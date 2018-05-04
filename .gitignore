@@ -1,0 +1,36 @@
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Fortran module files
+*.mod
+
+# Executables
+*.exe
+*.out
+*.app
+
+# Visual Studio files
+*.user
+*.suo
+*.sdf
+*.db
+
+# Temporary files
+*.tmp
+
+# Local environment
+[Bb]uild/
+[Bb]in/
+[Dd]ebug/
+[Rr]elease/
+[Mm]erge/
+[Pp]rojects/
+[Ww]iki/
+[Rr]edist/
