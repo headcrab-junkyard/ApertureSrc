@@ -21,6 +21,7 @@
 
 #pragma once
 
+//#include "quakedef.h" // TODO: host
 #include "engine/IEngine.hpp"
 
 struct IGame;
@@ -32,6 +33,7 @@ public:
 	~CEngine();
 	
 	bool Init(const SInitData &apInitData) override;
+	//bool Init(bool dedicated, const char *basedir, const char *cmdline) override;
 	void Shutdown() override;
 	
 	bool Frame() override;
@@ -55,6 +57,8 @@ private:
 	//void ShutdownServer(bool abCrash);
 	
 	//void WriteServerConfig(const char *asName);
+	
+	//quakeparms_t mParms{};
 	
 	void *mpCoreLib{nullptr}; // mpEngineCoreLib
 	IEngineCore *mpCore{nullptr};

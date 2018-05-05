@@ -1,14 +1,11 @@
 /// @file
-/// @brief Listen and Dedicated Server API implementation
+/// @brief IGameUIFuncs interface implementation
 
 #include "quakedef.h"
-#include "engine_launcher_api.h"
-#include "engine_hlds_api.h"
-#include "igameuifuncs.h"
-#include "iengine.h"
+#include "IGameUIFuncs.hpp"
 #include "interface.h"
 
-qboolean gbDedicatedServer{false};
+bool gbDedicatedServer{false};
 
 char *gsPostRestartCmdLineArgs{nullptr};
 
@@ -40,16 +37,6 @@ public:
 	~CEngineAPI();
 	
 	int Run(void *instance, const char *basedir, const char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory) override;
-};
-
-EXPOSE_SINGLE_INTERFACE(CEngineAPI, IEngineAPI, VENGINE_LAUNCHER_API_VERSION);
-
-CEngineAPI::CEngineAPI() = default;
-CEngineAPI::~CEngineAPI() = default;
-
-int CEngineAPI::Run(void *instance, const char *basedir, const char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
-{
-	return RunListenServer(instance, basedir, cmdline, postRestartCmdLineArgs, launcherFactory, filesystemFactory);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -145,24 +132,12 @@ public:
 	void UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, const char *pszMap) override;
 };
 
-EXPOSE_SINGLE_INTERFACE(CDedicatedServerAPI, IDedicatedServerAPI, VENGINE_HLDS_API_VERSION);
-
-CDedicatedServerAPI::CDedicatedServerAPI() = default;
-CDedicatedServerAPI::~CDedicatedServerAPI() = default;
-
 bool CDedicatedServerAPI::Init(const char *basedir, const char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
 {
 	if(!gpEngine->Load(true, basedir, cmdline))
 		return false;
 	
 	return true;
-};
-
-int CDedicatedServerAPI::Shutdown()
-{
-	gpEngine->Unload();
-	
-	return 0;
 };
 
 bool CDedicatedServerAPI::RunFrame()

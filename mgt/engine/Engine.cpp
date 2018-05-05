@@ -1,7 +1,7 @@
 /// @file
 
 //#include "quakedef.h" // TODO
-#include "sys_engine.h"
+#include "Engine.hpp"
 
 #ifdef _WIN32
 	#define EXPORT [[dllexport]]
@@ -34,7 +34,7 @@ C_EXPORT IEngine *GetEngine()
 CEngine::CEngine() = default;
 CEngine::~CEngine() = default;
 
-bool CEngine::Load(bool dedicated, const char *basedir, const char *cmdline)
+bool CEngine::Init(bool dedicated, const char *basedir, const char *cmdline)
 {
 	//static quakeparms_t parms; // TODO: static?
 	
@@ -60,7 +60,7 @@ bool CEngine::Load(bool dedicated, const char *basedir, const char *cmdline)
 	return true;
 };
 
-void CEngine::Unload()
+void CEngine::Shutdown()
 {
 	Host_Shutdown();
 };
