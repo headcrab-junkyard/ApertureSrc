@@ -1,6 +1,6 @@
 /*
- *	This file is part of Open GoldSrc Project
- *	Copyright (C) 2018 Headcrab Garage
+ *	This file is part of Magenta Engine
+ *	Copyright (C) 2018 BlackPhrase
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -14,28 +14,18 @@
  *
  *	You should have received a copy of the GNU General Public License
  *	along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
- *	In addition, as a special exception, the author gives permission to
- *	link the code of this program with the Half-Life Game Engine ("GoldSrc/GS
- *	Engine") and Modified Game Libraries ("MODs") developed by Valve,
- *	L.L.C ("Valve"). You must obey the GNU General Public License in all
- *	respects for all of the code used other than the GoldSrc Engine and MODs
- *	from Valve. If you modify this file, you may extend this exception
- *	to your version of the file, but you are not obligated to do so. If
- *	you do not wish to do so, delete this exception statement from your
- *	version.
  */
 
 /// @file
 
-#include "DedicatedExports.h"
+#include "DedicatedExports.hpp"
 
-EXPOSE_SINGLE_INTERFACE(CDedicatedExports, IDedicatedExports, VENGINE_DEDICATEDEXPORTS_API_VERSION);
+EXPOSE_SINGLE_INTERFACE(CDedicatedExports, IDedicatedExports, MGT_DEDICATEDEXPORTS_API_VERSION);
 
 CDedicatedExports::CDedicatedExports() = default;
 CDedicatedExports::~CDedicatedExports() = default;
 
-void CDedicatedExports::Sys_Printf(char *text)
+void CDedicatedExports::Sys_Printf(const char *text)
 {
 	if(!text || !*text)
 		return;

@@ -1,6 +1,6 @@
 /*
- *	This file is part of Open GoldSrc Project
- *	Copyright (C) 2018 Headcrab Garage
+ *	This file is part of Magenta Engine
+ *	Copyright (C) 2018 BlackPhrase
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -14,16 +14,6 @@
  *
  *	You should have received a copy of the GNU General Public License
  *	along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
- *	In addition, as a special exception, the author gives permission to
- *	link the code of this program with the Half-Life Game Engine ("GoldSrc/GS
- *	Engine") and Modified Game Libraries ("MODs") developed by Valve,
- *	L.L.C ("Valve"). You must obey the GNU General Public License in all
- *	respects for all of the code used other than the GoldSrc Engine and MODs
- *	from Valve. If you modify this file, you may extend this exception
- *	to your version of the file, but you are not obligated to do so. If
- *	you do not wish to do so, delete this exception statement from your
- *	version.
  */
 
 /// @file
@@ -38,5 +28,5 @@ public:
 	CDedicatedExports();
 	~CDedicatedExports();
 	
-	void Sys_Printf(char *text) override;
+	void Sys_Printf(const char *text) override;
 };
