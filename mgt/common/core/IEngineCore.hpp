@@ -32,7 +32,7 @@ struct IEnginePlugin;
 
 interface IEngineCore : public IBaseInterface
 {
-	struct TInitData
+	struct SInitData
 	{
 		CreateInterfaceFn fnLauncherFactory{nullptr}; ///< Factory function from launcher module to get interfaces from it
 		
@@ -48,7 +48,7 @@ interface IEngineCore : public IBaseInterface
 	* @param aInitData - passed read-only struct that contains specified init settings
 	* @return true if successfully (or already) initialized
 	*/
-	virtual bool Init(const TInitData &aInitData) = 0;
+	virtual bool Init(const SInitData &apInitData) = 0;
 	
 	/// Shutdown the engine
 	virtual void Shutdown() = 0;

@@ -29,7 +29,7 @@ constexpr auto MGT_ENGINE_INTERFACE_VERSION{"MGTEngine005Alpha"};
 
 interface IEngine : public IBaseInterface
 {
-	struct TInitData
+	struct SInitData
 	{
 		CreateInterfaceFn fnLauncherFactory{nullptr}; ///< Factory function from launcher module to get interfaces from it
 		
@@ -45,12 +45,13 @@ interface IEngine : public IBaseInterface
 	* @param aInitData - passed read-only struct that contains specified init settings
 	* @return true if successfully (or already) initialized
 	*/
-	virtual bool Init(const TInitData &aInitData) = 0;
+	virtual bool Init(const SInitData &apInitData) = 0;
 	
 	/// Shutdown the engine
 	virtual void Shutdown() = 0;
 	
-	///
+	/// Run a single frame
+	/// @return false if doesn't want to update anymore
 	virtual bool Frame() = 0;
 	
 	/// Call Frame method in loop (can't be updated manually)
