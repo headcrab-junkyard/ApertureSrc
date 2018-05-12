@@ -19,17 +19,15 @@
 
 /// @file
 
-#include "DedicatedExports.hpp"
+#pragma once
 
-EXPOSE_SINGLE_INTERFACE(CDedicatedExports, IDedicatedExports, MGT_DEDICATEDEXPORTS_API_VERSION);
+#include "IDedicatedExports.h"
 
-CDedicatedExports::CDedicatedExports() = default;
-CDedicatedExports::~CDedicatedExports() = default;
-
-void CDedicatedExports::Sys_Printf(const char *text)
+class CDedicatedExports final : public IDedicatedExports
 {
-	if(!text || !*text)
-		return;
+public:
+	CDedicatedExports();
+	~CDedicatedExports();
 	
-	// TODO
+	void Sys_Printf(const char *text) override;
 };
