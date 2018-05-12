@@ -1,44 +1,96 @@
+/*
+*	This file is part of Magenta Engine
+*
+*	Copyright (C) 2018 BlackPhrase
+*
+*	Magenta Engine is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	Magenta Engine is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
+*/
+
 /// @file
-/// @brief this implementation handles the linking of the engine to the DLL
+/// @brief this implementation handles the linking of the engine to the client DLL
 
 // NOTE: The reason why the client dll support is implemented this way is historical
 // The GoldSrc is a fork of Source codebase somewhere at the beginning of November 1998
 // Current Source is a single dll for both dedicated/listenserver modes (it skips client dll
 // loading and does nothing inside these wrapper functions below)
 
-// NOTE: OGS planned to be doing the same
-
 #include "quakedef.h"
 
 static cl_enginefunc_t gEngFuncs; // TODO: name overlap with server-side version? cl_enginefuncs in GS
-cldll_func_t cl_funcs;
+IClientGame *gpClientGame{nullptr};
 
-typedef int /*CL_DLLEXPORT*/ (*pfnGetClientDLL)(void *pv);
+void *gpClientDLL{nullptr};
+
+bool LoadClientDLL()
+{
+	//memcpy(&gEngFuncs, 0, sizeof(cl_enginefunc_t));
+	//memcpy(&cl_funcs, 0, sizeof(cldll_func_t));
+	
+	gpClientDLL = Sys_LoadModule("mgt/cl_dll/client"); // TODO: FS_LoadLibrary or something else that will load it from the game folder instead of app folder
+	
+	if(!gpClientDLL)
+		return false;
+	
+	auto fnClientDLLFactory{Sys_GetFactory(gpClientDLL)};
+	
+	if(!fnClientDLLFactory)
+		return false;
+	
+	gpClientGame = fnClientDLLFactory(MGT_CLIENTAME_INTERFACE_VERSION, nullptr);
+	
+	if(!gpClientGame->Init(Sys_GetFactoryThis(), &gEngFuncs)) // TODO: So.... Are you alive?
+		return false;
+	
+	return true;
+};
 
 void ClientDLL_Init()
 {
 	// TODO
+	
+	ClientDLL_Shutdown();
+	
+	if(!LoadClientDLL())
+		return;
+	
 	ClientDLL_HudInit();
 	ClientDLL_HudVidInit();
-	ClientDLL_ClientMoveInit(NULL /*TODO*/);
+	ClientDLL_ClientMoveInit(nullptr /*TODO*/);
 };
 
 void ClientDLL_Shutdown()
 {
-	//if(cl_funcs.pfnShutdown)
-		//cl_funcs.pfnShutdown();
+	//if(gpClientGame)
+		//gpClientGame->Shutdown();
+	
+	if(gpClientDLL)
+	{
+		Sys_UnloadModule(gpClientDLL);
+		gpClientDLL = nullptr;
+	};
 };
 
 void ClientDLL_HudInit()
 {
-	if(cl_funcs.pfnHudInit)
-		cl_funcs.pfnHudInit();
+	if(gpClientGame)
+		gpClientGame->HudInit();
 };
 
 void ClientDLL_HudVidInit()
 {
-	if(cl_funcs.pfnHudVidInit)
-		cl_funcs.pfnHudVidInit();
+	if(gpClientGame)
+		gpClientGame->HudVidInit();
 };
 
 void ClientDLL_UpdateClientData()
@@ -48,14 +100,14 @@ void ClientDLL_UpdateClientData()
 
 void ClientDLL_Frame(double time)
 {
-	if(cl_funcs.pfnFrame)
-		cl_funcs.pfnFrame(time);
+	if(gpClientGame)
+		gpClientGame->Frame(time);
 };
 
 void ClientDLL_HudRedraw(int intermission)
 {
-	if(cl_funcs.pfnHudRedraw)
-		cl_funcs.pfnHudRedraw(intermission);
+	if(gpClientGame)
+		gpClientGame->HudRedraw(intermission);
 };
 
 void ClientDLL_MoveClient(struct playermove_s *ppmove)
@@ -81,26 +133,26 @@ void ClientDLL_CreateMove(float frametime, struct usercmd_s *cmd, int active)
 
 void ClientDLL_ActivateMouse()
 {
-	if(cl_funcs.pfnIN_ActivateMouse)
-		cl_funcs.pfnIN_ActivateMouse();
+	if(gpClientGame)
+		gpClientGame->IN_ActivateMouse();
 };
 
 void ClientDLL_DeactivateMouse()
 {
-	if(cl_funcs.pfnIN_DeactivateMouse)
-		cl_funcs.pfnIN_DeactivateMouse();
+	if(gpClientGame)
+		gpClientGame->IN_DeactivateMouse();
 };
 
 void ClientDLL_MouseEvent(int mstate)
 {
-	if(cl_funcs.pfnIN_MouseEvent)
-		cl_funcs.pfnIN_MouseEvent(mstate);
+	if(gpClientGame)
+		gpClientGame->IN_MouseEvent(mstate);
 };
 
 void ClientDLL_ClearStates()
 {
-	if(cl_funcs.pfnIN_ClearStates)
-		cl_funcs.pfnIN_ClearStates();
+	if(gpClientGame)
+		gpClientGame->IN_ClearStates();
 };
 
 int ClientDLL_IsThirdPerson()
@@ -123,7 +175,7 @@ int ClientDLL_GraphKeyDown()
 struct kbutton_s *ClientDLL_FindKey(const char *name)
 {
 	// TODO
-	return NULL;
+	return nullptr;
 };
 
 void ClientDLL_CAM_Think()
@@ -133,8 +185,8 @@ void ClientDLL_CAM_Think()
 
 void ClientDLL_IN_Accumulate()
 {
-	if(cl_funcs.pfnIN_Accumulate)
-		cl_funcs.pfnIN_Accumulate();
+	if(gpClientGame)
+		gpClientGame->IN_Accumulate();
 };
 
 void ClientDLL_CalcRefdef(struct ref_params_s *pparams)
@@ -212,8 +264,8 @@ void ClientDLL_VGui_ConsolePrint(const char *text)
 
 int ClientDLL_Key_Event(int down, int keynum, const char *pszCurrentBinding)
 {
-	if(cl_funcs.pfnKey_Event)
-		return cl_funcs.pfnKey_Event(down, keynum, pszCurrentBinding);
+	if(gpClientGame)
+		return gpClientGame->Key_Event(down, keynum, pszCurrentBinding);
 	
 	return 0;
 };
@@ -226,7 +278,7 @@ void ClientDLL_TempEntUpdate(double ft, double ct, double grav, struct tempent_s
 struct cl_entity_s *ClientDLL_GetUserEntity(int index)
 {
 	// TODO
-	return NULL;
+	return nullptr;
 };
 
 void ClientDLL_VoiceStatus(int entindex, qboolean bTalking)
@@ -242,37 +294,4 @@ void ClientDLL_DirectorMessage(int iSize, void *pbuf)
 void ClientDLL_ChatInputPosition(int *x, int *y)
 {
 	// TODO
-};
-
-qboolean LoadClientDLLF()
-{
-	pfnGetClientDLL fnGetClientDLL = NULL;
-	
-	//memcpy(&gEngFuncs, 0, sizeof(cl_enginefunc_t));
-	//memcpy(&cl_funcs, 0, sizeof(cldll_func_t));
-	
-	void *pClientDLL = Sys_LoadModule("gskiller/cl_dll/client"); // TODO: FS_LoadLibrary or something else that will load it from the game folder instead of app folder
-	
-	if(!pClientDLL)
-		return false;
-	
-	fnGetClientDLL = (pfnGetClientDLL)Sys_GetExport(pClientDLL, "GetClientDLL");
-	
-	if(!fnGetClientDLL)
-		return false;
-	
-	fnGetClientDLL(&cl_funcs);
-	
-	if(!cl_funcs.pfnInitialize(&gEngFuncs, CLDLL_INTERFACE_VERSION)) // TODO: So.... Are you alive?
-		return false;
-	
-	return true;
-};
-
-void LoadClientDLL()
-{
-	// TODO: per-export loading as a fallback
-	
-	if(!LoadClientDLLF())
-		return;
 };
