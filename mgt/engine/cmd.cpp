@@ -1,23 +1,25 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+*	This file is part of Magenta Engine
+*
+*	Copyright (C) 1996-1997 Id Software, Inc.
+*	Copyright (C) 2018 BlackPhrase
+*
+*	Magenta Engine is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	Magenta Engine is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
-// cmd.c -- Quake script command processing module
+
+/// @file
+/// @brief script command processing module
 
 #include "quakedef.h"
 
@@ -118,7 +120,7 @@ void Cbuf_InsertText (const char *text)
 		SZ_Clear (&cmd_text);
 	}
 	else
-		temp = NULL;	// shut up compiler
+		temp = nullptr;	// shut up compiler
 		
 // add the entire text of the file
 	Cbuf_AddText (text);
@@ -409,7 +411,7 @@ typedef struct cmd_function_s
 static	int			cmd_argc;
 static	char		*cmd_argv[MAX_ARGS];
 static	char		*cmd_null_string = "";
-static	const char		*cmd_args = NULL;
+static	const char		*cmd_args = nullptr;
 
 cmd_source_t	cmd_source;
 
@@ -483,7 +485,7 @@ void Cmd_TokenizeString (const char *text)
 		Z_Free (cmd_argv[i]);
 		
 	cmd_argc = 0;
-	cmd_args = NULL;
+	cmd_args = nullptr;
 	
 	while (1)
 	{
@@ -589,14 +591,14 @@ char *Cmd_CompleteCommand (const char *partial)
 	len = Q_strlen(partial);
 	
 	if (!len)
-		return NULL;
+		return nullptr;
 		
 // check functions
 	for (cmd=cmd_functions ; cmd ; cmd=cmd->next)
 		if (!Q_strncmp (partial,cmd->name, len))
 			return cmd->name;
 
-	return NULL;
+	return nullptr;
 }
 
 /*

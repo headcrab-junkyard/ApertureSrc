@@ -1,23 +1,25 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+*	This file is part of Magenta Engine
+*
+*	Copyright (C) 1996-1997 Id Software, Inc.
+*	Copyright (C) 2018 BlackPhrase
+*
+*	Magenta Engine is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	Magenta Engine is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
-// common.c -- misc functions used in client and server
+
+/// @file
+/// @brief misc functions used in client and server
 
 #include "quakedef.h"
 
@@ -724,7 +726,7 @@ void SZ_Alloc (sizebuf_t *buf, int startsize)
 void SZ_Free (sizebuf_t *buf)
 {
 //      Z_Free (buf->data);
-//      buf->data = NULL;
+//      buf->data = nullptr;
 //      buf->maxsize = 0;
 	buf->cursize = 0;
 }
@@ -900,14 +902,14 @@ const char *COM_Parse (const char *data)
 	com_token[0] = 0;
 	
 	if (!data)
-		return NULL;
+		return nullptr;
 		
 // skip whitespace
 skipwhite:
 	while ( (c = *data) <= ' ')
 	{
 		if (c == 0)
-			return NULL;                    // end of file;
+			return nullptr;                    // end of file;
 		data++;
 	}
 	
@@ -1414,7 +1416,7 @@ int COM_FindFile (const char *filename, int *handle, FILE **file)
 	if (handle)
 		*handle = -1;
 	else
-		*file = NULL;
+		*file = nullptr;
 	com_filesize = -1;
 	return -1;
 }
@@ -1431,7 +1433,7 @@ it may actually be inside a pak file
 */
 int COM_OpenFile (const char *filename, int *handle)
 {
-	return COM_FindFile (filename, handle, NULL);
+	return COM_FindFile (filename, handle, nullptr);
 }
 
 /*
@@ -1444,7 +1446,7 @@ into the file.
 */
 int COM_FOpenFile (const char *filename, FILE **file)
 {
-	return COM_FindFile (filename, NULL, file);
+	return COM_FindFile (filename, nullptr, file);
 }
 
 /*
@@ -1484,12 +1486,12 @@ byte *COM_LoadFile (const char *path, int usehunk)
 	char    base[32];
 	int             len;
 
-	buf = NULL;     // quiet compiler warning
+	buf = nullptr;     // quiet compiler warning
 
 // look for it in the filesystem or pack files
 	len = COM_OpenFile (path, &h);
 	if (h == -1)
-		return NULL;
+		return nullptr;
 	
 // extract the filename base name for hunk tag
 	COM_FileBase (path, base);
@@ -1577,7 +1579,7 @@ pack_t *COM_LoadPackFile (const char *packfile)
 	if (FS_FileOpenRead (packfile, &packhandle) == -1)
 	{
 //              Con_Printf ("Couldn't open %s\n", packfile);
-		return NULL;
+		return nullptr;
 	}
 	FS_FileRead (packhandle, (void *)&header, sizeof(header));
 	if (header.id[0] != 'P' || header.id[1] != 'A'
@@ -1702,7 +1704,7 @@ void COM_InitFilesystem ()
 
 //
 // -cachedir <path>
-// Overrides the system supplied cache directory (NULL or /qcache)
+// Overrides the system supplied cache directory (nullptr or /qcache)
 // -cachedir - will disable caching.
 //
 	i = COM_CheckParm ("-cachedir");
@@ -1747,7 +1749,7 @@ void COM_InitFilesystem ()
 	if (i)
 	{
 		com_modified = true;
-		com_searchpaths = NULL;
+		com_searchpaths = nullptr;
 		while (++i < com_argc)
 		{
 			if (!com_argv[i] || com_argv[i][0] == '+' || com_argv[i][0] == '-')

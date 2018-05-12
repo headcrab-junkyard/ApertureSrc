@@ -1,22 +1,21 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-Copyright (C) 2018 Headcrab-Garage
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+*	This file is part of Magenta Engine
+*
+*	Copyright (C) 1996-1997 Id Software, Inc.
+*	Copyright (C) 2018 BlackPhrase
+*
+*	Magenta Engine is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	Magenta Engine is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /// @file
@@ -299,7 +298,7 @@ void IN_DeactivateMouse ()
 			if (restore_spi)
 				SystemParametersInfo (SPI_SETMOUSE, 0, originalmouseparms, 0);
 
-			ClipCursor (NULL);
+			ClipCursor (nullptr);
 			ReleaseCapture ();
 		}
 
@@ -350,7 +349,7 @@ qboolean IN_InitDInput ()
 	{
 		hInstDI = LoadLibrary("dinput.dll");
 		
-		if (hInstDI == NULL)
+		if (hInstDI == nullptr)
 		{
 			Con_SafePrintf ("Couldn't load dinput.dll\n");
 			return false;
@@ -369,7 +368,7 @@ qboolean IN_InitDInput ()
 	}
 
 // register with DirectInput and get an IDirectInput to play with.
-	hr = iDirectInputCreate(global_hInstance, DIRECTINPUT_VERSION, &g_pdi, NULL);
+	hr = iDirectInputCreate(global_hInstance, DIRECTINPUT_VERSION, &g_pdi, nullptr);
 
 	if (FAILED(hr))
 	{
@@ -377,7 +376,7 @@ qboolean IN_InitDInput ()
 	}
 
 // obtain an interface to the system mouse device.
-	hr = IDirectInput_CreateDevice(g_pdi, &GUID_SysMouse, &g_pMouse, NULL);
+	hr = IDirectInput_CreateDevice(g_pdi, &GUID_SysMouse, &g_pMouse, nullptr);
 
 	if (FAILED(hr))
 	{
@@ -534,13 +533,13 @@ void IN_Shutdown ()
     if (g_pMouse)
 	{
 		IDirectInputDevice_Release(g_pMouse);
-		g_pMouse = NULL;
+		g_pMouse = nullptr;
 	}
 
     if (g_pdi)
 	{
 		IDirectInput_Release(g_pdi);
-		g_pdi = NULL;
+		g_pdi = nullptr;
 	}
 }
 

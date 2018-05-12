@@ -1,22 +1,21 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-Copyright (C) 2018 Headcrab Garage
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+*	This file is part of Magenta Engine
+*
+*	Copyright (C) 1996-1997 Id Software, Inc.
+*	Copyright (C) 2018 BlackPhrase
+*
+*	Magenta Engine is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	Magenta Engine is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /// @file
@@ -263,7 +262,7 @@ void CL_ClearState ()
 	cl.free_efrags = cl_efrags;
 	for (i=0 ; i<MAX_EFRAGS-1 ; i++)
 		cl.free_efrags[i].entnext = &cl.free_efrags[i+1];
-	cl.free_efrags[i].entnext = NULL;
+	cl.free_efrags[i].entnext = nullptr;
 }
 
 /*
@@ -678,7 +677,7 @@ void CL_RelinkEntities ()
 // if the object wasn't included in the last packet, remove it
 		if (ent->msgtime != cl.mtime[0])
 		{
-			ent->model = NULL;
+			ent->model = nullptr;
 			continue;
 		}
 
@@ -950,7 +949,7 @@ void CL_ConnectionlessPacket ()
 
 	//char *response_buffer;
 	//int response_buffer_size;
-	if(ClientDLL_ConnectionlessPacket(&net_from, s, NULL, NULL)) // TODO
+	if(ClientDLL_ConnectionlessPacket(&net_from, s, nullptr, nullptr)) // TODO
 		return;
 
 	Con_Printf ("unknown:  %c\n", c);

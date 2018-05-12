@@ -1,25 +1,25 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-Copyright (C) 2018 Headcrab-Garage
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+*	This file is part of Magenta Engine
+*
+*	Copyright (C) 1996-1997 Id Software, Inc.
+*	Copyright (C) 2018 BlackPhrase
+*
+*	Magenta Engine is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	Magenta Engine is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /// @file
+/// @brief
 
 #include "quakedef.h"
 #include "winquake.h"
@@ -162,14 +162,14 @@ void FreeSound ()
 
 	}
 
-	pDS = NULL;
-	pDSBuf = NULL;
-	pDSPBuf = NULL;
+	pDS = nullptr;
+	pDSBuf = nullptr;
+	pDSPBuf = nullptr;
 	hWaveOut = 0;
 	hData = 0;
 	hWaveHdr = 0;
-	lpData = NULL;
-	lpWaveHdr = NULL;
+	lpData = nullptr;
+	lpWaveHdr = nullptr;
 	dsound_init = false;
 	wav_init = false;
 }
@@ -215,7 +215,7 @@ sndinitstat SNDDMA_InitDirect ()
 	{
 		hInstDS = LoadLibrary("dsound.dll");
 		
-		if (hInstDS == NULL)
+		if (hInstDS == nullptr)
 		{
 			Con_SafePrintf ("Couldn't load dsound.dll\n");
 			return SIS_FAILURE;
@@ -230,7 +230,7 @@ sndinitstat SNDDMA_InitDirect ()
 		}
 	}
 
-	while ((hresult = iDirectSoundCreate(NULL, &pDS, NULL)) != DS_OK)
+	while ((hresult = iDirectSoundCreate(nullptr, &pDS, nullptr)) != DS_OK)
 	{
 		if (hresult != DSERR_ALLOCATED)
 		{
@@ -238,7 +238,7 @@ sndinitstat SNDDMA_InitDirect ()
 			return SIS_FAILURE;
 		}
 
-		if (MessageBox (NULL,
+		if (MessageBox (nullptr,
 						"The sound hardware is in use by another app.\n\n"
 					    "Select Retry to try to start sound again or Cancel to run Quake with no sound.",
 						"Sound not available",
@@ -277,7 +277,7 @@ sndinitstat SNDDMA_InitDirect ()
 	dsbuf.dwSize = sizeof(DSBUFFERDESC);
 	dsbuf.dwFlags = DSBCAPS_PRIMARYBUFFER;
 	dsbuf.dwBufferBytes = 0;
-	dsbuf.lpwfxFormat = NULL;
+	dsbuf.lpwfxFormat = nullptr;
 
 	memset(&dsbcaps, 0, sizeof(dsbcaps));
 	dsbcaps.dwSize = sizeof(dsbcaps);
@@ -285,7 +285,7 @@ sndinitstat SNDDMA_InitDirect ()
 
 	if (!COM_CheckParm ("-snoforceformat"))
 	{
-		if (DS_OK == pDS->lpVtbl->CreateSoundBuffer(pDS, &dsbuf, &pDSPBuf, NULL))
+		if (DS_OK == pDS->lpVtbl->CreateSoundBuffer(pDS, &dsbuf, &pDSPBuf, nullptr))
 		{
 			pformat = format;
 
@@ -316,7 +316,7 @@ sndinitstat SNDDMA_InitDirect ()
 		memset(&dsbcaps, 0, sizeof(dsbcaps));
 		dsbcaps.dwSize = sizeof(dsbcaps);
 
-		if (DS_OK != pDS->lpVtbl->CreateSoundBuffer(pDS, &dsbuf, &pDSBuf, NULL))
+		if (DS_OK != pDS->lpVtbl->CreateSoundBuffer(pDS, &dsbuf, &pDSBuf, nullptr))
 		{
 			Con_SafePrintf ("DS:CreateSoundBuffer Failed");
 			FreeSound ();
@@ -370,7 +370,7 @@ sndinitstat SNDDMA_InitDirect ()
 // initialize the buffer
 	reps = 0;
 
-	while ((hresult = pDSBuf->lpVtbl->Lock(pDSBuf, 0, gSndBufSize, &lpData, &dwSize, NULL, NULL, 0)) != DS_OK)
+	while ((hresult = pDSBuf->lpVtbl->Lock(pDSBuf, 0, gSndBufSize, &lpData, &dwSize, nullptr, nullptr, 0)) != DS_OK)
 	{
 		if (hresult != DSERR_BUFFERLOST)
 		{
@@ -391,10 +391,10 @@ sndinitstat SNDDMA_InitDirect ()
 	memset(lpData, 0, dwSize);
 //		lpData[4] = lpData[5] = 0x7f;	// force a pop for debugging
 
-	pDSBuf->lpVtbl->Unlock(pDSBuf, lpData, dwSize, NULL, 0);
+	pDSBuf->lpVtbl->Unlock(pDSBuf, lpData, dwSize, nullptr, 0);
 
 	/* we don't want anyone to access the buffer directly w/o locking it first. */
-	lpData = NULL; 
+	lpData = nullptr; 
 
 	pDSBuf->lpVtbl->Stop(pDSBuf);
 	pDSBuf->lpVtbl->GetCurrentPosition(pDSBuf, &mmstarttime.u.sample, &dwWrite);
@@ -458,7 +458,7 @@ qboolean SNDDMA_InitWav ()
 			return false;
 		}
 
-		if (MessageBox (NULL,
+		if (MessageBox (nullptr,
 						"The sound hardware is in use by another app.\n\n"
 					    "Select Retry to try to start sound again or Cancel to run Quake with no sound.",
 						"Sound not available",
@@ -501,7 +501,7 @@ qboolean SNDDMA_InitWav ()
 	hWaveHdr = GlobalAlloc(GMEM_MOVEABLE | GMEM_SHARE, 
 		(DWORD) sizeof(WAVEHDR) * WAV_BUFFERS); 
 
-	if (hWaveHdr == NULL)
+	if (hWaveHdr == nullptr)
 	{ 
 		Con_SafePrintf ("Sound: Failed to Alloc header.\n");
 		FreeSound ();
@@ -510,7 +510,7 @@ qboolean SNDDMA_InitWav ()
 
 	lpWaveHdr = (LPWAVEHDR) GlobalLock(hWaveHdr); 
 
-	if (lpWaveHdr == NULL)
+	if (lpWaveHdr == nullptr)
 	{ 
 		Con_SafePrintf ("Sound: Failed to lock header.\n");
 		FreeSound ();

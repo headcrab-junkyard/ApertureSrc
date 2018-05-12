@@ -1,23 +1,25 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+*	This file is part of Magenta Engine
+*
+*	Copyright (C) 1996-1997 Id Software, Inc.
+*	Copyright (C) 2018 BlackPhrase
+*
+*	Magenta Engine is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	Magenta Engine is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
-// snd_mix.c -- portable code to mix sounds for snd_dma.c
+
+/// @file
+/// @brief portable code to mix sounds for snd_dma
 
 #include "quakedef.h"
 
@@ -132,7 +134,7 @@ void S_TransferStereo16 (int endtime)
 
 #ifdef _WIN32
 	if (pDSBuf)
-		pDSBuf->lpVtbl->Unlock(pDSBuf, pbuf, dwSize, NULL, 0);
+		pDSBuf->lpVtbl->Unlock(pDSBuf, pbuf, dwSize, nullptr, 0);
 #endif
 }
 
@@ -236,7 +238,7 @@ void S_TransferPaintBuffer(int endtime)
 		
 		ir += il;
 
-		pDSBuf->lpVtbl->Unlock(pDSBuf, pbuf, dwSize, NULL, 0);
+		pDSBuf->lpVtbl->Unlock(pDSBuf, pbuf, dwSize, nullptr, 0);
 
 		pDSBuf->lpVtbl->GetCurrentPosition(pDSBuf, &dwNewpos, &dwWrite);
 
@@ -317,7 +319,7 @@ void S_PaintChannels(int endtime)
 					}
 					else				
 					{	// channel just stopped
-						ch->sfx = NULL;
+						ch->sfx = nullptr;
 						break;
 					}
 				}

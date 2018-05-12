@@ -1,24 +1,25 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+*	This file is part of Magenta Engine
+*
+*	Copyright (C) 1996-1997 Id Software, Inc.
+*	Copyright (C) 2018 BlackPhrase
+*
+*	Magenta Engine is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	Magenta Engine is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
-// vid_sunxil.c -- uses X to setup windows and XIL to copy images (scaled as needed) 
-// 		   to screen
+
+/// @file
+/// @brief uses X to setup windows and XIL to copy images (scaled as needed) to screen
 
 #define _BSD
 #define BYTE_DEFINED 1
@@ -125,7 +126,7 @@ int		VGA_width, VGA_height, VGA_rowbytes, VGA_bufferrowbytes, VGA_planar;
 byte	*VGA_pagebase;
 
 qboolean			x_fullscreen = true;
-Display				*x_disp = NULL;
+Display				*x_disp = nullptr;
 int				x_screen, x_screen_width, x_screen_height;
 int				x_center_width, x_center_height;
 int				x_std_event_mask = STD_EVENT_MASK;
@@ -138,8 +139,8 @@ static Colormap			x_cmap;
 static GC			x_gc;
 static Visual			*x_vis;
 static XVisualInfo		*x_visinfo;
-static Atom			aHints = NULL;
-static Atom			aWMDelete = NULL;
+static Atom			aHints = nullptr;
+static Atom			aWMDelete = nullptr;
 
 static qboolean			oktodraw = false;
 static qboolean			X11_active = false;
@@ -157,8 +158,8 @@ int current_pixel_multiply = 2;
 
 static int 				render_pipeline[2];
 static XilSystemState 			state;
-static XilImage				display_image  = NULL;
-static XilImage				quake_image  = NULL;
+static XilImage				display_image  = nullptr;
+static XilImage				quake_image  = nullptr;
 static int				use_mt = 0;
 static int				count_frames = 0;
 
@@ -345,7 +346,7 @@ void VID_SetWindowTitle( Window win, char *pszName )
     wmHints->flags = StateHint;
     XSetWMProperties( x_disp, win, &textprop, &textprop,
 					  // Only put WM_COMMAND property on first window.
-					  com_argv, com_argc, NULL, NULL, NULL );
+					  com_argv, com_argc, nullptr, nullptr, nullptr );
     XFree( wmHints );
 
     aWMDelete = XInternAtom( x_disp, "WM_DELETE_WINDOW", False );
@@ -614,7 +615,7 @@ void	VID_Init (unsigned char *palette)
 	
 	state = xil_open();
 	
-	if(state == NULL) {
+	if(state == nullptr) {
 		//
 		//  XIL's default error handler will print an error msg on stderr
 		//
@@ -691,8 +692,8 @@ VID_ResetFramebuffer_MT()
 
 	display_image = xil_create_from_window(state, x_disp, x_win);
 	
-	if (quake_image == NULL) 
-		if (thr_create(NULL, NULL, update_thread, NULL, THR_NEW_LWP, NULL) != 0)
+	if (quake_image == nullptr) 
+		if (thr_create(nullptr, nullptr, update_thread, nullptr, THR_NEW_LWP, nullptr) != 0)
 			Sys_Error("VID: thr_create");	
 	
 	quake_image = drain_renderpipeline(quake_image);
@@ -740,8 +741,8 @@ void	VID_Shutdown (void)
 	//XAutoRepeatOn(x_disp);
 	xil_destroy(display_image);
 	xil_destroy(quake_image);
-	display_image = NULL;
-	quake_image = NULL;
+	display_image = nullptr;
+	quake_image = nullptr;
 	XCloseDisplay(x_disp);
 }
 

@@ -1,22 +1,21 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-Copyright (C) 2018 Headcrab Garage
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+*	This file is part of Magenta Engine
+*
+*	Copyright (C) 1996-1997 Id Software, Inc.
+*	Copyright (C) 2018 BlackPhrase
+*
+*	Magenta Engine is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	Magenta Engine is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /// @file
@@ -31,7 +30,7 @@ globalvars_t	gGlobalVariables;
 =================
 ED_ClearEdict
 
-Sets everything to NULL
+Sets everything to nullptr
 =================
 */
 void ED_ClearEdict (edict_t *e)
@@ -83,7 +82,7 @@ edict_t *ED_Alloc ()
 ED_Free
 
 Marks the edict as free
-FIXME: walk all entities and NULL out references to this entity
+FIXME: walk all entities and nullptr out references to this entity
 =================
 */
 void ED_Free (edict_t *ed)
@@ -125,7 +124,7 @@ dfunction_t *ED_FindFunction (char *name)
 		if (!strcmp(PR_GetString(func->s_name),name) )
 			return func;
 	}
-	return NULL;
+	return nullptr;
 }
 */
 
@@ -663,7 +662,7 @@ void ED_LoadFromFile (char *data)
 	int			inhibit;
 	//dfunction_t	*func;
 	
-	ent = NULL;
+	ent = nullptr;
 	inhibit = 0;
 	gGlobalVariables.time = sv.time;
 	
@@ -743,10 +742,10 @@ PR_LoadProgs
 */
 void PR_LoadProgs () // our temporary LoadEntityDLLs
 {
-	static void *gamedll = NULL;
-	pfnGiveFnptrsToDll fnGiveFnptrsToDll = NULL;
-	pfnGetEntityAPI fnGetEntityAPI = NULL;
-	pfnGetEntityAPI2 fnGetEntityAPI2 = NULL;
+	static void *gamedll = nullptr;
+	pfnGiveFnptrsToDll fnGiveFnptrsToDll = nullptr;
+	pfnGetEntityAPI fnGetEntityAPI = nullptr;
+	pfnGetEntityAPI2 fnGetEntityAPI2 = nullptr;
 	
 	gamedll = Sys_LoadModule("dlls/server");
 

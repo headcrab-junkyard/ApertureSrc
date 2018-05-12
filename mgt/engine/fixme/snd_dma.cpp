@@ -1,23 +1,25 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+*	This file is part of Magenta Engine
+*
+*	Copyright (C) 1996-1997 Id Software, Inc.
+*	Copyright (C) 2018 BlackPhrase
+*
+*	Magenta Engine is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	Magenta Engine is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
-// snd_dma.c -- main control for any streaming sound output device
+
+/// @file
+/// @brief main control for any streaming sound output device
 
 #include "quakedef.h"
 
@@ -332,7 +334,7 @@ sfx_t *S_PrecacheSound (const char *name)
 	sfx_t	*sfx;
 
 	if (!sound_started || nosound.value)
-		return NULL;
+		return nullptr;
 
 	sfx = S_FindName (name);
 	
@@ -382,10 +384,10 @@ channel_t *SND_PickChannel(int entnum, int entchannel)
    }
 
 	if (first_to_die == -1)
-		return NULL;
+		return nullptr;
 
 	if (channels[first_to_die].sfx)
-		channels[first_to_die].sfx = NULL;
+		channels[first_to_die].sfx = nullptr;
 
     return &channels[first_to_die];    
 }       
@@ -488,7 +490,7 @@ void S_StartSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float f
 	sc = S_LoadSound (sfx);
 	if (!sc)
 	{
-		target_chan->sfx = NULL;
+		target_chan->sfx = nullptr;
 		return;		// couldn't load the sound's data
 	}
 
@@ -526,7 +528,7 @@ void S_StopSound(int entnum, int entchannel)
 			&& channels[i].entchannel == entchannel)
 		{
 			channels[i].end = 0;
-			channels[i].sfx = NULL;
+			channels[i].sfx = nullptr;
 			return;
 		}
 	}
@@ -543,7 +545,7 @@ void S_StopAllSounds(qboolean clear)
 
 	for (i=0 ; i<MAX_CHANNELS ; i++)
 		if (channels[i].sfx)
-			channels[i].sfx = NULL;
+			channels[i].sfx = nullptr;
 
 	Q_memset(channels, 0, MAX_CHANNELS * sizeof(channel_t));
 
@@ -582,7 +584,7 @@ void S_ClearBuffer ()
 
 		reps = 0;
 
-		while ((hresult = pDSBuf->lpVtbl->Lock(pDSBuf, 0, gSndBufSize, (void**)&pData, &dwSize, NULL, NULL, 0)) != DS_OK)
+		while ((hresult = pDSBuf->lpVtbl->Lock(pDSBuf, 0, gSndBufSize, (void**)&pData, &dwSize, nullptr, nullptr, 0)) != DS_OK)
 		{
 			if (hresult != DSERR_BUFFERLOST)
 			{
@@ -601,7 +603,7 @@ void S_ClearBuffer ()
 
 		Q_memset(pData, clear, shm->samples * shm->samplebits/8);
 
-		pDSBuf->lpVtbl->Unlock(pDSBuf, pData, dwSize, NULL, 0);
+		pDSBuf->lpVtbl->Unlock(pDSBuf, pData, dwSize, nullptr, 0);
 	
 	}
 	else
@@ -679,7 +681,7 @@ void S_UpdateAmbientSounds ()
 	if (!l || !ambient_level.value)
 	{
 		for (ambient_channel = 0 ; ambient_channel< NUM_AMBIENTS ; ambient_channel++)
-			channels[ambient_channel].sfx = NULL;
+			channels[ambient_channel].sfx = nullptr;
 		return;
 	}
 
@@ -736,7 +738,7 @@ void S_Update(vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 // update general area ambient sound sources
 	S_UpdateAmbientSounds ();
 
-	combine = NULL;
+	combine = nullptr;
 
 // update spatialization for static and dynamic sounds	
 	ch = channels+NUM_AMBIENTS;
@@ -769,7 +771,7 @@ void S_Update(vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 					
 			if (j == total_channels)
 			{
-				combine = NULL;
+				combine = nullptr;
 			}
 			else
 			{

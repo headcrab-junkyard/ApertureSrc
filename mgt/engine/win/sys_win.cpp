@@ -1,22 +1,21 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-Copyright (C) 2018 Headcrab-Garage
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+*	This file is part of Magenta Engine
+*
+*	Copyright (C) 1996-1997 Id Software, Inc.
+*	Copyright (C) 2018 BlackPhrase
+*
+*	Magenta Engine is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	Magenta Engine is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /// @file
@@ -180,7 +179,7 @@ void Sys_FileClose (int handle)
 
 	t = VID_ForceUnlockedAndReturnState ();
 	fclose (sys_handles[handle]);
-	sys_handles[handle] = NULL;
+	sys_handles[handle] = nullptr;
 	VID_ForceLockState (t);
 }
 
@@ -309,11 +308,11 @@ void Sys_Error (char *error, ...)
 		va_end (argptr);
 
 		sprintf (text2, "ERROR: %s\n", text);
-		WriteFile (houtput, text5, strlen (text5), &dummy, NULL);
-		WriteFile (houtput, text4, strlen (text4), &dummy, NULL);
-		WriteFile (houtput, text2, strlen (text2), &dummy, NULL);
-		WriteFile (houtput, text3, strlen (text3), &dummy, NULL);
-		WriteFile (houtput, text4, strlen (text4), &dummy, NULL);
+		WriteFile (houtput, text5, strlen (text5), &dummy, nullptr);
+		WriteFile (houtput, text4, strlen (text4), &dummy, nullptr);
+		WriteFile (houtput, text2, strlen (text2), &dummy, nullptr);
+		WriteFile (houtput, text3, strlen (text3), &dummy, nullptr);
+		WriteFile (houtput, text4, strlen (text4), &dummy, nullptr);
 
 
 		starttime = Sys_FloatTime ();
@@ -332,12 +331,12 @@ void Sys_Error (char *error, ...)
 		{
 			in_sys_error0 = 1;
 			VID_SetDefaultMode ();
-			MessageBox(NULL, text, "Engine Error",
+			MessageBox(nullptr, text, "Engine Error",
 					   MB_OK | MB_SETFOREGROUND | MB_ICONSTOP);
 		}
 		else
 		{
-			MessageBox(NULL, text, "Double Engine Error",
+			MessageBox(nullptr, text, "Double Engine Error",
 					   MB_OK | MB_SETFOREGROUND | MB_ICONSTOP);
 		}
 	}
@@ -446,7 +445,7 @@ char *Sys_ConsoleInput ()
 	int		ch, numread, numevents;
 
 	if (!isDedicated)
-		return NULL;
+		return nullptr;
 
 
 	for ( ;; )
@@ -472,7 +471,7 @@ char *Sys_ConsoleInput ()
 				switch (ch)
 				{
 					case '\r':
-						WriteFile(houtput, "\r\n", 2, &dummy, NULL);	
+						WriteFile(houtput, "\r\n", 2, &dummy, nullptr);	
 
 						if (len)
 						{
@@ -491,7 +490,7 @@ char *Sys_ConsoleInput ()
 						break;
 
 					case '\b':
-						WriteFile(houtput, "\b \b", 3, &dummy, NULL);	
+						WriteFile(houtput, "\b \b", 3, &dummy, nullptr);	
 						if (len)
 						{
 							len--;
@@ -501,7 +500,7 @@ char *Sys_ConsoleInput ()
 					default:
 						if (ch >= ' ')
 						{
-							WriteFile(houtput, &ch, 1, &dummy, NULL);	
+							WriteFile(houtput, &ch, 1, &dummy, nullptr);	
 							text[len] = ch;
 							len = (len + 1) & 0xff;
 						}
@@ -513,7 +512,7 @@ char *Sys_ConsoleInput ()
 		}
 	}
 
-	return NULL;
+	return nullptr;
 }
 
 void Sys_Sleep ()
@@ -525,12 +524,12 @@ void Sys_SendKeyEvents ()
 {
     MSG        msg;
 
-	while (PeekMessage (&msg, NULL, 0, 0, PM_NOREMOVE))
+	while (PeekMessage (&msg, nullptr, 0, 0, PM_NOREMOVE))
 	{
 	// we always update if there are any event, even if we're paused
 		scr_skipupdate = 0;
 
-		if (!GetMessage (&msg, NULL, 0, 0))
+		if (!GetMessage (&msg, nullptr, 0, 0))
 			Sys_Quit ();
 
       	TranslateMessage (&msg);
@@ -584,7 +583,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 		cwd[Q_strlen(cwd)-1] = 0;
 
 	parms.basedir = cwd;
-	parms.cachedir = NULL;
+	parms.cachedir = nullptr;
 
 	parms.argc = 1;
 	argv[0] = empty_string;
@@ -617,7 +616,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	if (!isDedicated)
 	{
-		hwnd_dialog = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), NULL, NULL);
+		hwnd_dialog = CreateDialog(hInstance, MAKEINTRESOURCE(IDD_DIALOG1), nullptr, nullptr);
 
 		if (hwnd_dialog)
 		{
@@ -667,7 +666,7 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	Sys_PageIn (parms.membase, parms.memsize);
 
-	tevent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	tevent = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 
 	if (!tevent)
 		Sys_Error ("Couldn't create event");

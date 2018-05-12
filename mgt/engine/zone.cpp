@@ -1,23 +1,25 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+*	This file is part of Magenta Engine
+*
+*	Copyright (C) 1996-1997 Id Software, Inc.
+*	Copyright (C) 2018 BlackPhrase
+*
+*	Magenta Engine is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	Magenta Engine is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
-// Z_zone.c
+
+/// @file
+/// @brief zone memory allocator
 
 #include "quakedef.h"
 
@@ -174,7 +176,7 @@ void *Z_TagMalloc (int size, int tag)
 	do
 	{
 		if (rover == start)	// scaned all the way around the list
-			return NULL;
+			return nullptr;
 		if (rover->tag)
 			base = rover = rover->next;
 		else
@@ -501,7 +503,7 @@ void *Hunk_HighAllocName (int size, char *name)
 	if (hunk_size - hunk_low_used - hunk_high_used < size)
 	{
 		Con_Printf ("Hunk_HighAlloc: failed on %i bytes\n",size);
-		return NULL;
+		return nullptr;
 	}
 
 	hunk_high_used += size;
@@ -629,7 +631,7 @@ void Cache_FreeHigh (int new_high_hunk)
 {
 	cache_system_t	*c, *prev;
 	
-	prev = NULL;
+	prev = nullptr;
 	while (1)
 	{
 		c = cache_head.prev;
@@ -655,7 +657,7 @@ void Cache_UnlinkLRU (cache_system_t *cs)
 	cs->lru_next->lru_prev = cs->lru_prev;
 	cs->lru_prev->lru_next = cs->lru_next;
 	
-	cs->lru_prev = cs->lru_next = NULL;
+	cs->lru_prev = cs->lru_next = nullptr;
 }
 
 void Cache_MakeLRU (cache_system_t *cs)
@@ -746,7 +748,7 @@ cache_system_t *Cache_TryAlloc (int size, qboolean nobottom)
 		return new;
 	}
 	
-	return NULL;		// couldn't allocate
+	return nullptr;		// couldn't allocate
 }
 
 /*
@@ -832,9 +834,9 @@ void Cache_Free (cache_user_t *c)
 
 	cs->prev->next = cs->next;
 	cs->next->prev = cs->prev;
-	cs->next = cs->prev = NULL;
+	cs->next = cs->prev = nullptr;
 
-	c->data = NULL;
+	c->data = nullptr;
 
 	Cache_UnlinkLRU (cs);
 }
@@ -851,7 +853,7 @@ void *Cache_Check (cache_user_t *c)
 	cache_system_t	*cs;
 
 	if (!c->data)
-		return NULL;
+		return nullptr;
 
 	cs = ((cache_system_t *)c->data) - 1;
 
