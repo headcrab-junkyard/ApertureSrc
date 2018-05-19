@@ -88,7 +88,7 @@ int RunServer() // void?
 	if(!pEngineFactory)
 		return EXIT_FAILURE;
 	
-	auto pEngine{(IDedicatedServerAPI*)pEngineFactory(VENGINE_HLDS_API_VERSION, nullptr)};
+	auto pEngine{(IEngine*)pEngineFactory(MGT_ENGINE_INTERFACE_VERSION, nullptr)};
 	
 	if(!pEngine)
 		return EXIT_FAILURE;
