@@ -83,15 +83,16 @@ void W_FireAxe()
 			T_Damage (trace_ent, self, self, 20);
 	}
 	else
-	{       // hit wall
-		sound (self, CHAN_WEAPON, "player/axhit2.wav", 1, ATTN_NORM);
+	{
+		// hit wall
+		gpEngine->pfnEmitSound (self, CHAN_WEAPON, "player/axhit2.wav", 1, ATTN_NORM);
 
-		WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-		WriteByte (MSG_MULTICAST, TE_GUNSHOT);
-		WriteByte (MSG_MULTICAST, 3);
-		WriteCoord (MSG_MULTICAST, org_x);
-		WriteCoord (MSG_MULTICAST, org_y);
-		WriteCoord (MSG_MULTICAST, org_z);
+		gpEngine->pfnWriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
+		gpEngine->pfnWriteByte (MSG_MULTICAST, TE_GUNSHOT);
+		gpEngine->pfnWriteByte (MSG_MULTICAST, 3);
+		gpEngine->pfnWriteCoord (MSG_MULTICAST, org_x);
+		gpEngine->pfnWriteCoord (MSG_MULTICAST, org_y);
+		gpEngine->pfnWriteCoord (MSG_MULTICAST, org_z);
 		multicast (org, MULTICAST_PVS);
 	}
 };
@@ -139,9 +140,9 @@ void SpawnMeatSpray(vector org, vector vel)
 	missile.nextthink = time + 1;
 	missile.think = SUB_Remove;
 
-	setmodel (missile, "models/zom_gib.mdl");
-	setsize (missile, '0 0 0', '0 0 0');            
-	setorigin (missile, org);
+	gpEngine->pfnSetModel (missile, "models/zom_gib.mdl");
+	gpEngine->pfnSetSize (missile, '0 0 0', '0 0 0');            
+	gpEngine->pfnSetOrigin (missile, org);
 };
 
 /*
@@ -151,12 +152,12 @@ SpawnBlood
 */
 void SpawnBlood(vector org, float damage)
 {
-	WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-	WriteByte (MSG_MULTICAST, TE_BLOOD);
-	WriteByte (MSG_MULTICAST, 1);
-	WriteCoord (MSG_MULTICAST, org_x);
-	WriteCoord (MSG_MULTICAST, org_y);
-	WriteCoord (MSG_MULTICAST, org_z);
+	gpEngine->pfnWriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
+	gpEngine->pfnWriteByte (MSG_MULTICAST, TE_BLOOD);
+	gpEngine->pfnWriteByte (MSG_MULTICAST, 1);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, org_x);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, org_y);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, org_z);
 	multicast (org, MULTICAST_PVS);
 };
 
@@ -226,23 +227,23 @@ void Multi_Finish()
 {
 	if (puff_count)
 	{
-		WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-		WriteByte (MSG_MULTICAST, TE_GUNSHOT);
-		WriteByte (MSG_MULTICAST, puff_count);
-		WriteCoord (MSG_MULTICAST, puff_org_x);
-		WriteCoord (MSG_MULTICAST, puff_org_y);
-		WriteCoord (MSG_MULTICAST, puff_org_z);
+		gpEngine->pfnWriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
+		gpEngine->pfnWriteByte (MSG_MULTICAST, TE_GUNSHOT);
+		gpEngine->pfnWriteByte (MSG_MULTICAST, puff_count);
+		gpEngine->pfnWriteCoord (MSG_MULTICAST, puff_org_x);
+		gpEngine->pfnWriteCoord (MSG_MULTICAST, puff_org_y);
+		gpEngine->pfnWriteCoord (MSG_MULTICAST, puff_org_z);
 		multicast (puff_org, MULTICAST_PVS);
 	}
 
 	if (blood_count)
 	{
-		WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-		WriteByte (MSG_MULTICAST, TE_BLOOD);
-		WriteByte (MSG_MULTICAST, blood_count);
-		WriteCoord (MSG_MULTICAST, blood_org_x);
-		WriteCoord (MSG_MULTICAST, blood_org_y);
-		WriteCoord (MSG_MULTICAST, blood_org_z);
+		gpEngine->pfnWriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
+		gpEngine->pfnWriteByte (MSG_MULTICAST, TE_BLOOD);
+		gpEngine->pfnWriteByte (MSG_MULTICAST, blood_count);
+		gpEngine->pfnWriteCoord (MSG_MULTICAST, blood_org_x);
+		gpEngine->pfnWriteCoord (MSG_MULTICAST, blood_org_y);
+		gpEngine->pfnWriteCoord (MSG_MULTICAST, blood_org_z);
 		multicast (puff_org, MULTICAST_PVS);
 	}
 };
@@ -374,20 +375,18 @@ void T_MissileTouch()
 
 	T_RadiusDamage (self, self.owner, 120, other, "rocket");
 
-//  sound (self, CHAN_WEAPON, "weapons/r_exp3.wav", 1, ATTN_NORM);
+//  gpEngine->pfnEmitSound (self, CHAN_WEAPON, "weapons/r_exp3.wav", 1, ATTN_NORM);
 	self.origin = self.origin - 8 * normalize(self.velocity);
 
-	WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-	WriteByte (MSG_MULTICAST, TE_EXPLOSION);
-	WriteCoord (MSG_MULTICAST, self.origin_x);
-	WriteCoord (MSG_MULTICAST, self.origin_y);
-	WriteCoord (MSG_MULTICAST, self.origin_z);
+	gpEngine->pfnWriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
+	gpEngine->pfnWriteByte (MSG_MULTICAST, TE_EXPLOSION);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, self.origin_x);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, self.origin_y);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, self.origin_z);
 	multicast (self.origin, MULTICAST_PHS);
 
 	remove(self);
 };
-
-
 
 /*
 ================
@@ -399,10 +398,10 @@ void W_FireRocket()
 	if (deathmatch != 4)
 		self.currentammo = self.ammo_rockets = self.ammo_rockets - 1;
 	
-	sound (self, CHAN_WEAPON, "weapons/sgun1.wav", 1, ATTN_NORM);
+	gpEngine->pfnEmitSound (self, CHAN_WEAPON, "weapons/sgun1.wav", 1, ATTN_NORM);
 
 	msg_entity = self;
-	WriteByte (MSG_ONE, SVC_SMALLKICK);
+	gpEngine->pfnWriteByte (MSG_ONE, SVC_SMALLKICK);
 
 	newmis = spawn ();
 	newmis.owner = self;
@@ -424,9 +423,9 @@ void W_FireRocket()
 	newmis.think = SUB_Remove;
 	newmis.classname = "rocket";
 
-	setmodel (newmis, "models/missile.mdl");
-	setsize (newmis, '0 0 0', '0 0 0');             
-	setorigin (newmis, self.origin + v_forward*8 + '0 0 16');
+	gpEngine->pfnSetModel (newmis, "models/missile.mdl");
+	gpEngine->pfnSetSize (newmis, '0 0 0', '0 0 0');             
+	gpEngine->pfnSetOrigin (newmis, self.origin + v_forward*8 + '0 0 16');
 };
 
 /*
@@ -437,11 +436,11 @@ LIGHTNING
 
 void LightningHit(entity from, float damage)
 {
-	WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-	WriteByte (MSG_MULTICAST, TE_LIGHTNINGBLOOD);
-	WriteCoord (MSG_MULTICAST, trace_endpos_x);
-	WriteCoord (MSG_MULTICAST, trace_endpos_y);
-	WriteCoord (MSG_MULTICAST, trace_endpos_z);
+	gpEngine->pfnWriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
+	gpEngine->pfnWriteByte (MSG_MULTICAST, TE_LIGHTNINGBLOOD);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, trace_endpos_x);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, trace_endpos_y);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, trace_endpos_z);
 	multicast (trace_endpos, MULTICAST_PVS);
 
 	T_Damage (trace_ent, from, from, damage);
@@ -537,11 +536,11 @@ void W_FireLightning()
 
 	if (self.t_width < time)
 	{
-		sound (self, CHAN_WEAPON, "weapons/lhit.wav", 1, ATTN_NORM);
+		gpEngine->pfnEmitSound (self, CHAN_WEAPON, "weapons/lhit.wav", 1, ATTN_NORM);
 		self.t_width = time + 0.6;
 	}
 	msg_entity = self;
-	WriteByte (MSG_ONE, SVC_SMALLKICK);
+	gpEngine->pfnWriteByte (MSG_ONE, SVC_SMALLKICK);
 
 	if (deathmatch != 4)
 		self.currentammo = self.ammo_cells = self.ammo_cells - 1;
@@ -550,15 +549,15 @@ void W_FireLightning()
 	
 	traceline (org, org + v_forward*600, TRUE, self);
 
-	WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-	WriteByte (MSG_MULTICAST, TE_LIGHTNING2);
-	WriteEntity (MSG_MULTICAST, self);
-	WriteCoord (MSG_MULTICAST, org_x);
-	WriteCoord (MSG_MULTICAST, org_y);
-	WriteCoord (MSG_MULTICAST, org_z);
-	WriteCoord (MSG_MULTICAST, trace_endpos_x);
-	WriteCoord (MSG_MULTICAST, trace_endpos_y);
-	WriteCoord (MSG_MULTICAST, trace_endpos_z);
+	gpEngine->pfnWriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
+	gpEngine->pfnWriteByte (MSG_MULTICAST, TE_LIGHTNING2);
+	gpEngine->pfnWriteEntity (MSG_MULTICAST, self);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, org_x);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, org_y);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, org_z);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, trace_endpos_x);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, trace_endpos_y);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, trace_endpos_z);
 	multicast (org, MULTICAST_PHS);
 
 	LightningDamage (self.origin, trace_endpos + v_forward*4, self, 30);
@@ -570,18 +569,18 @@ void W_FireLightning()
 
 void GrenadeExplode()
 {
-	if (self.voided) {
+	if (self.voided)
 		return;
-	}
+	
 	self.voided = 1;
 
 	T_RadiusDamage (self, self.owner, 120, world, "grenade");
 
-	WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-	WriteByte (MSG_MULTICAST, TE_EXPLOSION);
-	WriteCoord (MSG_MULTICAST, self.origin_x);
-	WriteCoord (MSG_MULTICAST, self.origin_y);
-	WriteCoord (MSG_MULTICAST, self.origin_z);
+	gpEngine->pfnWriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
+	gpEngine->pfnWriteByte (MSG_MULTICAST, TE_EXPLOSION);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, self.origin_x);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, self.origin_y);
+	gpEngine->pfnWriteCoord (MSG_MULTICAST, self.origin_z);
 	multicast (self.origin, MULTICAST_PHS);
 
 	remove (self);
@@ -596,7 +595,7 @@ void GrenadeTouch()
 		GrenadeExplode();
 		return;
 	}
-	sound (self, CHAN_WEAPON, "weapons/bounce.wav", 1, ATTN_NORM);  // bounce sound
+	gpEngine->pfnEmitSound (self, CHAN_WEAPON, "weapons/bounce.wav", 1, ATTN_NORM);  // bounce sound
 	if (self.velocity == '0 0 0')
 		self.avelocity = '0 0 0';
 };
@@ -611,10 +610,10 @@ void W_FireGrenade()
 	if (deathmatch != 4)
 		self.currentammo = self.ammo_rockets = self.ammo_rockets - 1;
 	
-	sound (self, CHAN_WEAPON, "weapons/grenade.wav", 1, ATTN_NORM);
+	gpEngine->pfnEmitSound (self, CHAN_WEAPON, "weapons/grenade.wav", 1, ATTN_NORM);
 
 	msg_entity = self;
-	WriteByte (MSG_ONE, SVC_SMALLKICK);
+	gpEngine->pfnWriteByte (MSG_ONE, SVC_SMALLKICK);
 
 	newmis = spawn ();
 	newmis.voided=0;
@@ -655,9 +654,9 @@ void W_FireGrenade()
 
 	newmis.think = GrenadeExplode;
 
-	setmodel (newmis, "models/grenade.mdl");
-	setsize (newmis, '0 0 0', '0 0 0');             
-	setorigin (newmis, self.origin);
+	gpEngine->pfnSetModel (newmis, "models/grenade.mdl");
+	gpEngine->pfnSetSize (newmis, '0 0 0', '0 0 0');             
+	gpEngine->pfnSetOrigin (newmis, self.origin);
 };
 
 
@@ -688,9 +687,10 @@ void launch_spike(vector org, vector dir)
 	newmis.classname = "spike";
 	newmis.think = SUB_Remove;
 	newmis.nextthink = time + 6;
-	setmodel (newmis, "models/spike.mdl");
-	setsize (newmis, VEC_ORIGIN, VEC_ORIGIN);               
-	setorigin (newmis, org);
+	
+	gpEngine->pfnSetModel (newmis, "models/spike.mdl");
+	gpEngine->pfnSetSize (newmis, VEC_ORIGIN, VEC_ORIGIN);               
+	gpEngine->pfnSetOrigin (newmis, org);
 
 	newmis.velocity = dir * 1000;
 };
@@ -700,17 +700,19 @@ void W_FireSuperSpikes()
 	vector    dir;
 	entity    old;
 	
-	sound (self, CHAN_WEAPON, "weapons/spike2.wav", 1, ATTN_NORM);
+	gpEngine->pfnEmitSound (self, CHAN_WEAPON, "weapons/spike2.wav", 1, ATTN_NORM);
 	self.attack_finished = time + 0.2;
 	if (deathmatch != 4) 
 		self.currentammo = self.ammo_nails = self.ammo_nails - 2;
 	dir = aim (self, 1000);
 	launch_spike (self.origin + '0 0 16', dir);
 	newmis.touch = superspike_touch;
-	setmodel (newmis, "models/s_spike.mdl");
-	setsize (newmis, VEC_ORIGIN, VEC_ORIGIN);               
+	
+	gpEngine->pfnSetModel (newmis, "models/s_spike.mdl");
+	gpEngine->pfnSetSize (newmis, VEC_ORIGIN, VEC_ORIGIN);
+	
 	msg_entity = self;
-	WriteByte (MSG_ONE, SVC_SMALLKICK);
+	gpEngine->pfnWriteByte (MSG_ONE, SVC_SMALLKICK);
 };
 
 void W_FireSpikes(float ox)
@@ -733,7 +735,7 @@ void W_FireSpikes(float ox)
 		return;
 	}
 
-	sound (self, CHAN_WEAPON, "weapons/rocket1i.wav", 1, ATTN_NORM);
+	gpEngine->pfnEmitSound (self, CHAN_WEAPON, "weapons/rocket1i.wav", 1, ATTN_NORM);
 	self.attack_finished = time + 0.2;
 	if (deathmatch != 4)
 		self.currentammo = self.ammo_nails = self.ammo_nails - 1;
@@ -741,7 +743,7 @@ void W_FireSpikes(float ox)
 	launch_spike (self.origin + '0 0 16' + v_right*ox, dir);
 
 	msg_entity = self;
-	WriteByte (MSG_ONE, SVC_SMALLKICK);
+	gpEngine->pfnWriteByte (MSG_ONE, SVC_SMALLKICK);
 };
 
 .float hit_z;
@@ -775,16 +777,16 @@ void spike_touch()
 	}
 	else
 	{
-		WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
+		gpEngine->pfnWriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
 		if (self.classname == "wizspike")
-			WriteByte (MSG_MULTICAST, TE_WIZSPIKE);
+			gpEngine->pfnWriteByte (MSG_MULTICAST, TE_WIZSPIKE);
 		else if (self.classname == "knightspike")
-			WriteByte (MSG_MULTICAST, TE_KNIGHTSPIKE);
+			gpEngine->pfnWriteByte (MSG_MULTICAST, TE_KNIGHTSPIKE);
 		else
-			WriteByte (MSG_MULTICAST, TE_SPIKE);
-		WriteCoord (MSG_MULTICAST, self.origin_x);
-		WriteCoord (MSG_MULTICAST, self.origin_y);
-		WriteCoord (MSG_MULTICAST, self.origin_z);
+			gpEngine->pfnWriteByte (MSG_MULTICAST, TE_SPIKE);
+		gpEngine->pfnWriteCoord (MSG_MULTICAST, self.origin_x);
+		gpEngine->pfnWriteCoord (MSG_MULTICAST, self.origin_y);
+		gpEngine->pfnWriteCoord (MSG_MULTICAST, self.origin_z);
 		multicast (self.origin, MULTICAST_PHS);
 	}
 
@@ -823,11 +825,11 @@ void superspike_touch()
 	}
 	else
 	{
-		WriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
-		WriteByte (MSG_MULTICAST, TE_SUPERSPIKE);
-		WriteCoord (MSG_MULTICAST, self.origin_x);
-		WriteCoord (MSG_MULTICAST, self.origin_y);
-		WriteCoord (MSG_MULTICAST, self.origin_z);
+		gpEngine->pfnWriteByte (MSG_MULTICAST, SVC_TEMPENTITY);
+		gpEngine->pfnWriteByte (MSG_MULTICAST, TE_SUPERSPIKE);
+		gpEngine->pfnWriteCoord (MSG_MULTICAST, self.origin_x);
+		gpEngine->pfnWriteCoord (MSG_MULTICAST, self.origin_y);
+		gpEngine->pfnWriteCoord (MSG_MULTICAST, self.origin_z);
 		multicast (self.origin, MULTICAST_PHS);
 	}
 
@@ -910,86 +912,6 @@ void W_SetCurrentAmmo()
 		self.currentammo = 0;
 		self.weaponmodel = "";
 		self.weaponframe = 0;
-	}
-};
-
-/*
-============
-W_Attack
-
-An attack impulse can be triggered now
-============
-*/
-void  player_axe1();
-void  player_axeb1();
-void  player_axec1();
-void  player_axed1();
-void  player_shot1();
-void  player_nail1();
-void  player_light1();
-void  player_rocket1();
-
-void W_Attack()
-{
-	float   r;
-
-	if (!W_CheckNoAmmo ())
-		return;
-
-	makevectors     (self.v_angle);                 // calculate forward angle for velocity
-	self.show_hostile = time + 1;   // wake monsters up
-
-	if (self.weapon == IT_AXE)
-	{
-		self.attack_finished = time + 0.5;
-		sound (self, CHAN_WEAPON, "weapons/ax1.wav", 1, ATTN_NORM);
-		r = random();
-		if (r < 0.25)
-			player_axe1 ();
-		else if (r<0.5)
-			player_axeb1 ();
-		else if (r<0.75)
-			player_axec1 ();
-		else
-			player_axed1 ();
-	}
-	else if (self.weapon == IT_SHOTGUN)
-	{
-		player_shot1 ();
-		self.attack_finished = time + 0.5;
-		W_FireShotgun ();
-	}
-	else if (self.weapon == IT_SUPER_SHOTGUN)
-	{
-		player_shot1 ();
-		self.attack_finished = time + 0.7;
-		W_FireSuperShotgun ();
-	}
-	else if (self.weapon == IT_NAILGUN)
-	{
-		player_nail1 ();
-	}
-	else if (self.weapon == IT_SUPER_NAILGUN)
-	{
-		player_nail1 ();
-	}
-	else if (self.weapon == IT_GRENADE_LAUNCHER)
-	{
-		player_rocket1();
-		self.attack_finished = time + 0.6;
-		W_FireGrenade();
-	}
-	else if (self.weapon == IT_ROCKET_LAUNCHER)
-	{
-		player_rocket1();
-		self.attack_finished = time + 0.8;
-		W_FireRocket();
-	}
-	else if (self.weapon == IT_LIGHTNING)
-	{
-		self.attack_finished = time + 0.1;
-		sound (self, CHAN_AUTO, "weapons/lstart.wav", 1, ATTN_NORM);
-		player_light1();
 	}
 };
 
