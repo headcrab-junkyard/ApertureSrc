@@ -1,4 +1,4 @@
-project(gskiller-gameui)
+project(mgt-gameui)
 
 file(GLOB PROJECT_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
