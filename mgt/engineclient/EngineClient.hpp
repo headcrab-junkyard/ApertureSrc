@@ -48,7 +48,7 @@ public:
 	CEngineClient();
 	~CEngineClient();
 	
-	bool Init(CreateInterfaceFn afnEngineFactory, tWinHandle ahWindow) override;
+	bool Init(CreateInterfaceFn afnEngineFactory/*, tWinHandle ahWindow*/) override;
 	void Shutdown() override;
 	
 	//void PreFrame();
@@ -61,8 +61,8 @@ public:
 	//void Render();
 	//void PostRender();
 	
-	void Printf(const char *message, ...) override;
-	void DPrintf(const char *message, ...) override;
+	void Printf(const char *message, ...);
+	void DPrintf(const char *message, ...);
 	
 	void ForwardCmdToServer(const char *cmd);
 private:
