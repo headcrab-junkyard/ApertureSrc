@@ -1,5 +1,7 @@
 project(mgt-engineclient)
 
+add_definitions(-DGLQUAKE) # TODO
+
 # Sources list
 file(GLOB PROJECT_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp

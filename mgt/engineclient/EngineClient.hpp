@@ -39,7 +39,6 @@ class CClient;
 class CChase;
 class CKey;
 class CMenu;
-class CClientGameLoaderHandler;
 class CClientGame;
 
 class CEngineClient final : public IEngineClient//, public IEngineEventListener
@@ -50,6 +49,8 @@ public:
 	
 	bool Init(CreateInterfaceFn afnEngineFactory/*, tWinHandle ahWindow*/) override;
 	void Shutdown() override;
+	
+	void ClearMemory() override;
 	
 	//void PreFrame();
 	//void PostFrame();
@@ -66,13 +67,15 @@ public:
 	
 	void ForwardCmdToServer(const char *cmd);
 private:
-	void WriteConfig(const char *filename);
+	void WriteConfig(/*const char *filename*/);
 	void WriteVideoConfig();
 	void WriteRenderConfig();
 	//void WriteOpenGLConfig(); // TODO: move to graphics module?
 	
 	void CheckStartupVids();
 	//void CreateStartupVids();
+	
+	void UpdateScreen();
 	
 	ISound *LoadSoundModule();
 	IInput *LoadInputModule();
@@ -88,7 +91,6 @@ private:
 	std::unique_ptr<CMenu> mpMenu;
 	std::unique_ptr<CClient> mpClient;
 	std::unique_ptr<CChase> mpChase;
-	std::unique_ptr<CClientGameLoaderHandler> mpClientGameLoaderHandler;
 	std::unique_ptr<CClientGame> mpClientGame;
 	
 	//ICvarRegistry *mpCvarRegistry{nullptr};
