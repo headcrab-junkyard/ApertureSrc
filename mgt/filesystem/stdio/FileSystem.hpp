@@ -1,6 +1,6 @@
 /*
- *	This file is part of Open GoldSrc Project
- *	Copyright (C) 2018 Headcrab Garage
+ *	This file is part of Magenta Engine
+ *	Copyright (C) 2016-2018 BlackPhrase
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -14,20 +14,10 @@
  *
  *	You should have received a copy of the GNU General Public License
  *	along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
- *	In addition, as a special exception, the author gives permission to
- *	link the code of this program with the Half-Life Game Engine ("GoldSrc/GS
- *	Engine") and Modified Game Libraries ("MODs") developed by Valve,
- *	L.L.C ("Valve"). You must obey the GNU General Public License in all
- *	respects for all of the code used other than the GoldSrc Engine and MODs
- *	from Valve. If you modify this file, you may extend this exception
- *	to your version of the file, but you are not obligated to do so. If
- *	you do not wish to do so, delete this exception statement from your
- *	version.
  */
 
 /// @file
-/// @brief IFileSystem interface implementation (OGS version)
+/// @brief IFileSystem interface implementation
 
 #pragma once
 
@@ -35,7 +25,7 @@
 #include <string>
 #include <list>
 #include <unordered_map>
-#include "IFileSystem.hpp"
+#include "filesystem/IFileSystem.hpp"
 
 struct SSearchPathEntry
 {
@@ -63,9 +53,40 @@ public:
 	void Mount() override;
 	void Unmount() override;
 	
-	void AddSearchPath(const char *path, const char *alias, bool nowrite) override;
+	//void PrintOpenedFiles() override;
 	
-	IFile *OpenFile(const char *asName) override;
+	//void SetWarningFunc(void (*pfnWarning)(const char *fmt, ...)) override;
+	//void SetWarningLevel(FileWarningLevel_t level) override;
+	
+	//void LogLevelLoadStarted(const char *name) override;
+	//void LogLevelLoadFinished(const char *name) override;
+	
+	//int HintResourceNeed(const char *hintlist, int forgetEverything) override;
+	
+	//int PauseResourcePreloading() override;
+	//int ResumeResourcePreloading() override;
+	
+	void AddSearchPath(const char *path, const char *alias, bool bNoWrite) override; // NOTE: alias = pathID
+	//bool RemoveSearchPath(const char *pPath) override;
+	
+	//void RemoveAllSearchPaths() override;
+	
+	//bool AddPackFile(const char *fullpath, const char *pathID) override;
+	
+	//const char *GetLocalPath(const char *pFileName, char *pLocalPath, int localPathBufferSize) override;
+	//bool FullPathToRelativePath(const char *pFullpath, char *pRelative) override;
+	
+	//bool GetCurrentDirectory(char *pDirectory, int maxlen) override;
+	
+	//void GetInterfaceVersion(char *p, int maxlen) override;
+	
+	//void GetLocalCopy(const char *pFileName) override;
+	
+	//void FileTimeToString(char *pStrip, int maxCharsIncludingTerminator, long fileTime) override;
+	
+	IFile *OpenFile(const char *asName/*, const char *asOptions, const char *pathID*/) override;
+	//IFile *OpenFromCacheForRead(const char *pFileName, const char *pOptions, const char *pathID) override;
+	
 	void CloseFile(IFile *apFile) override;
 	
 	int FileOpen(const char *path, const char *mode) override;
@@ -76,7 +97,32 @@ public:
 	int FileRead(int handle, void *dest, int count) override;
 	int FileWrite(int handle, const void *data, int count) override;
 	
-	int GetFileTime(const char *path) const override;
+	/*long*/ int GetFileTime(const char *path) const override;
+	//unsigned int GetFileSize(const char *pFileName) const override;
+	
+	bool FileExists(const char *pFileName) override;
+	
+	//void CreateDirHierarchy(const char *path, const char *pathID) override;
+	
+	//void RemoveFile(const char *pRelativePath, const char *pathID) override;
+	
+	//char *ParseFile(char *pFileBytes, char *pToken, bool *pWasQuoted) override;
+	
+	//bool IsDirectory(const char *asPath) override;
+	//bool IsFileImmediatelyAvailable(const char *pFileName) override;
+	
+	//bool IsAppReadyForOfflinePlay(int appID) override;
+	
+	//const char *FindFirst(const char *pWildCard, FileFindHandle_t *pHandle, const char *pathID) override;
+	//const char *FindNext(FileFindHandle_t handle) override;
+	//bool FindIsDirectory(FileFindHandle_t handle) override;
+	//void FindClose(FileFindHandle_t handle) override;
+	
+	//WaitForResourcesHandle_t WaitForResources(const char *resourcelist) override;
+	//bool GetWaitForResourcesProgress(WaitForResourcesHandle_t handle,
+	                                 float *progress /* out */,
+	                                 bool *complete /* out */) override;
+	//void CancelWaitForResources(WaitForResourcesHandle_t handle) override;
 private:
 	static constexpr auto MAX_HANDLES{10};
 	

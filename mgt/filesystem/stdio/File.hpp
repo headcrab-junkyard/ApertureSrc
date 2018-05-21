@@ -1,6 +1,6 @@
 /*
- *	This file is part of Open GoldSrc Project
- *	Copyright (C) 2018 Headcrab Garage
+ *	This file is part of Magenta Engine
+ *	Copyright (C) 2018 BlackPhrase
  *
  *	This program is free software: you can redistribute it and/or modify
  *	it under the terms of the GNU General Public License as published by
@@ -14,16 +14,6 @@
  *
  *	You should have received a copy of the GNU General Public License
  *	along with this program. If not, see <http://www.gnu.org/licenses/>.
- *
- *	In addition, as a special exception, the author gives permission to
- *	link the code of this program with the Half-Life Game Engine ("GoldSrc/GS
- *	Engine") and Modified Game Libraries ("MODs") developed by Valve,
- *	L.L.C ("Valve"). You must obey the GNU General Public License in all
- *	respects for all of the code used other than the GoldSrc Engine and MODs
- *	from Valve. If you modify this file, you may extend this exception
- *	to your version of the file, but you are not obligated to do so. If
- *	you do not wish to do so, delete this exception statement from your
- *	version.
  */
 
 /// @file
@@ -32,7 +22,7 @@
 #pragma once
 
 #include <cstdio>
-#include "IFile.hpp"
+#include "filesystem/IFile.hpp"
 
 class CFile final : public IFile
 {
@@ -40,21 +30,33 @@ public:
 	CFile(const char *asName);
 	~CFile();
 	
-	void Write(const void *data, int count) override;
+	/*int*/ void Write(const void *data, int count) override;
 	int Read(void *dest, int count) const override;
 
-	void Printf(const char *text, ...) override;
+	//char *ReadLine(char *pOutput, int maxChars) override;
+	
+	/*int*/ void Printf(const char *text, ...) override;
 
-	int Seek(int position) const override;
+	void Flush() override;
+	
+	/*void*/ int Seek(int position, FileSystemSeek_t seekType) const override;
 
-	int Tell() const override;
+	/*unsigned*/ int Tell() const override;
 
+	//int SetVBuf(char *buffer, int mode, long size) override;
+	
+	//bool IsOK() const override;
+	bool IsEOF() const override;
+	
+	//void *GetReadBuffer(int *outBufferSize, bool failIfNotInCache) override;
+	//void ReleaseReadBuffer(void *readBuffer) override;
+	
 	const char *GetName() const override;
 	const char *GetExt() const override;
 	const char *GetPath() const override;
 
 	int GetTime() const override;
-	int GetSize() const override;
+	/*unsigned*/ int GetSize() const override;
 private:
 	const char *msName{""};
 	
