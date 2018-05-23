@@ -21,7 +21,7 @@
 
 #pragma once
 
-//#include "quakedef.h" // TODO: host
+#include "quakedef.h" // TODO: host
 #include "engine/IEngine.hpp"
 
 struct IGame;
@@ -58,15 +58,15 @@ private:
 	
 	//void WriteServerConfig(const char *asName);
 	
-	//quakeparms_t mParms{};
+	quakeparms_t mParms{};
 	
-	void *mpCoreLib{nullptr}; // mpEngineCoreLib
-	IEngineCore *mpCore{nullptr};
+	//void *mpCoreLib{nullptr}; // mpEngineCoreLib
+	//IEngineCore *mpCore{nullptr};
 	
-	void *mpClientLib{nullptr}; // mpEngineClientLib
-	IEngineClient *mpClient{nullptr};
+	//void *mpClientLib{nullptr}; // mpEngineClientLib
+	//IEngineClient *mpClient{nullptr};
 	
 	// temp support for game dll
-	void *mpGameLib{nullptr};
-	IGame *mpGame{nullptr};
+	//void *mpGameLib{nullptr};
+	//IGame *mpGame{nullptr};
 };

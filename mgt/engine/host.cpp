@@ -37,13 +37,15 @@ Memory is cleared / released when a server or client begins, not when they end.
 
 quakeparms_t host_parms;
 
-qboolean	host_initialized;		// true if into command execution
-//qboolean	nomaster;
+bool	host_initialized;		// true if into command execution
+//bool	nomaster;
 
 double		host_frametime;
 //double		host_time; // TODO
+
 double		realtime;				// without any filtering or bounding
 double		oldrealtime;			// last frame run
+
 int			host_framecount;
 
 int			host_hunklevel;
@@ -54,14 +56,17 @@ client_t	*host_client;			// current client
 
 jmp_buf 	host_abortserver;
 
-byte		*host_basepal;
+byte *host_basepal; // TODO: unsigned short
 byte		*host_colormap;
+
+void *gpEngineClientLib{nullptr};
+IEngineClient *gpEngineClient{nullptr};
 
 cvar_t	host_framerate = {"host_framerate","0"};	// set for slow motion
 cvar_t	host_speeds = {"host_speeds","0"};			// set for running times
+cvar_t	host_profile = {"host_profile","0"};
 
 cvar_t	sys_ticrate = {"sys_ticrate","0.05"};
-cvar_t	serverprofile = {"serverprofile","0"}; // TODO: host_profile
 
 cvar_t	fraglimit = {"fraglimit","0",false,true};
 cvar_t	timelimit = {"timelimit","0",false,true};
@@ -87,18 +92,21 @@ Host_EndGame
 void Host_EndGame (const char *message, ...)
 {
 	va_list		argptr;
-	char		string[1024];
+	char		string[1024]{};
 	
 	va_start (argptr,message);
 	vsprintf (string,message,argptr);
 	va_end (argptr);
+	
 	Con_DPrintf ("Host_EndGame: %s\n",string);
 	
 	if (sv.active)
 		Host_ShutdownServer (false);
 
-	if (cls.state == ca_dedicated)
+	if (gbDedicatedServer)
 		Sys_Error ("Host_EndGame: %s\n",string);	// dedicated servers exit
+	
+	// TODO: host event broadcaster -> notify about the game end?
 	
 	if (cls.demonum != -1)
 		CL_NextDemo ();
@@ -106,7 +114,7 @@ void Host_EndGame (const char *message, ...)
 		CL_Disconnect ();
 
 	longjmp (host_abortserver, 1);
-}
+};
 
 /*
 ================
@@ -118,8 +126,8 @@ This shuts down both the client and server
 void Host_Error (const char *error, ...)
 {
 	va_list		argptr;
-	char		string[1024];
-	static	qboolean inerror = false;
+	char		string[1024]{};
+	static	bool inerror{false};
 	
 	if (inerror)
 		Sys_Error ("Host_Error: recursively entered");
@@ -142,7 +150,7 @@ void Host_Error (const char *error, ...)
 	if (sv.active)
 		Host_ShutdownServer (false);
 
-	if (cls.state == ca_dedicated)
+	if (gbDedicatedServer)
 		Sys_Error ("Host_Error: %s\n",string);	// dedicated servers exit
 
 	CL_Disconnect ();
@@ -151,7 +159,7 @@ void Host_Error (const char *error, ...)
 	inerror = false;
 
 	longjmp (host_abortserver, 1);
-}
+};
 
 /*
 ================
@@ -160,18 +168,15 @@ Host_FindMaxClients
 */
 void	Host_FindMaxClients ()
 {
-	int		i;
-
 	svs.maxclients = 1;
 		
-	i = COM_CheckParm ("-dedicated");
+	auto i{COM_CheckParm ("-dedicated")};
+	
 	if (i)
 	{
-		cls.state = ca_dedicated;
+		gbDedicatedServer = true;
 		if (i != (com_argc - 1))
-		{
 			svs.maxclients = Q_atoi (com_argv[i+1]);
-		}
 		else
 			svs.maxclients = 8;
 	}
@@ -187,7 +192,8 @@ void	Host_FindMaxClients ()
 			svs.maxclients = Q_atoi (com_argv[i+1]);
 		else
 			svs.maxclients = 8;
-	}
+	};
+	
 	if (svs.maxclients < 1)
 		svs.maxclients = 8;
 	else if (svs.maxclients > MAX_SCOREBOARD)
@@ -202,8 +208,7 @@ void	Host_FindMaxClients ()
 		Cvar_SetValue ("deathmatch", 1.0);
 	else
 		Cvar_SetValue ("deathmatch", 0.0);
-}
-
+};
 
 /*
 =======================
@@ -216,9 +221,9 @@ void Host_InitLocal ()
 	
 	Cvar_RegisterVariable (&host_framerate);
 	Cvar_RegisterVariable (&host_speeds);
+	Cvar_RegisterVariable (&host_profile);
 
 	Cvar_RegisterVariable (&sys_ticrate);
-	Cvar_RegisterVariable (&serverprofile);
 
 	Cvar_RegisterVariable (&fraglimit);
 	Cvar_RegisterVariable (&timelimit);
@@ -235,37 +240,7 @@ void Host_InitLocal ()
 	Host_FindMaxClients ();
 	
 	host_time = 1.0;		// so a think at time 0 won't get called
-}
-
-
-/*
-===============
-Host_WriteConfiguration
-
-Writes key bindings and archived cvars to config.cfg
-===============
-*/
-void Host_WriteConfiguration ()
-{
-	FILE	*f;
-
-	// dedicated servers initialize the host but don't parse and set the config.cfg cvars
-	if (host_initialized & !isDedicated)
-	{
-		f = fopen (va("%s/config.cfg",com_gamedir), "w");
-		if (!f)
-		{
-			Con_Printf ("Couldn't write config.cfg.\n");
-			return;
-		}
-		
-		Key_WriteBindings (f);
-		Cvar_WriteVariables (f);
-
-		fclose (f);
-	}
-}
-
+};
 
 /*
 =================
@@ -278,7 +253,7 @@ FIXME: make this just a stuffed echo?
 void SV_ClientPrintf (client_t *cl, /*int level,*/ const char *fmt, ...)
 {
 	va_list		argptr;
-	char		string[1024];
+	char		string[1024]{};
 	
 	//if (level < cl->messagelevel)
 		//return;
@@ -290,7 +265,7 @@ void SV_ClientPrintf (client_t *cl, /*int level,*/ const char *fmt, ...)
 	MSG_WriteByte (&cl->netchan.message, svc_print);
 	//MSG_WriteByte (&cl->netchan.message, level);
 	MSG_WriteString (&cl->netchan.message, string);
-}
+};
 
 /*
 =================
@@ -302,43 +277,19 @@ Sends text to all active clients
 void SV_BroadcastPrintf (const char *fmt, ...)
 {
 	va_list		argptr;
-	char		string[1024];
-	int			i;
+	char		string[1024]{};
 	
 	va_start (argptr,fmt);
 	vsprintf (string, fmt,argptr);
 	va_end (argptr);
 	
-	for (i=0 ; i<svs.maxclients ; i++)
+	for (int i = 0 ; i<svs.maxclients ; ++i)
 		if (svs.clients[i].active && svs.clients[i].spawned)
 		{
 			MSG_WriteByte (&svs.clients[i].netchan.message, svc_print);
 			MSG_WriteString (&svs.clients[i].netchan.message, string);
-		}
-}
-
-// TODO: move to sv_main (or sv_send)
-/*
-=================
-SV_BroadcastCommand
-
-Sends text to all active clients
-=================
-*/
-void SV_BroadcastCommand (const char *fmt, ...)
-{
-	va_list		argptr;
-	char		string[1024];
-	
-	if (!sv.state)
-		return;
-	va_start (argptr,fmt);
-	vsprintf (string, fmt,argptr);
-	va_end (argptr);
-
-	MSG_WriteByte (&sv.reliable_datagram, svc_stufftext);
-	MSG_WriteString (&sv.reliable_datagram, string);
-}
+		};
+};
 
 /*
 =================
@@ -347,10 +298,10 @@ Host_ClientCommands
 Send text over to the client to be executed
 =================
 */
-void Host_ClientCommands (const char *fmt, ...)
+void SV_ClientCommands (client_t *host_client, const char *fmt, ...) // TODO: was Host_ClientCommands
 {
 	va_list		argptr;
-	char		string[1024];
+	char		string[1024]{};
 	
 	va_start (argptr,fmt);
 	vsprintf (string, fmt,argptr);
@@ -358,7 +309,7 @@ void Host_ClientCommands (const char *fmt, ...)
 	
 	MSG_WriteByte (&host_client->netchan.message, svc_stufftext);
 	MSG_WriteString (&host_client->netchan.message, string);
-}
+};
 
 /*
 =====================
@@ -368,7 +319,7 @@ Called when the player is getting totally kicked off the host
 if (crash = true), don't bother sending signofs
 =====================
 */
-void SV_DropClient (client_t *drop, qboolean crash, char *fmt, ...)
+void SV_DropClient (client_t *drop, bool crash, char *fmt, ...)
 {
 	// TODO: fmt support
 	
@@ -382,18 +333,18 @@ void SV_DropClient (client_t *drop, qboolean crash, char *fmt, ...)
 		{
 			MSG_WriteByte (&drop->netchan.message, svc_disconnect);
 			Netchan_Transmit(&drop->netchan, 0, drop->netchan.message.data);
-		}
+		};
 	
 		if (drop->edict && drop->spawned)
 		{
 			// call the prog function for removing a client
 			// this will set the body to a dead frame, among other things
 			//gGlobalVariables.self = EDICT_TO_PROG(drop->edict);
-			gEntityInterface.pfnClientDisconnect(drop->edict);
-		}
+			gpServerEventDispatcher->ClientDisconnect(drop->edict); // was gEntityInterface.pfnClientDisconnect
+		};
 
 		Sys_Printf ("Client %s removed\n", drop->name);
-	}
+	};
 
 // free the client (the body stays around)
 	drop->active = false;
@@ -418,8 +369,8 @@ void SV_DropClient (client_t *drop, qboolean crash, char *fmt, ...)
 		MSG_WriteByte (&client->netchan.message, svc_updatecolors);
 		MSG_WriteByte (&client->netchan.message, drop - svs.clients);
 		MSG_WriteByte (&client->netchan.message, 0);
-	}
-}
+	};
+};
 
 /*
 ==================
@@ -428,7 +379,7 @@ Host_ShutdownServer
 This only happens at the end of a game, not between levels
 ==================
 */
-void Host_ShutdownServer(qboolean crash)
+void Host_ShutdownServer(bool crash)
 {
 	int		i;
 	int		count;
@@ -463,9 +414,10 @@ void Host_ShutdownServer(qboolean crash)
 				{
 					NET_GetPacket(NS_SERVER, &net_from, &host_client->netchan.message); // TODO: was NET_GetMessage; REVISIT: We're reading into write buffer?????????
 					count++;
-				}
-			}
-		}
+				};
+			};
+		};
+		
 		if ((Sys_FloatTime() - start) > 3.0)
 			break;
 	}
@@ -489,8 +441,7 @@ void Host_ShutdownServer(qboolean crash)
 //
 	memset (&sv, 0, sizeof(sv));
 	memset (svs.clients, 0, svs.maxclientslimit*sizeof(client_t));
-}
-
+};
 
 /*
 ================
@@ -500,22 +451,22 @@ This clears all the memory used by both the client and server, but does
 not reinitialize anything.
 ================
 */
-void Host_ClearMemory ()
+void Host_ClearMemory () // TODO: bool bQuiet
 {
 	Con_DPrintf ("Clearing memory\n");
-	D_FlushCaches ();
+	
 	Mod_ClearAll ();
+	
 	if (host_hunklevel) // FIXME: check this...
 		Hunk_FreeToLowMark (host_hunklevel);
-
-	cls.signon = 0;
+	
 	memset (&sv, 0, sizeof(sv));
-	memset (&cl, 0, sizeof(cl));
-}
-
+	
+	if(gpEngineClient)
+		gpEngineClient->ClearMemory();
+};
 
 //============================================================================
-
 
 /*
 ===================
@@ -528,7 +479,7 @@ qboolean Host_FilterTime (float time)
 {
 	realtime += time;
 
-	if (!cls.timedemo && realtime - oldrealtime < 1.0/72.0)
+	if (!cls.timedemo && realtime - oldrealtime < 1.0/72.0) // TODO: use "fps_max" cvar value here
 		return false;		// framerate is too high
 
 	host_frametime = realtime - oldrealtime;
@@ -542,11 +493,10 @@ qboolean Host_FilterTime (float time)
 			host_frametime = 0.1;
 		if (host_frametime < 0.001)
 			host_frametime = 0.001;
-	}
+	};
 	
 	return true;
-}
-
+};
 
 /*
 ===================
@@ -565,16 +515,7 @@ void Host_GetConsoleCommands ()
 		if (!cmd)
 			break;
 		Cbuf_AddText (cmd);
-	}
-}
-
-void Host_UpdateScreen()
-{
-	// TODO: something else?
-	
-	SCR_UpdateScreen();
-	
-	// TODO: something else?
+	};
 };
 
 /*
@@ -604,23 +545,17 @@ void _Host_Frame (float time)
 // get new key events
 	Sys_SendKeyEvents ();
 
-// allow mice or other external controllers to add commands
-	IN_Commands ();
-
 // process console commands
 	Cbuf_Execute ();
-
-	// fetch results from server
-	//CL_ReadPackets(); // TODO: instead of NET_Poll
 
 // if running the server locally, make intentions now
 // resend a connection request if necessary
 	if (sv.active)
 	{
-		if (cls.state == ca_disconnected)
-			CL_CheckForResend ();
-		else
-			CL_SendCmd ();
+		//if (cls.state == ca_disconnected)
+			//CL_CheckForResend ();
+		//else
+			//CL_SendCmd ();
 	};
 	
 //-------------------
@@ -635,61 +570,8 @@ void _Host_Frame (float time)
 	if (sv.active)
 		SV_Frame ();
 
-//-------------------
-//
-// client operations
-//
-//-------------------
-
-// if running the server remotely, send intentions now after
-// the incoming messages have been read
-	if (!sv.active)
-	{
-		if (cls.state == ca_disconnected)
-			CL_CheckForResend ();
-		else
-			CL_SendCmd ();
-	};
-
-	host_time += host_frametime;
-
-// fetch results from server
-	if (cls.state == ca_connected)
-	{
-		CL_ReadPackets();
-	}
-
-	// Set up prediction for other players
-	CL_SetUpPlayerPrediction(false);
-
-	// do client side motion prediction
-	CL_PredictMove ();
-
-	// Set up prediction for other players
-	CL_SetUpPlayerPrediction(true);
-
-	// build a refresh entity list
-	CL_EmitEntities ();
-	
-// update video
-	if (host_speeds.value)
-		time1 = Sys_FloatTime ();
-		
-	Host_UpdateScreen (); // TODO: was SCR_UpdateScreen
-
-	if (host_speeds.value)
-		time2 = Sys_FloatTime ();
-		
-// update audio
-	if (cls.signon == SIGNONS)
-	{
-		S_Update (r_origin, vpn, vright, vup);
-		CL_DecayLights ();
-	}
-	else
-		S_Update (vec3_origin, vec3_origin, vec3_origin, vec3_origin);
-	
-	CDAudio_Update();
+	if(gpEngineClient)
+		gpEngineClient->Frame(time1, time2);
 
 	if (host_speeds.value)
 	{
@@ -699,10 +581,10 @@ void _Host_Frame (float time)
 		pass3 = (time3 - time2)*1000;
 		Con_Printf ("%3i tot %3i server %3i gfx %3i snd\n",
 					pass1+pass2+pass3, pass1, pass2, pass3);
-	}
+	};
 	
 	host_framecount++;
-}
+};
 
 void Host_Frame (float time)
 {
@@ -711,15 +593,15 @@ void Host_Frame (float time)
 	static int		timecount;
 	int		i, c, m;
 
-	if (!serverprofile.value)
+	if (!host_profile.value)
 	{
 		_Host_Frame (time);
 		return;
-	}
+	};
 	
 	time1 = Sys_FloatTime ();
 	_Host_Frame (time);
-	time2 = Sys_FloatTime ();	
+	time2 = Sys_FloatTime ();
 	
 	timetotal += time2 - time1;
 	timecount++;
@@ -735,10 +617,10 @@ void Host_Frame (float time)
 	{
 		if (svs.clients[i].active)
 			c++;
-	}
+	};
 
-	Con_Printf ("serverprofile: %2i clients %2i msec\n",  c,  m);
-}
+	Con_Printf ("host_profile: %2i clients %2i msec\n",  c,  m);
+};
 
 //============================================================================
 
@@ -774,11 +656,11 @@ void Host_InitVCR (quakeparms_t *parms)
 			p = malloc(len);
 			FS_FileRead (vcrFile, p, len);
 			com_argv[i+1] = p;
-		}
+		};
 		com_argc++; // add one for arg[0]
 		parms->argc = com_argc;
 		parms->argv = com_argv;
-	}
+	};
 
 	if ( (n = COM_CheckParm("-record")) != 0)
 	{
@@ -800,10 +682,9 @@ void Host_InitVCR (quakeparms_t *parms)
 			len = Q_strlen(com_argv[i]) + 1;
 			FS_FileWrite(vcrFile, &len, sizeof(int));
 			FS_FileWrite(vcrFile, com_argv[i], len);
-		}
-	}
-	
-}
+		};
+	};
+};
 */
 
 /*
@@ -830,19 +711,21 @@ void Host_Init (quakeparms_t *parms)
 	Cbuf_Init ();
 	Cmd_Init ();
 	
-	V_Init ();
-	Chase_Init ();
 	//Host_InitVCR (parms);
 	COM_Init (parms->basedir); // TODO: no basedir?
 	Host_InitLocal ();
-	W_LoadWadFile ("gfx.wad");
-	Key_Init ();
+	
+	W_LoadWadFile("gfx.wad");
+	W_LoadWadFile("fonts.wad");
+	
 	Con_Init ();
-	M_Init ();	
+	
 	PR_Init ();
 	Mod_Init ();
+	
 	NET_Init ();
 	Netchan_Init();
+	
 	SV_Init ();
 
 	Con_Printf ("Protocol version %d\n", PROTOCOL_VERSION);
@@ -852,7 +735,7 @@ void Host_Init (quakeparms_t *parms)
 	
 	R_InitTextures ();		// needed even for dedicated servers
  
-	if (cls.state != ca_dedicated)
+	if (!gbDedicatedServer)
 	{
 		host_basepal = (byte *)COM_LoadHunkFile ("gfx/palette.lmp");
 		if (!host_basepal)
@@ -860,41 +743,10 @@ void Host_Init (quakeparms_t *parms)
 		host_colormap = (byte *)COM_LoadHunkFile ("gfx/colormap.lmp");
 		if (!host_colormap)
 			Sys_Error ("Couldn't load gfx/colormap.lmp");
-
-#ifndef _WIN32 // on non win32, mouse comes before video for security reasons
-		IN_Init ();
-#endif
-		VID_Init (host_basepal);
-		// TODO: GL_Init() here + no VID_Shutdown in GS (at least for hw)
-	
-		Draw_Init ();
-		SCR_Init ();
-		R_Init ();
-#ifndef	_WIN32
-	// on Win32, sound initialization has to come before video initialization, so we
-	// can put up a popup if the sound hardware is in use
-		S_Init ();
-#else
-
-#ifdef	GLQUAKE
-	// FIXME: doesn't use the new one-window approach yet
-		S_Init ();
-#endif
-
-#endif	// _WIN32
-		CDAudio_Init ();
-		Sbar_Init ();
-		CL_Init ();
-#ifdef _WIN32 // on non win32, mouse comes before video for security reasons
-		IN_Init ();
-#endif
-	
-		// GUI should be initialized before the client dll
-		//GUI_Init();
 		
-		// Initialize the client dll now
-		ClientDLL_Init();
-	}
+		if(!InitEngineClient())
+			return;
+	};
 
 	Cbuf_InsertText ("exec valve.rc\n");
 
@@ -906,8 +758,8 @@ void Host_Init (quakeparms_t *parms)
 	host_initialized = true;
 	
 	//Con_Printf ("\nServer Version %4.2f (Build %04d)\n\n", VERSION, build_number());
-	Sys_Printf ("======== OGS Initialized =========\n"); // TODO: Con_Printf?
-}
+	Sys_Printf ("======== MGT Initialized =========\n"); // TODO: Con_Printf?
+};
 
 /*
 ===============
@@ -919,28 +771,55 @@ to run quit through here before the final handoff to the sys code.
 */
 void Host_Shutdown()
 {
-	static qboolean isdown = false;
+	static bool bDown{false};
 	
-	if (isdown)
+	if(bDown)
 	{
-		printf ("recursive shutdown\n");
+		printf("recursive shutdown\n");
 		return;
-	}
-	isdown = true;
-
-	// keep Con_Printf from trying to update the screen
-	scr_disabled_for_loading = true; // TODO: revisit
-
-	Host_WriteConfiguration (); 
-
-	ClientDLL_Shutdown();
-	//GUI_Shutdown();
+	};
 	
-	CDAudio_Shutdown ();
-	NET_Shutdown ();
-	S_Shutdown();
-	IN_Shutdown ();
+	bDown = true;
 
-	if (cls.state != ca_dedicated)
-		VID_Shutdown();
-}
+	ShutdownEngineClient();
+
+	NET_Shutdown();
+};
+
+bool InitEngineClient()
+{
+	gpEngineClientLib{Sys_LoadModule("engineclient")};
+	
+	if(!gpEngineClientLib)
+		return false;
+	
+	auto pfnEngineClientFactory{Sys_GetFactory(gpEngineClientLib)};
+	
+	if(!pfnEngineClientFactory)
+		return false;
+	
+	gpEngineClient = (IEngineClient*)pfnEngineClientFactory(MGT_ENGINECLIENT_INTERFACE_VERSION, nullptr);
+	
+	if(!gpEngineClient)
+		return false;
+	
+	if(gpEngineClient)
+		if(!gpEngineClient->Init(Sys_GetFactoryThis()))
+			return false;
+	
+	return true;
+};
+
+void ShutdownEngineClient()
+{
+	if(!gpEngineClientLib)
+		return;
+	
+	if(gpEngineClient)
+		gpEngineClient->Shutdown();
+	
+	gpEngineClient = nullptr;
+	
+	Sys_UnloadModule(gpEngineClientLib);
+	gpEngineClientLib = nullptr;
+};

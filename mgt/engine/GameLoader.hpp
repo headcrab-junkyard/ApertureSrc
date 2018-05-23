@@ -1,7 +1,7 @@
 /*
 *	This file is part of Magenta Engine
 *
-*	Copyright (C) 2018 BlackPhrase
+*	Copyright (C) 2016-2018 BlackPhrase
 *
 *	Magenta Engine is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -18,41 +18,19 @@
 */
 
 /// @file
-/// @brief
 
-#include "quakedef.h"
+#pragma once
 
-netadr_t net_from;
-sizebuf_t net_message;
+#include "IGameLoader.hpp"
 
-void NET_Init()
+class CNativeGameLoader final : public IGameLoader
 {
-};
+public:
+	CNativeGameLoader() = default;
+	~CNativeGameLoader() = default;
 
-void NET_Shutdown()
-{
-};
-
-bool NET_GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message)
-{
-	return true;
-};
-
-void NET_SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
-{
-};
-
-bool NET_CompareAdr(netadr_t a, netadr_t b)
-{
-	return true;
-};
-
-char *NET_AdrToString(netadr_t a)
-{
-	return nullptr;
-};
-
-bool NET_StringToAdr(char *s, netadr_t *a)
-{
-	return true;
+	IGame *Load(const char *asPath) override;
+	void Unload(IGame *apGame) override;
+private:
+	void *mpGameLib{nullptr}; // TODO: Replace with CDLLHandle
 };

@@ -35,7 +35,7 @@
 #include <sys/mman.h>
 #include <stdio.h>
 
-qboolean			isDedicated;
+bool			isDedicated;
 
 /*
 ===============================================================================

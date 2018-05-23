@@ -1,7 +1,7 @@
 /*
 *	This file is part of Magenta Engine
 *
-*	Copyright (C) 2018 BlackPhrase
+*	Copyright (C) 2016-2018 BlackPhrase
 *
 *	Magenta Engine is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -18,41 +18,28 @@
 */
 
 /// @file
-/// @brief
 
-#include "quakedef.h"
+#include "GameLoader.hpp"
+//#include "debug/Debug.hpp"
 
-netadr_t net_from;
-sizebuf_t net_message;
-
-void NET_Init()
+IGame *CNativeGameLoader::Load(const char *asName)
 {
+	auto fnCreateInterface{Sys_GetFactory(mpGameLib)};
+	
+	if(!fnCreateInterface)
+		return nullptr;
+	
+	//DevMsg("Detected native magenta format...");
+	auto pGame{(IGame*)fnCreateInterface(MGT_GAME_INTERFACE_VERSION, nullptr)};
+	
+	// Is interface valid?
+	if(!pGame)
+		return nullptr;
+	
+	return pGame;
 };
 
-void NET_Shutdown()
+void CNativeGameLoader::Unload(IGame *apGame)
 {
-};
-
-bool NET_GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message)
-{
-	return true;
-};
-
-void NET_SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
-{
-};
-
-bool NET_CompareAdr(netadr_t a, netadr_t b)
-{
-	return true;
-};
-
-char *NET_AdrToString(netadr_t a)
-{
-	return nullptr;
-};
-
-bool NET_StringToAdr(char *s, netadr_t *a)
-{
-	return true;
+	// TODO
 };

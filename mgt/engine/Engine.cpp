@@ -21,41 +21,28 @@
 /// @file
 /// @brief
 
-//#include "quakedef.h" // TODO
+#include "quakedef.h"
 #include "Engine.hpp"
-
-#ifdef _WIN32
-	#define EXPORT [[dllexport]]
-#else
-	#define EXPORT [[visibility("default")]]
-#endif
-
-#define C_EXPORT extern "C" EXPORT
 
 // TODO: temp
 #define PAUSE_SLEEP		50				// sleep time on pause or minimization
 #define NOT_FOCUS_SLEEP	20				// sleep time when not focus
 
-static CEngine gEngine; // g_Engine
-IEngine *gpEngine = &gEngine; // eng
+//static CEngine gEngine; // g_Engine
+//IEngine *gpEngine = &gEngine; // eng
 
 // TODO
 #ifdef _WIN32
 qboolean ActiveApp, Minimized;
 #endif
 
-/*
-C_EXPORT IEngine *GetEngine()
-{
-	static CEngine Engine;
-	return &Engine;
-};
-*/
+EXPOSE_SINGLE_INTERFACE(CEngine, IEngine, MGT_ENGINE_INTERFACE_VERSION);
 
 CEngine::CEngine() = default;
 CEngine::~CEngine() = default;
 
-bool CEngine::Init(bool dedicated, const char *basedir, const char *cmdline)
+//bool CEngine::Init(bool dedicated, const char *basedir, const char *cmdline)
+bool CEngine::Init(const SInitData &apInitParams)
 {
 	//static quakeparms_t parms; // TODO: static?
 	
@@ -94,7 +81,7 @@ void SleepUntilInput(int time)
 };
 #endif
 
-void CEngine::Frame()
+bool /*void*/ CEngine::Frame() // TODO
 {
 	static double time, oldtime, newtime;
 	
@@ -117,7 +104,7 @@ void CEngine::Frame()
 		//if ((cl.paused && (!ActiveApp && !DDActive)) || Minimized || block_drawing) // TODO
 		{
 			SleepUntilInput (PAUSE_SLEEP);
-			scr_skipupdate = 1;		// no point in bothering to draw
+			//scr_skipupdate = 1;		// no point in bothering to draw // TODO
 		}
 		//else if (!ActiveApp && !DDActive) // TODO
 			SleepUntilInput (NOT_FOCUS_SLEEP);
@@ -129,4 +116,6 @@ void CEngine::Frame()
 
 	Host_Frame (time);
 	oldtime = newtime;
+	
+	return true;
 };

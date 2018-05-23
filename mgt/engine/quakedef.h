@@ -38,13 +38,14 @@
 
 #define	GAMENAME	"valve"		// directory to look in by default
 
-#include <math.h>
-#include <string.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <setjmp.h>
-//#include <ctype.h>
+#include <cmath>
+#include <cstring>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
+#include <csetjmp>
+//#include <cctype>
+#include <ctime>
 
 #if defined(_WIN32) && !defined(WINDED)
 
@@ -193,7 +194,6 @@ extern "C"
 
 #include "common.h"
 #include "bspfile.h"
-#include "vid.h"
 #include "sys.h"
 #include "filesystem_internal.h"
 #include "zone.h"
@@ -204,110 +204,33 @@ extern "C"
 #include "entity_state.h"
 
 #include "wad.h"
-#include "draw.h"
 #include "cvar.h"
-#include "screen.h"
 #include "net.h"
 #include "protocol.h"
 #include "cmd.h"
-#include "sbar.h"
-#include "sound.h"
-#include "render.h"
 #include "progs.h"
 #include "server.h"
-#include "eiface.h"
-#include "cdll_int.h"
+//#include "eiface.h"
+
+#include "com_model.h"
 
 #ifdef GLQUAKE
-#include "gl_model.h"
+//#include "gl_model.h"
 #else
 #include "model.h"
 #include "d_iface.h"
 #endif
 
-#include "client.h"
-#include "input.h"
 #include "world.h"
 #include "pmove.h"
-#include "keys.h"
 #include "console.h"
-#include "view.h"
-#include "menu.h"
 #include "crc.h"
-#include "cdaudio.h"
-
-#ifdef GLQUAKE
-#include "glquake.h"
-#endif
-
-//=============================================================================
-
-// the host system specifies the base of the directory tree, the
-// command line parms passed to the program, and the amount of memory
-// available for the program to use
-
-typedef struct
-{
-	char	*basedir;
-	char	*cachedir;		// for development over ISDN lines
-	int		argc;
-	char	**argv;
-	void	*membase;
-	int		memsize;
-} quakeparms_t;
 
 //=============================================================================
 
 extern qboolean noclip_anglehack;
 
-
-//
-// host
-//
-extern	quakeparms_t host_parms;
-
-extern	cvar_t		sys_ticrate;
-extern	cvar_t		sys_nostdout;
-extern	cvar_t		developer;
-
-extern	qboolean	host_initialized;		// true if into command execution
-extern	double		host_frametime;
-extern	byte		*host_basepal;
-extern	byte		*host_colormap;
-extern	int			host_framecount;	// incremented every frame, never reset
-extern	double		realtime;			// not bounded in any way, changed at
-										// start of every frame, never reset
-
-void Host_ClearMemory ();
-void Host_InitCommands ();
-void Host_Init (quakeparms_t *parms);
-void Host_Shutdown();
-void Host_Error (const char *error, ...);
-void Host_EndGame (const char *message, ...);
-void Host_Frame (float time); // TODO: state, stateinfo
-void Host_Quit_f ();
-void Host_ClientCommands (const char *fmt, ...);
-void Host_ShutdownServer (qboolean crash);
-//void Host_WriteConfiguration ();
-
-extern qboolean		msg_suppress_1;		// suppresses resolution and cache size console output
-										//  an fullscreen DIB focus gain/loss
-extern int			current_skill;		// skill level for currently loaded level (in case
-										//  the user changes the cvar while the level is
-										//  running, this reflects the level actually in use)
-
-extern qboolean		isDedicated;
-
-extern int			minimum_memory;
-
-//
-// chase
-//
-extern	cvar_t	chase_active;
-
-void Chase_Init ();
-void Chase_Reset ();
-void Chase_Update ();
+#include "host.h"
 
 #ifdef __cplusplus
 };

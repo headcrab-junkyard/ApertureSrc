@@ -25,7 +25,7 @@
 
 IFileSystem *gpFileSystem{nullptr};
 
-void FileSystem_Init(char *basedir, void *filesystemFactory)
+void FileSystem_Init(const char *basedir, void *filesystemFactory)
 {
 	// TODO
 	
@@ -56,34 +56,35 @@ FILE IO
 ===============================================================================
 */
 
-int FS_FileOpenRead(const char *path, int *hndl)
+IFile *FS_FileOpenRead(const char *path, int *hndl)
 {
 	return 0; // TODO
 };
 
-int FS_FileOpenWrite(const char *path)
+IFile *FS_FileOpenWrite(const char *path)
 {
 	return gpFileSystem->FileOpen(path, "wb");
 };
 
-void FS_FileClose(int handle)
+void FS_FileClose(IFile *handle)
 {
+	//handle->Close();
 	gpFileSystem->FileClose(handle);
 };
 
-void FS_FileSeek(int handle, int position)
+void FS_FileSeek(IFile *handle, int position)
 {
-	gpFileSystem->FileSeek(handle, position);
+	handle->Seek(position);
 };
 
-int FS_FileRead(int handle, void *dest, int count)
+int FS_FileRead(IFile *handle, void *dest, int count)
 {
-	return gpFileSystem->FileRead(handle, dest, count);
+	return handle->Read(dest, count);
 };
 
-int FS_FileWrite(int handle, const void *data, int count)
+int FS_FileWrite(IFile *handle, const void *data, int count)
 {
-	return gpFileSystem->FileWrite(handle, data, count);
+	return handle->Write(data, count);
 };
 
 int FS_FileTime(const char *path)
