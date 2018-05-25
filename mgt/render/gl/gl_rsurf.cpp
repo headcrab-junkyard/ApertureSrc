@@ -1069,7 +1069,7 @@ void DrawTextureChains (void)
 R_DrawBrushModel
 =================
 */
-void R_DrawBrushModel (entity_t *e)
+void R_DrawBrushModel (cl_entity_t *e)
 {
 	int			j, k;
 	vec3_t		mins, maxs;
@@ -1309,7 +1309,7 @@ R_DrawWorld
 */
 void R_DrawWorld (void)
 {
-	entity_t	ent;
+	cl_entity_t	ent;
 	int			i;
 
 	memset (&ent, 0, sizeof(ent));

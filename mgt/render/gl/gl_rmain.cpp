@@ -21,12 +21,12 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
-entity_t	r_worldentity;
+cl_entity_t	r_worldentity;
 
 qboolean	r_cache_thrash;		// compatability
 
 vec3_t		modelorg, r_entorigin;
-entity_t	*currententity;
+cl_entity_t	*currententity;
 
 int			r_visframecount;	// bumped when going to a new PVS
 int			r_framecount;		// used for dlight push checking
@@ -119,7 +119,7 @@ qboolean R_CullBox (vec3_t mins, vec3_t maxs)
 }
 
 
-void R_RotateForEntity (entity_t *e)
+void R_RotateForEntity (cl_entity_t *e)
 {
     glTranslatef (e->origin[0],  e->origin[1],  e->origin[2]);
 
@@ -141,7 +141,7 @@ void R_RotateForEntity (entity_t *e)
 R_GetSpriteFrame
 ================
 */
-mspriteframe_t *R_GetSpriteFrame (entity_t *currententity)
+mspriteframe_t *R_GetSpriteFrame (cl_entity_t *currententity)
 {
 	msprite_t		*psprite;
 	mspritegroup_t	*pspritegroup;
@@ -194,7 +194,7 @@ R_DrawSpriteModel
 
 =================
 */
-void R_DrawSpriteModel (entity_t *e)
+void R_DrawSpriteModel (cl_entity_t *e)
 {
 	vec3_t	point;
 	mspriteframe_t	*frame;
@@ -432,7 +432,7 @@ R_DrawAliasModel
 
 =================
 */
-void R_DrawAliasModel (entity_t *e)
+void R_DrawAliasModel (cl_entity_t *e)
 {
 	int			i, j;
 	int			lnum;
@@ -1025,7 +1025,7 @@ void R_Mirror (void)
 {
 	float		d;
 	msurface_t	*s;
-	entity_t	*ent;
+	cl_entity_t	*ent;
 
 	if (!mirror)
 		return;

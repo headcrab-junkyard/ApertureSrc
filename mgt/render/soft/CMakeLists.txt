@@ -1,4 +1,4 @@
-project(gskiller-render-soft)
+project(mgt-render-soft)
 
 file(GLOB PROJECT_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
