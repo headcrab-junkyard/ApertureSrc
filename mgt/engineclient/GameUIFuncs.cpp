@@ -50,17 +50,11 @@ vgui3::KeyCode CGameUIFuncs::GetVGUI2KeyCodeForBind(const char *bind)
 	return vgui3::KeyCode::KEY_NONE;
 };
 
-void CGameUIFuncs::GetVideoModes(struct vmode_s **liststart, int *count)
-{
-};
+void CGameUIFuncs::GetVideoModes(struct vmode_s **liststart, int *count){};
 
-void CGameUIFuncs::GetCurrentVideoMode(int *wide, int *tall, int *bpp)
-{
-};
+void CGameUIFuncs::GetCurrentVideoMode(int *wide, int *tall, int *bpp){};
 
-void CGameUIFuncs::GetCurrentRenderer(char *name, int namelen, int *windowed, int *hdmodels, int *addons_folder, int *vid_level)
-{
-};
+void CGameUIFuncs::GetCurrentRenderer(char *name, int namelen, int *windowed, int *hdmodels, int *addons_folder, int *vid_level){};
 
 bool CGameUIFuncs::IsConnectedToVACSecureServer()
 {

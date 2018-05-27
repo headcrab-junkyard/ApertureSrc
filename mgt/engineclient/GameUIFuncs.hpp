@@ -29,7 +29,7 @@ class CGameUIFuncs final : public IGameUIFuncs
 public:
 	CGameUIFuncs();
 	~CGameUIFuncs();
-	
+
 	bool IsKeyDown(char const *keyname, bool &isdown) override;
 
 	const char *Key_NameForKey(int keynum) override;
@@ -41,8 +41,8 @@ public:
 	void GetCurrentVideoMode(int *wide, int *tall, int *bpp) override;
 
 	void GetCurrentRenderer(char *name, int namelen,
-	                                int *windowed, int *hdmodels,
-	                                int *addons_folder, int *vid_level) override;
+	                        int *windowed, int *hdmodels,
+	                        int *addons_folder, int *vid_level) override;
 	//void GetCurrentRenderer(char *name, int namelen, int *windowed) override;
 
 	bool IsConnectedToVACSecureServer() override;

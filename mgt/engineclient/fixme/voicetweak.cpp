@@ -24,5 +24,4 @@
 #include "ivoicetweak.h"
 
 IVoiceTweak gVoiceTweak =
-{
-};
+{};

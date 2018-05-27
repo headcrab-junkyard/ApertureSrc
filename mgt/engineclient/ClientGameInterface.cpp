@@ -28,42 +28,42 @@
 #include "quakedef.h"
 
 static cl_enginefunc_t gEngFuncs; // TODO: name overlap with server-side version? cl_enginefuncs in GS
-IClientGame *gpClientGame{nullptr};
+IClientGame *gpClientGame{ nullptr };
 
-void *gpClientDLL{nullptr};
+void *gpClientDLL{ nullptr };
 
 bool LoadClientDLL()
 {
 	//memcpy(&gEngFuncs, 0, sizeof(cl_enginefunc_t));
 	//memcpy(&cl_funcs, 0, sizeof(cldll_func_t));
-	
+
 	gpClientDLL = Sys_LoadModule("mgt/cl_dll/client"); // TODO: FS_LoadLibrary or something else that will load it from the game folder instead of app folder
-	
+
 	if(!gpClientDLL)
 		return false;
-	
-	auto fnClientDLLFactory{Sys_GetFactory(gpClientDLL)};
-	
+
+	auto fnClientDLLFactory{ Sys_GetFactory(gpClientDLL) };
+
 	if(!fnClientDLLFactory)
 		return false;
-	
+
 	gpClientGame = fnClientDLLFactory(MGT_CLIENTAME_INTERFACE_VERSION, nullptr);
-	
+
 	if(!gpClientGame->Init(Sys_GetFactoryThis(), &gEngFuncs)) // TODO: So.... Are you alive?
 		return false;
-	
+
 	return true;
 };
 
 void ClientDLL_Init()
 {
 	// TODO
-	
+
 	ClientDLL_Shutdown();
-	
+
 	if(!LoadClientDLL())
 		return;
-	
+
 	ClientDLL_HudInit();
 	ClientDLL_HudVidInit();
 	ClientDLL_ClientMoveInit(nullptr /*TODO*/);
@@ -72,8 +72,8 @@ void ClientDLL_Init()
 void ClientDLL_Shutdown()
 {
 	//if(gpClientGame)
-		//gpClientGame->Shutdown();
-	
+	//gpClientGame->Shutdown();
+
 	if(gpClientDLL)
 	{
 		Sys_UnloadModule(gpClientDLL);
@@ -93,8 +93,7 @@ void ClientDLL_HudVidInit()
 		gpClientGame->HudVidInit();
 };
 
-void ClientDLL_UpdateClientData()
-{
+void ClientDLL_UpdateClientData(){
 	// TODO
 };
 
@@ -110,13 +109,11 @@ void ClientDLL_HudRedraw(int intermission)
 		gpClientGame->HudRedraw(intermission);
 };
 
-void ClientDLL_MoveClient(struct playermove_s *ppmove)
-{
+void ClientDLL_MoveClient(struct playermove_s *ppmove){
 	// TODO
 };
 
-void ClientDLL_ClientMoveInit(struct playermove_s *ppmove)
-{
+void ClientDLL_ClientMoveInit(struct playermove_s *ppmove){
 	// TODO
 };
 
@@ -126,8 +123,7 @@ char ClientDLL_ClientTextureType(char *name)
 	return '\0';
 };
 
-void ClientDLL_CreateMove(float frametime, struct usercmd_s *cmd, int active)
-{
+void ClientDLL_CreateMove(float frametime, struct usercmd_s *cmd, int active){
 	// TODO
 };
 
@@ -161,8 +157,7 @@ int ClientDLL_IsThirdPerson()
 	return 0;
 };
 
-void ClientDLL_GetCameraOffsets(float *ofs)
-{
+void ClientDLL_GetCameraOffsets(float *ofs){
 	// TODO
 };
 
@@ -178,8 +173,7 @@ struct kbutton_s *ClientDLL_FindKey(const char *name)
 	return nullptr;
 };
 
-void ClientDLL_CAM_Think()
-{
+void ClientDLL_CAM_Think(){
 	// TODO
 };
 
@@ -189,8 +183,7 @@ void ClientDLL_IN_Accumulate()
 		gpClientGame->IN_Accumulate();
 };
 
-void ClientDLL_CalcRefdef(struct ref_params_s *pparams)
-{
+void ClientDLL_CalcRefdef(struct ref_params_s *pparams){
 	// TODO
 };
 
@@ -200,48 +193,39 @@ int ClientDLL_AddEntity(int type, struct cl_entity_s *ent)
 	return 0;
 };
 
-void ClientDLL_CreateEntities()
-{
+void ClientDLL_CreateEntities(){
 	// TODO
 };
 
-void ClientDLL_DrawNormalTriangles()
-{
+void ClientDLL_DrawNormalTriangles(){
 	// TODO
 };
 
-void ClientDLL_DrawTransparentTriangles()
-{
+void ClientDLL_DrawTransparentTriangles(){
 	// TODO
 };
 
-void ClientDLL_StudioEvent(const struct mstudioevent_s *event, const struct cl_entity_s *entity)
-{
+void ClientDLL_StudioEvent(const struct mstudioevent_s *event, const struct cl_entity_s *entity){
 	// TODO
 };
 
-void ClientDLL_PostRunCmd(struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, unsigned int random_seed)
-{
+void ClientDLL_PostRunCmd(struct local_state_s *from, struct local_state_s *to, struct usercmd_s *cmd, int runfuncs, double time, unsigned int random_seed){
 	// TODO
 };
 
-void ClientDLL_TxferLocalOverrides(struct entity_state_s *state, const struct clientdata_s *client)
-{
+void ClientDLL_TxferLocalOverrides(struct entity_state_s *state, const struct clientdata_s *client){
 	// TODO
 };
 
-void ClientDLL_ProcessPlayerState(struct entity_state_s *dst, const struct entity_state_s *src)
-{
+void ClientDLL_ProcessPlayerState(struct entity_state_s *dst, const struct entity_state_s *src){
 	// TODO
 };
 
-void ClientDLL_TxferPredictionData(struct entity_state_s *ps, const struct entity_state_s *pps, struct clientdata_s *pcd, const struct clientdata_s *ppcd, struct weapon_data_s *wd, const struct weapon_data_s *pwd)
-{
+void ClientDLL_TxferPredictionData(struct entity_state_s *ps, const struct entity_state_s *pps, struct clientdata_s *pcd, const struct clientdata_s *ppcd, struct weapon_data_s *wd, const struct weapon_data_s *pwd){
 	// TODO
 };
 
-void ClientDLL_ReadDemoBuffer(int size, byte *buffer)
-{
+void ClientDLL_ReadDemoBuffer(int size, byte *buffer){
 	// TODO
 };
 
@@ -257,8 +241,7 @@ int ClientDLL_GetHullBounds(int hullnumber, float *mins, float *maxs)
 	return 0;
 };
 
-void ClientDLL_VGui_ConsolePrint(const char *text)
-{
+void ClientDLL_VGui_ConsolePrint(const char *text){
 	// TODO
 };
 
@@ -266,12 +249,11 @@ int ClientDLL_Key_Event(int down, int keynum, const char *pszCurrentBinding)
 {
 	if(gpClientGame)
 		return gpClientGame->Key_Event(down, keynum, pszCurrentBinding);
-	
+
 	return 0;
 };
 
-void ClientDLL_TempEntUpdate(double ft, double ct, double grav, struct tempent_s **ppFreeTE, struct tempent_s **ppActiveTE, int (*addEntity)(struct cl_entity_s *pEntity), void (*playTESound)(struct tempent_s *pTemp, float damp))
-{
+void ClientDLL_TempEntUpdate(double ft, double ct, double grav, struct tempent_s **ppFreeTE, struct tempent_s **ppActiveTE, int (*addEntity)(struct cl_entity_s *pEntity), void (*playTESound)(struct tempent_s *pTemp, float damp)){
 	// TODO
 };
 
@@ -281,17 +263,14 @@ struct cl_entity_s *ClientDLL_GetUserEntity(int index)
 	return nullptr;
 };
 
-void ClientDLL_VoiceStatus(int entindex, qboolean bTalking)
-{
+void ClientDLL_VoiceStatus(int entindex, qboolean bTalking){
 	// TODO
 };
 
-void ClientDLL_DirectorMessage(int iSize, void *pbuf)
-{
+void ClientDLL_DirectorMessage(int iSize, void *pbuf){
 	// TODO
 };
 
-void ClientDLL_ChatInputPosition(int *x, int *y)
-{
+void ClientDLL_ChatInputPosition(int *x, int *y){
 	// TODO
 };

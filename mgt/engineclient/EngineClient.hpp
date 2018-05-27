@@ -41,47 +41,56 @@ class CKey;
 class CMenu;
 class CClientGame;
 
-class CEngineClient final : public IEngineClient//, public IEngineEventListener
+class CEngineClient final : public IEngineClient //, public IEngineEventListener
 {
 public:
 	CEngineClient();
 	~CEngineClient();
-	
-	bool Init(CreateInterfaceFn afnEngineFactory/*, tWinHandle ahWindow*/) override;
+
+	bool Init(CreateInterfaceFn afnEngineFactory /*, tWinHandle ahWindow*/) override;
 	void Shutdown() override;
-	
+
 	void ClearMemory() override;
-	
+
 	//void PreFrame();
 	//void PostFrame();
-	
+
 	void Frame() override;
 	//void Update(float afTimeStep);
 	//void PostUpdate(float afTimeStep);
-	
+
 	//void Render();
 	//void PostRender();
-	
+
 	void Printf(const char *message, ...);
 	void DPrintf(const char *message, ...);
+
+	void ForwardCmdToServer(const char *cmd) override;
+
+	void HostEndGame() override;
+	void HostError() override;
+	void HostServerShutdown() override;
 	
-	void ForwardCmdToServer(const char *cmd);
+	void ConInit() override;
+	void ConPrint(const char *msg) override;
 private:
+	void LocalInit();
+
 	void WriteConfig(/*const char *filename*/);
 	void WriteVideoConfig();
 	void WriteRenderConfig();
 	//void WriteOpenGLConfig(); // TODO: move to graphics module?
-	
+
 	void CheckStartupVids();
 	//void CreateStartupVids();
-	
+
 	void UpdateScreen();
-	
+
 	ISound *LoadSoundModule();
 	IInput *LoadInputModule();
 	IGameUI *LoadGameUIModule();
 	//IClientGame *LoadClientGameModule();
-	
+
 	std::unique_ptr<CConsole> mpConsole;
 	std::unique_ptr<CCDAudio> mpCDAudio;
 	std::unique_ptr<CVideo> mpVideo;
@@ -92,14 +101,14 @@ private:
 	std::unique_ptr<CClient> mpClient;
 	std::unique_ptr<CChase> mpChase;
 	std::unique_ptr<CClientGame> mpClientGame;
-	
+
 	//ICvarRegistry *mpCvarRegistry{nullptr};
-	
-	IFileSystem *mpFileSystem{nullptr};
-	ISound *mpSound{nullptr};
-	IInput *mpInput{nullptr};
-	IGameUI *mpGameUI{nullptr};
+
+	IFileSystem *mpFileSystem{ nullptr };
+	ISound *mpSound{ nullptr };
+	IInput *mpInput{ nullptr };
+	IGameUI *mpGameUI{ nullptr };
 	//IClientGame *mpClientGame{nullptr};
-	
-	bool mbInitialized{false};
+
+	bool mbInitialized{ false };
 };

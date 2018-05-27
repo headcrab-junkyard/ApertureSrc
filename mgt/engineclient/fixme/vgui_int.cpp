@@ -23,26 +23,26 @@
 #include "quakedef.h"
 #include "vgui_int.h"
 
-void *gpGUILib{nullptr};
-IGUI *gpGUI{nullptr};
+void *gpGUILib{ nullptr };
+IGUI *gpGUI{ nullptr };
 
 void VGui_Startup()
 {
 	gpGUILib = Sys_LoadModule("gui");
-	
+
 	if(!gpGUILib)
 		return;
-	
-	auto pfnGUIFactory{Sys_GetFactory(gpGUILib)};
-	
+
+	auto pfnGUIFactory{ Sys_GetFactory(gpGUILib) };
+
 	if(!pfnGUIFactory)
 		return;
-	
+
 	gpGUI = pfnGUIFactory(MGT_GUI_INTERFACE_VERSION, nullptr);
-	
+
 	if(!gpGUI)
 		return;
-	
+
 	if(!gpGUI->Init())
 		return;
 };
@@ -51,7 +51,7 @@ void VGui_Shutdown()
 {
 	if(gpGUI)
 		gpGUI->Shutdown();
-	
+
 	if(gpGUILib)
 	{
 		Sys_UnloadModule(gpGUILib);
@@ -59,8 +59,7 @@ void VGui_Shutdown()
 	};
 };
 
-void VGui_ViewportPaintBackground(int extents[4])
-{
+void VGui_ViewportPaintBackground(int extents[4]){
 	// TODO
 };
 

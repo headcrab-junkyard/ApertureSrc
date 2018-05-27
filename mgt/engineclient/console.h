@@ -19,34 +19,31 @@
 */
 
 /// @file
-/// @brief these are the only functions outside the refresh allowed to touch the vid buffer
 
 #pragma once
 
-extern qpic_t *draw_disc; // also used on sbar
+//
+// console
+//
+extern int con_totallines;
+extern int con_backscroll;
+extern bool con_forcedup; // because no entities to refresh
+extern bool con_initialized;
+extern byte *con_chars;
+extern int con_notifylines; // scan lines to clear for notify lines
 
-void Draw_Init();
+void Con_DrawCharacter(int cx, int line, int num);
 
-void Draw_Character(int x, int y, int num);
-void Draw_DebugChar(char num);
+void Con_CheckResize();
+void Con_Init();
+void Con_DrawConsole(int lines, bool drawinput);
+void Con_Print(const char *txt);
+void Con_Printf(const char *fmt, ...);
+void Con_DPrintf(const char *fmt, ...);
+void Con_SafePrintf(const char *fmt, ...);
+void Con_Clear_f();
+void Con_DrawNotify();
+void Con_ClearNotify();
+void Con_ToggleConsole_f();
 
-void Draw_Pic(int x, int y, qpic_t *pic);
-
-void Draw_TransPic(int x, int y, qpic_t *pic);
-void Draw_TransPicTranslate(int x, int y, qpic_t *pic, byte *translation);
-
-void Draw_ConsoleBackground(int lines);
-
-void Draw_BeginDisc();
-void Draw_EndDisc();
-
-void Draw_TileClear(int x, int y, int w, int h);
-
-void Draw_Fill(int x, int y, int w, int h, int c);
-
-void Draw_FadeScreen();
-
-void Draw_String(int x, int y, const char *str);
-
-qpic_t *Draw_PicFromWad(const char *name);
-qpic_t *Draw_CachePic(const char *path);
+void Con_NotifyBox(const char *text); // during startup for sound / cd warnings

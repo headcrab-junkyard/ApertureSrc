@@ -24,5 +24,4 @@
 #include "event_api.h"
 
 event_api_t eventapi =
-{
-};
+{};

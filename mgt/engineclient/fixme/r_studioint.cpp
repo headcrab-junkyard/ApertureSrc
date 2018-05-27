@@ -22,4 +22,3 @@
 
 #include "quakedef.h"
 #include "r_studioint.h"
-

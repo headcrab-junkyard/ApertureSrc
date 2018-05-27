@@ -24,5 +24,4 @@
 #include "triangleapi.h"
 
 triangleapi_t gTriAPI =
-{
-};
+{};

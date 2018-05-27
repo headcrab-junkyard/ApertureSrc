@@ -3,12 +3,12 @@
 #include "quakedef.h"
 #include "icdaudio.h"
 
-ICDAudio *gpCDAudio{nullptr};
+ICDAudio *gpCDAudio{ nullptr };
 
 int CDAudio_Init()
 {
 	gpCDAudio = new CCDAudioNull();
-	
+
 	return gpCDAudio->Init();
 };
 
