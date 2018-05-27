@@ -9,9 +9,10 @@ class CGameClient final : public IGameClient
 public:
 	CGameClient();
 	~CGameClient();
-	
+
 	void Disconnect(const char *asReason, ...) override;
-	
+
 	void Printf(const char *asMsg, ...) override;
+
 private:
 };

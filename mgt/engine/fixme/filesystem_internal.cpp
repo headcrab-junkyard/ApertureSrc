@@ -21,22 +21,23 @@
 /// @brief
 
 #include "quakedef.h"
-#include "IFileSystem.hpp"
+#include "filesystem/IFileSystem.hpp"
+#include "filesystem/IFile.hpp"
 
-IFileSystem *gpFileSystem{nullptr};
+IFileSystem *gpFileSystem{ nullptr };
 
 void FileSystem_Init(const char *basedir, void *filesystemFactory)
 {
 	// TODO
-	
+
 	if(!basedir || !*basedir)
 		return;
-	
+
 	if(!filesystemFactory)
 		return;
-	
-	gpFileSystem = (IFileSystem*)(((CreateInterfaceFn)filesystemFactory)(OGS_FILESYSTEM_INTERFACE_VERSION, nullptr)); // TODO: FILESYSTEM_INTERFACE_VERSION
-	
+
+	gpFileSystem = (IFileSystem *)(((CreateInterfaceFn)filesystemFactory)(OGS_FILESYSTEM_INTERFACE_VERSION, nullptr)); // TODO: FILESYSTEM_INTERFACE_VERSION
+
 	if(!gpFileSystem)
 		return;
 };
@@ -44,7 +45,7 @@ void FileSystem_Init(const char *basedir, void *filesystemFactory)
 void FileSystem_Shutdown()
 {
 	// TODO
-	
+
 	gpFileSystem = nullptr;
 };
 
@@ -94,10 +95,10 @@ int FS_FileTime(const char *path)
 
 void FS_mkdir(const char *path)
 {
-	// TODO: if not dedicated?
+// TODO: if not dedicated?
 
 #ifdef _WIN32
-	//_mkdir(path); // TODO
+//_mkdir(path); // TODO
 #else
 	mkdir(path, 0777);
 #endif

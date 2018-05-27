@@ -31,10 +31,10 @@ interface IGameLoader
 {
 	///
 	//virtual void Release() = 0;
-	
+
 	///
 	virtual IGame *Load(const char *asPath) = 0;
-	
+
 	///
-	virtual void Unload(IGame *apGame) = 0;
+	virtual void Unload(IGame * apGame) = 0;
 };

@@ -31,41 +31,41 @@ class CEngine final : public IEngine
 public:
 	CEngine();
 	~CEngine();
-	
+
 	bool Init(const SInitData &apInitData) override;
 	//bool Init(bool dedicated, const char *basedir, const char *cmdline) override;
 	void Shutdown() override;
-	
+
 	bool Frame() override;
-	
+
 	void EndGame(const char *asMsg, ...); // TODO: wtf? move to game manager or something...
 private:
 	bool InitCore();
 	bool InitClient();
-	
+
 	bool InitGame(const char *asName);
 	void ShutdownGame();
-	
+
 	//void NewGame(const tString &asMapName, bool abLoadGame);
 	//void EndGame(const tString &asMessage, ...);
-	
+
 	//bool IsLocalGame() const;
-	
+
 	// Get info about current game running - get interface with getters
 	//IGameInfo *GetCurrentGameInfo() const; //or TGameInfo - get struct
-	
+
 	//void ShutdownServer(bool abCrash);
-	
+
 	//void WriteServerConfig(const char *asName);
-	
+
 	quakeparms_t mParms{};
-	
+
 	//void *mpCoreLib{nullptr}; // mpEngineCoreLib
 	//IEngineCore *mpCore{nullptr};
-	
+
 	//void *mpClientLib{nullptr}; // mpEngineClientLib
 	//IEngineClient *mpClient{nullptr};
-	
+
 	// temp support for game dll
 	//void *mpGameLib{nullptr};
 	//IGame *mpGame{nullptr};

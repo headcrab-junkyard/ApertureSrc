@@ -25,8 +25,8 @@
 #include "Engine.hpp"
 
 // TODO: temp
-#define PAUSE_SLEEP		50				// sleep time on pause or minimization
-#define NOT_FOCUS_SLEEP	20				// sleep time when not focus
+#define PAUSE_SLEEP 50     // sleep time on pause or minimization
+#define NOT_FOCUS_SLEEP 20 // sleep time when not focus
 
 //static CEngine gEngine; // g_Engine
 //IEngine *gpEngine = &gEngine; // eng
@@ -45,24 +45,24 @@ CEngine::~CEngine() = default;
 bool CEngine::Init(const SInitData &apInitParams)
 {
 	//static quakeparms_t parms; // TODO: static?
-	
+
 	//memset(&parms, 0, sizeof(parms));
-	
+
 	//mParms. =;
-	
+
 	//parms.memsize = 8*1024*1024;
 	//parms.membase = malloc (parms.memsize);
 	//parms.basedir = ".";
-	
+
 	//COM_InitArgv (argc, argv); // TODO: parms.argc, parms.argv
-	
+
 	//parms.argc = com_argc;
 	//parms.argv = com_argv;
-	
+
 	//isDedicated = (COM_CheckParm ("-dedicated") != 0);
-	
+
 	//Sys_InitGame(char *, char *, void *, int); // TODO
-	
+
 	//printf("Host_Init\n");
 	Host_Init(&mParms);
 	return true;
@@ -75,8 +75,7 @@ void CEngine::Shutdown()
 
 // TODO
 #ifdef _WIN32
-void SleepUntilInput(int time)
-{
+void SleepUntilInput(int time){
 	//MsgWaitForMultipleObjects(1, &tevent, FALSE, time, QS_ALLINPUT); // TODO
 };
 #endif
@@ -84,38 +83,38 @@ void SleepUntilInput(int time)
 bool /*void*/ CEngine::Frame() // TODO
 {
 	static double time, oldtime, newtime;
-	
-	if (isDedicated)
+
+	if(isDedicated)
 	{
-		newtime = Sys_FloatTime ();
+		newtime = Sys_FloatTime();
 		time = newtime - oldtime;
 
-		while (time < sys_ticrate.value )
+		while(time < sys_ticrate.value)
 		{
 			Sys_Sleep();
-			newtime = Sys_FloatTime ();
+			newtime = Sys_FloatTime();
 			time = newtime - oldtime;
 		}
 	}
 	else
 	{
 #ifdef _WIN32
-	// yield the CPU for a little while when paused, minimized, or not the focus
+		// yield the CPU for a little while when paused, minimized, or not the focus
 		//if ((cl.paused && (!ActiveApp && !DDActive)) || Minimized || block_drawing) // TODO
 		{
-			SleepUntilInput (PAUSE_SLEEP);
+			SleepUntilInput(PAUSE_SLEEP);
 			//scr_skipupdate = 1;		// no point in bothering to draw // TODO
 		}
 		//else if (!ActiveApp && !DDActive) // TODO
-			SleepUntilInput (NOT_FOCUS_SLEEP);
+		SleepUntilInput(NOT_FOCUS_SLEEP);
 #endif // _WIN32
 
-		newtime = Sys_FloatTime ();
+		newtime = Sys_FloatTime();
 		time = newtime - oldtime;
 	};
 
-	Host_Frame (time);
+	Host_Frame(time);
 	oldtime = newtime;
-	
+
 	return true;
 };

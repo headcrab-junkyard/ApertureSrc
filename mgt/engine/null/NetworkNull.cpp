@@ -8,7 +8,7 @@ class CNetworkNull final : public INetwork
 public:
 	CNetworkNull();
 	~CNetworkNull();
-	
-	bool Init() override {return true;}
+
+	bool Init() override { return true; }
 	void Shutdown() override {}
 };

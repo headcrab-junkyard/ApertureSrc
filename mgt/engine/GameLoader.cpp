@@ -24,22 +24,21 @@
 
 IGame *CNativeGameLoader::Load(const char *asName)
 {
-	auto fnCreateInterface{Sys_GetFactory(mpGameLib)};
-	
+	auto fnCreateInterface{ Sys_GetFactory(mpGameLib) };
+
 	if(!fnCreateInterface)
 		return nullptr;
-	
+
 	//DevMsg("Detected native magenta format...");
-	auto pGame{(IGame*)fnCreateInterface(MGT_GAME_INTERFACE_VERSION, nullptr)};
-	
+	auto pGame{ (IGame *)fnCreateInterface(MGT_GAME_INTERFACE_VERSION, nullptr) };
+
 	// Is interface valid?
 	if(!pGame)
 		return nullptr;
-	
+
 	return pGame;
 };
 
-void CNativeGameLoader::Unload(IGame *apGame)
-{
+void CNativeGameLoader::Unload(IGame *apGame){
 	// TODO
 };

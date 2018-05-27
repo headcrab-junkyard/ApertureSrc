@@ -9,7 +9,9 @@ class CSystem final : public ISystem
 public:
 	CSystem();
 	~CSystem();
-	
+
+	void Error(const char *fmt, ...) override;
+
 	double GetFloatTime() const override;
 };
 

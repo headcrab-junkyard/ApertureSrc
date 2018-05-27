@@ -18,69 +18,67 @@
 */
 
 /// @file
-/// @brief IGameUIFuncs interface implementation
 
 #include "quakedef.h"
-#include "IGameUIFuncs.hpp"
 #include "interface.h"
 
-bool gbDedicatedServer{false};
+bool gbDedicatedServer{ false };
 
-char *gsPostRestartCmdLineArgs{nullptr};
+char *gsPostRestartCmdLineArgs{ nullptr };
 
 int RunListenServer(void *instance, const char *basedir, const char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
 {
 	// TODO: Whole bunch of Sys_Init* calls
-	
+
 	// TODO: CWindowManager::CreateGameWindow(); // IGame::CreateGameWindow
-	
-	if(!gpEngine->Load(false, basedir, cmdline))
-		return EXIT_FAILURE;
-	
-	while(true)
-		gpEngine->Frame();
-	
-	gpEngine->Unload();
-	
+
+	//if(!gpEngine->Load(false, basedir, cmdline))
+		//return EXIT_FAILURE;
+
+	//while(true)
+		//gpEngine->Frame();
+
+	//gpEngine->Unload();
+
 	// TODO: CWindowManager::DestroyGameWindow(); // IGame::DestroyGameWindow
-	
+
 	// TODO: Whole bunch of Sys_Shutdown* calls
-	
+
 	return EXIT_SUCCESS;
 };
 
-class CEngineAPI final : public IEngineAPI
+class CEngineAPI
 {
 public:
 	CEngineAPI();
 	~CEngineAPI();
-	
-	int Run(void *instance, const char *basedir, const char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory) override;
+
+	int Run(void *instance, const char *basedir, const char *cmdline, char *postRestartCmdLineArgs, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory);
 };
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-class CDedicatedServerAPI final : public IDedicatedServerAPI
+class CDedicatedServerAPI
 {
 public:
 	CDedicatedServerAPI();
 	~CDedicatedServerAPI();
-	
-	bool Init(const char *basedir, const char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory) override;
-	int Shutdown() override;
 
-	bool RunFrame() override;
+	bool Init(const char *basedir, const char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory);
+	int Shutdown();
 
-	void AddConsoleText(const char *text) override;
+	bool RunFrame();
 
-	void UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, const char *pszMap) override;
+	void AddConsoleText(const char *text);
+
+	void UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, const char *pszMap);
 };
 
 bool CDedicatedServerAPI::Init(const char *basedir, const char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory)
 {
-	if(!gpEngine->Load(true, basedir, cmdline))
-		return false;
-	
+	//if(!gpEngine->Init(true, basedir, cmdline))
+		//return false;
+
 	return true;
 };
 
@@ -95,7 +93,6 @@ void CDedicatedServerAPI::AddConsoleText(const char *text)
 	Cbuf_AddText(text);
 };
 
-void CDedicatedServerAPI::UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, const char *pszMap)
-{
+void CDedicatedServerAPI::UpdateStatus(float *fps, int *nActive, int *nMaxPlayers, const char *pszMap){
 	//Host_UpdateStatus(fps, nActive, nMaxPlayers, pszMap);
 };

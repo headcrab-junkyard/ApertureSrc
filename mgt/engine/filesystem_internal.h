@@ -30,8 +30,7 @@
 
 #define FILESYSTEM_INVALID_HANDLE (FileHandle_t)0
 
-typedef enum
-{
+typedef enum {
 	FILESYSTEM_SEEK_HEAD = 0,
 	FILESYSTEM_SEEK_CURRENT,
 	FILESYSTEM_SEEK_TAIL
@@ -43,8 +42,7 @@ enum
 	FILESYSTEM_INVALID_FIND_HANDLE = -1
 };
 
-typedef enum
-{
+typedef enum {
 	FILESYSTEM_WARNING_QUIET = 0,      ///< Don't print anything
 	FILESYSTEM_WARNING_REPORTUNCLOSED, ///< On shutdown, report names of files left unclosed
 	FILESYSTEM_WARNING_REPORTUSAGE,    ///< Report number of times a file was opened/closed
@@ -74,10 +72,10 @@ void FS_FileSeek(IFile *handle, int position);
 int FS_FileRead(IFile *handle, void *dest, int count);
 int FS_FileWrite(IFile *handle, const void *data, int count);
 
-int	FS_FileTime(const char *path);
+int FS_FileTime(const char *path);
 
 void FS_mkdir(const char *path);
 
 // Dynamic Library Management
-	
+
 //void *FS_LoadLibrary(const char *name, const char *path);

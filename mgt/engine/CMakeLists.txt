@@ -2,6 +2,8 @@ project(mgt-engine)
 
 add_definitions(-DGLQUAKE) # TODO
 
+include_directories(${CMAKE_CURRENT_SOURCE_DIR})
+
 file(GLOB PROJECT_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
 	${CMAKE_CURRENT_SOURCE_DIR}/null/*.cpp

@@ -29,46 +29,46 @@
 
 typedef struct
 {
-	char	*basedir;
-	char	*cachedir;		// for development over ISDN lines
-	int		argc;
-	char	**argv;
-	void	*membase;
-	int		memsize;
+	char *basedir;
+	char *cachedir; // for development over ISDN lines
+	int argc;
+	char **argv;
+	void *membase;
+	int memsize;
 } quakeparms_t;
 
-extern	quakeparms_t host_parms;
+extern quakeparms_t host_parms;
 
-extern	cvar_t		sys_ticrate;
-extern	cvar_t		sys_nostdout;
-extern	cvar_t		developer;
+extern cvar_t sys_ticrate;
+extern cvar_t sys_nostdout;
+extern cvar_t developer;
 
-extern	bool	host_initialized;		// true if into command execution
-extern	double		host_frametime;
-extern	byte		*host_basepal;
-extern	byte		*host_colormap;
-extern	int			host_framecount;	// incremented every frame, never reset
-extern	double		realtime;			// not bounded in any way, changed at
-										// start of every frame, never reset
+extern bool host_initialized; // true if into command execution
+extern double host_frametime;
+extern byte *host_basepal;
+extern byte *host_colormap;
+extern int host_framecount; // incremented every frame, never reset
+extern double realtime;     // not bounded in any way, changed at
+                            // start of every frame, never reset
 
-void Host_ClearMemory ();
-void Host_InitCommands ();
-void Host_Init (quakeparms_t *parms);
+void Host_ClearMemory();
+void Host_InitCommands();
+void Host_Init(quakeparms_t *parms);
 void Host_Shutdown();
-void Host_Error (const char *error, ...);
-void Host_EndGame (const char *message, ...);
-void Host_Frame (float time); // TODO: state, stateinfo
-void Host_Quit_f ();
-void Host_ClientCommands (const char *fmt, ...);
-void Host_ShutdownServer (bool crash);
+void Host_Error(const char *error, ...);
+void Host_EndGame(const char *message, ...);
+void Host_Frame(float time); // TODO: state, stateinfo
+void Host_Quit_f();
+void Host_ClientCommands(const char *fmt, ...);
+void Host_ShutdownServer(bool crash);
 //void Host_WriteConfiguration ();
 
-extern bool		msg_suppress_1;		// suppresses resolution and cache size console output
-										//  an fullscreen DIB focus gain/loss
-extern int			current_skill;		// skill level for currently loaded level (in case
-										//  the user changes the cvar while the level is
-										//  running, this reflects the level actually in use)
+extern bool msg_suppress_1; // suppresses resolution and cache size console output
+                            //  an fullscreen DIB focus gain/loss
+extern int current_skill;   // skill level for currently loaded level (in case
+                            //  the user changes the cvar while the level is
+                            //  running, this reflects the level actually in use)
 
-extern bool		isDedicated;
+extern bool isDedicated;
 
-extern int			minimum_memory;
+extern int minimum_memory;

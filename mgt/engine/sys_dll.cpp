@@ -24,6 +24,8 @@
 #include "quakedef.h"
 
 #ifdef _WIN32
+#include "winquake.h"
+
 qboolean WinNT;
 
 static double pfreq;
@@ -32,33 +34,32 @@ static double lastcurtime = 0.0;
 static int lowshift;
 #endif
 
-void Sys_InitAuthentication()
-{
+void MaskExceptions();
+void Sys_InitFloatTime();
+void Sys_PushFPCW_SetHigh();
+void Sys_PopFPCW();
+
+void Sys_InitAuthentication(){
 	// TODO
 };
 
-void Sys_ShutdownAuthentication()
-{
+void Sys_ShutdownAuthentication(){
 	// TODO
 };
 
-void Sys_InitLauncherInterface()
-{
+void Sys_InitLauncherInterface(){
 	// TODO
 };
 
-void Sys_ShutdownLauncherInterface()
-{
+void Sys_ShutdownLauncherInterface(){
 	// TODO
 };
 
-void Sys_InitMemory()
-{
+void Sys_InitMemory(){
 	// TODO
 };
 
-void Sys_ShutdownMemory()
-{
+void Sys_ShutdownMemory(){
 	// TODO
 };
 
@@ -76,8 +77,8 @@ void Sys_InitFloatTime()
 
 	j = COM_CheckParm("-starttime");
 
-	if (j)
-		curtime = (double)(Q_atof(com_argv[j+1]));
+	if(j)
+		curtime = (double)(Q_atof(com_argv[j + 1]));
 	else
 		curtime = 0.0;
 
@@ -93,23 +94,23 @@ Sys_Init
 void Sys_Init()
 {
 #ifdef _WIN32
-	LARGE_INTEGER	PerformanceFreq;
-	unsigned int	lowpart, highpart;
-	OSVERSIONINFO	vinfo;
+	LARGE_INTEGER PerformanceFreq;
+	unsigned int lowpart, highpart;
+	OSVERSIONINFO vinfo;
 
-	MaskExceptions ();
-	Sys_SetFPCW ();
+	MaskExceptions();
+	Sys_SetFPCW();
 
-	if (!QueryPerformanceFrequency (&PerformanceFreq))
-		Sys_Error ("No hardware timer available");
+	if(!QueryPerformanceFrequency(&PerformanceFreq))
+		Sys_Error("No hardware timer available");
 
-// get 32 out of the 64 time bits such that we have around
-// 1 microsecond resolution
+	// get 32 out of the 64 time bits such that we have around
+	// 1 microsecond resolution
 	lowpart = (unsigned int)PerformanceFreq.LowPart;
 	highpart = (unsigned int)PerformanceFreq.HighPart;
 	lowshift = 0;
 
-	while (highpart || (lowpart > 2000000.0))
+	while(highpart || (lowpart > 2000000.0))
 	{
 		lowshift++;
 		lowpart >>= 1;
@@ -119,79 +120,76 @@ void Sys_Init()
 
 	pfreq = 1.0 / (double)lowpart;
 
-	Sys_InitFloatTime ();
+	Sys_InitFloatTime();
 
 	vinfo.dwOSVersionInfoSize = sizeof(vinfo);
 
-	if (!GetVersionEx (&vinfo))
-		Sys_Error ("Couldn't get OS info");
+	if(!GetVersionEx(&vinfo))
+		Sys_Error("Couldn't get OS info");
 
-	if ((vinfo.dwMajorVersion < 4) ||
-		(vinfo.dwPlatformId == VER_PLATFORM_WIN32s))
+	if((vinfo.dwMajorVersion < 4) ||
+	   (vinfo.dwPlatformId == VER_PLATFORM_WIN32s))
 	{
-		Sys_Error ("WinQuake requires at least Win95 or NT 4.0");
+		Sys_Error("WinQuake requires at least Win95 or NT 4.0");
 	}
 
-	if (vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT)
+	if(vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT)
 		WinNT = true;
 	else
 		WinNT = false;
 #else // if linux
-	#if id386
-		Sys_SetFPCW();
-	#endif
+#if id386
+	Sys_SetFPCW();
+#endif
 #endif
 };
 
-void Sys_Shutdown()
-{
+void Sys_Shutdown(){
 	// TODO
 };
 
-void Sys_InitArgv()
-{
+void Sys_InitArgv(){
 	// TODO
 };
 
-void Sys_ShutdownArgv()
-{
+void Sys_ShutdownArgv(){
 	// TODO
 };
 
 void Sys_Printf(const char *fmt, ...)
 {
 #ifdef _WIN32
-	va_list		argptr;
-	char		text[1024];
-	DWORD		dummy;
-	
-	if (isDedicated)
+	va_list argptr;
+	char text[1024];
+	DWORD dummy;
+
+	if(isDedicated)
 	{
-		va_start (argptr,fmt);
-		vsprintf (text, fmt, argptr);
-		va_end (argptr);
+		va_start(argptr, fmt);
+		vsprintf(text, fmt, argptr);
+		va_end(argptr);
 
 		//WriteFile(houtput, text, strlen (text), &dummy, nullptr); // TODO: IDedicatedExports->Printf
 	};
-#else // if linux
-	va_list		argptr;
-	char		text[1024];
-	unsigned char		*p;
+#else  // if linux
+	va_list argptr;
+	char text[1024];
+	unsigned char *p;
 
-	va_start (argptr,fmt);
-	vsprintf (text,fmt,argptr);
-	va_end (argptr);
+	va_start(argptr, fmt);
+	vsprintf(text, fmt, argptr);
+	va_end(argptr);
 
-	if (strlen(text) > sizeof(text))
+	if(strlen(text) > sizeof(text))
 		Sys_Error("memory overwrite in Sys_Printf");
 
-    if (nostdout)
-        return;
+	if(nostdout)
+		return;
 
-	for (p = (unsigned char *)text; *p; p++)
+	for(p = (unsigned char *)text; *p; p++)
 	{
 		*p &= 0x7f;
-		if ((*p > 128 || *p < 32) && *p != 10 && *p != 13 && *p != 9)
+		if((*p > 128 || *p < 32) && *p != 10 && *p != 13 && *p != 9)
 			printf("[%02x]", *p);
 		else
 			putc(*p, stdout);
@@ -204,33 +202,33 @@ void Sys_Printf(const char *fmt, ...)
 Sys_FloatTime
 ================
 */
-double Sys_FloatTime ()
+double Sys_FloatTime()
 {
 #ifdef _WIN32
-	static int			sametimecount;
-	static unsigned int	oldtime;
-	static int			first = 1;
-	LARGE_INTEGER		PerformanceCount;
-	unsigned int		temp, t2;
-	double				time;
+	static int sametimecount;
+	static unsigned int oldtime;
+	static int first = 1;
+	LARGE_INTEGER PerformanceCount;
+	unsigned int temp, t2;
+	double time;
 
-	Sys_PushFPCW_SetHigh ();
+	Sys_PushFPCW_SetHigh();
 
-	QueryPerformanceCounter (&PerformanceCount);
+	QueryPerformanceCounter(&PerformanceCount);
 
 	temp = ((unsigned int)PerformanceCount.LowPart >> lowshift) |
-		   ((unsigned int)PerformanceCount.HighPart << (32 - lowshift));
+	((unsigned int)PerformanceCount.HighPart << (32 - lowshift));
 
-	if (first)
+	if(first)
 	{
 		oldtime = temp;
 		first = 0;
 	}
 	else
 	{
-	// check for turnover or backward time
-		if ((temp <= oldtime) && ((oldtime - temp) < 0x10000000))
-			oldtime = temp;	// so we can't get stuck
+		// check for turnover or backward time
+		if((temp <= oldtime) && ((oldtime - temp) < 0x10000000))
+			oldtime = temp; // so we can't get stuck
 		else
 		{
 			t2 = temp - oldtime;
@@ -240,11 +238,11 @@ double Sys_FloatTime ()
 
 			curtime += time;
 
-			if (curtime == lastcurtime)
+			if(curtime == lastcurtime)
 			{
 				sametimecount++;
 
-				if (sametimecount > 100000)
+				if(sametimecount > 100000)
 				{
 					curtime += 1.0;
 					sametimecount = 0;
@@ -257,22 +255,22 @@ double Sys_FloatTime ()
 		};
 	};
 
-	Sys_PopFPCW ();
+	Sys_PopFPCW();
 
-    return curtime;
+	return curtime;
 #else // if __linux__ or something else (that support POSIX API)
 	struct timeval tp;
-    struct timezone tzp; 
-    static int      secbase; 
-    
-    gettimeofday(&tp, &tzp);  
+	struct timezone tzp;
+	static int secbase;
 
-    if (!secbase)
-    {
-        secbase = tp.tv_sec;
-        return tp.tv_usec/1000000.0;
-    };
+	gettimeofday(&tp, &tzp);
 
-    return (tp.tv_sec - secbase) + tp.tv_usec/1000000.0;
+	if(!secbase)
+	{
+		secbase = tp.tv_sec;
+		return tp.tv_usec / 1000000.0;
+	};
+
+	return (tp.tv_sec - secbase) + tp.tv_usec / 1000000.0;
 #endif
 };
