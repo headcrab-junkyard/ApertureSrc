@@ -114,7 +114,7 @@ PLAYER
 ==============================================================================
 */
 
-void() player_run;
+void player_run();
 
 void()  player_stand1 =[        $axstnd1,       player_stand1   ]
 {
@@ -263,16 +263,15 @@ void() player_light2   =[$light2, player_light1  ]
 //============================================================================
 
 
-void() player_rocket1   =[$rockatt1, player_rocket2  ] {self.weaponframe=1;
-	muzzleflash();};
+void() player_rocket1   =[$rockatt1, player_rocket2  ] {self.weaponframe=1; muzzleflash();};
 void() player_rocket2   =[$rockatt2, player_rocket3  ] {self.weaponframe=2;};
 void() player_rocket3   =[$rockatt3, player_rocket4  ] {self.weaponframe=3;};
 void() player_rocket4   =[$rockatt4, player_rocket5  ] {self.weaponframe=4;};
 void() player_rocket5   =[$rockatt5, player_rocket6  ] {self.weaponframe=5;};
 void() player_rocket6   =[$rockatt6, player_run  ] {self.weaponframe=6;};
-void(float num_bubbles) DeathBubbles;
+void DeathBubbles(float num_bubbles);
 
-void CPlayer::PainSound()
+void CBasePlayer::PainSound()
 {
 	float rs;
 
@@ -430,7 +429,7 @@ void DeathBubbles(float num_bubbles)
 	bubble_spawner.bubble_count = num_bubbles;
 };
 
-void CPlayer::DeathSound()
+void CBasePlayer::DeathSound()
 {
 	float rs;
 
@@ -505,7 +504,7 @@ vector VelocityForDamage(float dm)
 	return v;
 };
 
-void CPlayer::ThrowGib(string gibname, float dm)
+void CBasePlayer::ThrowGib(string gibname, float dm)
 {
 	entity new;
 
@@ -526,7 +525,7 @@ void CPlayer::ThrowGib(string gibname, float dm)
 	new.flags = 0;
 };
 
-void CPlayer::ThrowHead(string gibname, float dm)
+void CBasePlayer::ThrowHead(string gibname, float dm)
 {
 	gpEngine->pfnSetModel (self, gibname);
 	self.frame = 0;
@@ -542,7 +541,7 @@ void CPlayer::ThrowHead(string gibname, float dm)
 	self.avelocity = crandom() * '0 600 0';
 };
 
-void CPlayer::GibPlayer()
+void CBasePlayer::GibPlayer()
 {
 	ThrowHead ("models/h_player.mdl", self.health);
 	ThrowGib ("models/gib1.mdl", self.health);
@@ -569,7 +568,7 @@ void CPlayer::GibPlayer()
 		gpEngine->pfnEmitSound(self, CHAN_VOICE, "player/udeath.wav", 1, ATTN_NONE);
 };
 
-void CPlayer::Die()
+void CBasePlayer::Die()
 {
 	float   i;
 	string	s;
@@ -660,7 +659,7 @@ void CPlayer::Die()
 DropBackpack
 ===============
 */
-void CPlayer::DropBackpack()
+void CBasePlayer::DropBackpack()
 {
 	entvars_t item;
 
@@ -710,7 +709,7 @@ void CPlayer::DropBackpack()
 	item.think = SUB_Remove;
 };
 
-float CPlayer::GetBestWeapon()
+float CBasePlayer::GetBestWeapon()
 {
 	float it = self.items;
 
@@ -736,7 +735,7 @@ float CPlayer::GetBestWeapon()
 	return IT_AXE;
 };
 
-bool CPlayer::CheckNoAmmo()
+bool CBasePlayer::CheckNoAmmo()
 {
 	if(self.currentammo > 0)
 		return true;
@@ -833,7 +832,7 @@ void()  player_die_ax7  =       [       $axdeth7,       player_die_ax8  ] {};
 void()  player_die_ax8  =       [       $axdeth8,       player_die_ax9  ] {};
 void()  player_die_ax9  =       [       $axdeth9,       player_die_ax9  ] {PlayerDead();};
 
-bool CPlayer::Pickup_Weapon(edict_t *ent, edict_t *other)
+bool CBasePlayer::Pickup_Weapon(edict_t *ent, edict_t *other)
 {
 	int			index;
 	gitem_t		*ammo;
@@ -888,7 +887,7 @@ The old weapon has been dropped all the way, so make the new one
 current
 ===============
 */
-void CPlayer::ChangeWeapon (edict_t *ent)
+void CBasePlayer::ChangeWeapon (edict_t *ent)
 {
 	int i;
 
@@ -947,7 +946,7 @@ void CPlayer::ChangeWeapon (edict_t *ent)
 NoAmmoWeaponChange
 =================
 */
-void CPlayer::NoAmmoWeaponChange (edict_t *ent)
+void CBasePlayer::NoAmmoWeaponChange (edict_t *ent)
 {
 	if ( ent->client->pers.inventory[ITEM_INDEX(FindItem("slugs"))]
 		&&  ent->client->pers.inventory[ITEM_INDEX(FindItem("railgun"))] )
@@ -995,7 +994,7 @@ Think_Weapon
 Called by ClientBeginServerFrame and ClientThink
 =================
 */
-void CPlayer::Think_Weapon (edict_t *ent)
+void CBasePlayer::Think_Weapon (edict_t *ent)
 {
 	// if just died, put the weapon away
 	if (ent->health < 1)
@@ -1023,7 +1022,7 @@ Use_Weapon
 Make the weapon ready if there is ammo
 ================
 */
-void CPlayer::Use_Weapon (edict_t *ent, gitem_t *item)
+void CBasePlayer::Use_Weapon (edict_t *ent, gitem_t *item)
 {
 	int			ammo_index;
 	gitem_t		*ammo_item;
@@ -1059,7 +1058,7 @@ void CPlayer::Use_Weapon (edict_t *ent, gitem_t *item)
 Drop_Weapon
 ================
 */
-void CPlayer::Drop_Weapon (edict_t *ent, gitem_t *item)
+void CBasePlayer::Drop_Weapon (edict_t *ent, gitem_t *item)
 {
 	int		index;
 
