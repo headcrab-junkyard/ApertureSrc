@@ -22,9 +22,9 @@
 #include "GameClientEventDispatcher.hpp"
 #include "engine/IGameClientEventListener.hpp"
 
-CGameClientEventListener::CGameClientEventListener() = default;
+CGameClientEventDispatcher::CGameClientEventDispatcher() = default;
 
-CGameClientEventListener::~CGameClientEventListener()
+CGameClientEventDispatcher::~CGameClientEventDispatcher()
 {
 	for(auto It : mlstListeners)
 	{
@@ -33,7 +33,7 @@ CGameClientEventListener::~CGameClientEventListener()
 	};
 };
 
-void CGameClientEventListener::AddListener(IGameClientEventListener *apListener)
+void CGameClientEventDispatcher::AddListener(IGameClientEventListener *apListener)
 {
 	if(!apListener)
 		return;
@@ -41,7 +41,7 @@ void CGameClientEventListener::AddListener(IGameClientEventListener *apListener)
 	mlstListeners.push_back(apListener);
 };
 
-void CGameClientEventListener::RemoveListener(IGameClientEventListener *apListener)
+void CGameClientEventDispatcher::RemoveListener(IGameClientEventListener *apListener)
 {
 	if(!apListener)
 		return;
@@ -49,7 +49,7 @@ void CGameClientEventListener::RemoveListener(IGameClientEventListener *apListen
 	//mlstListeners.erase(apListener);
 };
 
-bool CGameClientEventListener::ClientConnect(edict_t *pEntity, const char *name, const char *adr, char *sRejectReason[128])
+bool CGameClientEventDispatcher::ClientConnect(edict_t *pEntity, const char *name, const char *adr, char *sRejectReason[128])
 {
 	for(auto It : mlstListeners)
 		if(!It->OnClientConnect(pEntity, name, adr, sRejectReason))
@@ -58,31 +58,31 @@ bool CGameClientEventListener::ClientConnect(edict_t *pEntity, const char *name,
 	return true; // TODO
 };
 
-void CGameClientEventListener::ClientDisconnect(edict_t *pclent)
+void CGameClientEventDispatcher::ClientDisconnect(edict_t *pclent)
 {
 	for(auto It : mlstListeners)
 		It->OnClientDisconnect(pclent);
 };
 
-void CGameClientEventListener::ClientKill(edict_t *pclent)
+void CGameClientEventDispatcher::ClientKill(edict_t *pclent)
 {
 	for(auto It : mlstListeners)
 		It->OnClientKill(pclent);
 };
 
-void CGameClientEventListener::ClientPutInServer(edict_t *pclent)
+void CGameClientEventDispatcher::ClientPutInServer(edict_t *pclent)
 {
 	for(auto It : mlstListeners)
 		It->OnClientPutInServer(pclent);
 };
 
-void CGameClientEventListener::ClientCommand(edict_t *pclent)
+void CGameClientEventDispatcher::ClientCommand(edict_t *pclent)
 {
 	for(auto It : mlstListeners)
 		It->OnClientCommand(pclent);
 };
 
-void CGameClientEventListener::ClientUserInfoChanged(edict_t *pclent, char *userinfo)
+void CGameClientEventDispatcher::ClientUserInfoChanged(edict_t *pclent, char *userinfo)
 {
 	for(auto It : mlstListeners)
 		It->OnClientUserInfoChanged(pclent, userinfo);
