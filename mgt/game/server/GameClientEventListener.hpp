@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "IGameClientEventListener.hpp"
+#include "engine/IGameClientEventListener.hpp"
 
 class CGameClientEventListener final : public IGameClientEventListener
 {
