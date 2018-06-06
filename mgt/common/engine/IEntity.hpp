@@ -34,14 +34,59 @@ interface IEntity
 	///
 	virtual IGameEntity *GetGameEntity() const = 0;
 	
+	//TODO
+	virtual struct entvars_s *GetVars() const = 0;
+	
+	///
+	virtual void SetOrigin(const float *org) = 0;
+	
+	///
+	virtual void SetSize(const float *mins, const float *maxs) = 0;
+	
 	///
 	virtual void SetModel(const char *name) = 0;
 	
 	///
-	virtual void SetSize(float *mins, float *maxs) = 0;
+	virtual void *GetModelPtr() const = 0;
 	
 	///
-	virtual void SetOrigin(float *org) = 0;
+	virtual void GetBonePosition(int nBone, float *vOrigin, float *vAngles) = 0;
+	
+	///
+	virtual void GetAttachment(int nAttachment, float *vOrigin, float *vAngles) = 0;
+	
+	///
+	virtual int GetIllum() const = 0;
+	
+	///
+	virtual void SaveSpawnParms() = 0;
+	
+	///
+	virtual void GetSpawnParms() = 0;
+	
+	///
+	virtual void AnimationAutomove(float fTime) = 0;
+	
+	///
+	virtual void MoveToOrigin(const float *vGoalPos, float fDist, int nMoveType) = 0;
+	
+	///
+	virtual int WalkMove(float yaw, float dist, int nMode) = 0;
+	
+	///
+	virtual void ChangeYaw() = 0;
+	
+	///
+	virtual void ChangePitch() = 0;
+	
+	///
+	virtual int IsOnFloor() const = 0;
+	
+	///
+	virtual int DropToFloor() = 0;
+	
+	//
+	virtual int GetIndex() const = 0;
 	
 	///
 	//virtual void SetName(const char *asName) = 0;

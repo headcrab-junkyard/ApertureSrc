@@ -25,8 +25,19 @@
 
 int SV_ModelIndex(const char *name);
 
-CEntity::CEntity() = default;
+CEntity::CEntity(edict_t *apEdict, IGameEntity *apGameEntity) : e(apEdict), mpGameEntity(apGameEntity)
+{
+	if(mpGameEntity)
+		mpGameEntity->OnSpawn();
+};
+
 CEntity::~CEntity() = default;
+
+void CEntity::Think()
+{
+	if(mpGameEntity)
+		mpGameEntity->OnThink();
+};
 
 /*
 =================
@@ -87,6 +98,118 @@ void CEntity::SetModel(const char *m)
 		SetMinMaxSize(e, mod->mins, mod->maxs, true);
 	else
 		SetMinMaxSize(e, vec3_origin, vec3_origin, true);
+};
+
+/*
+===============
+PF_walkmove
+
+float(float yaw, float dist) walkmove
+===============
+*/
+float CEntity::WalkMove(float yaw, float dist)
+{
+	vec3_t move;
+
+	if(!((int)e->v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM)))
+		return 0;
+
+	yaw = yaw * M_PI * 2 / 360;
+
+	move[0] = cos(yaw) * dist;
+	move[1] = sin(yaw) * dist;
+	move[2] = 0;
+
+	return SV_movestep(e, move, true);
+};
+
+/*
+==============
+PF_changeyaw
+
+This was a major timewaster in progs, so it was converted to C
+==============
+*/
+void CEntity::ChangeYaw(edict_t *ent)
+{
+	float ideal, current, move, speed;
+
+	//ent = PROG_TO_EDICT(gGlobalVariables.self);
+	current = anglemod(ent->v.angles[1]);
+	ideal = ent->v.ideal_yaw;
+	speed = ent->v.yaw_speed;
+
+	if(current == ideal)
+		return;
+	
+	move = ideal - current;
+	
+	if(ideal > current)
+	{
+		if(move >= 180)
+			move = move - 360;
+	}
+	else
+	{
+		if(move <= -180)
+			move = move + 360;
+	};
+	
+	if(move > 0)
+	{
+		if(move > speed)
+			move = speed;
+	}
+	else
+	{
+		if(move < -speed)
+			move = -speed;
+	};
+
+	ent->v.angles[1] = anglemod(current + move);
+};
+
+/*
+==============
+PF_changepitch
+==============
+*/
+void CEntity::ChangePitch()
+{
+	float ideal, current, move, speed;
+
+	current = anglemod(e->v.angles[0]);
+	ideal = e->v.idealpitch;
+	speed = e->v.pitch_speed;
+
+	if(current == ideal)
+		return;
+	
+	move = ideal - current;
+	
+	if(ideal > current)
+	{
+		if(move >= 180)
+			move = move - 360;
+	}
+	else
+	{
+		if(move <= -180)
+			move = move + 360;
+	};
+	
+	if(move > 0)
+	{
+		if(move > speed)
+			move = speed;
+	}
+	else
+	{
+		if(move < -speed)
+			move = -speed;
+	};
+
+	e->v.angles[0] = anglemod(current + move);
 };
 
 void CEntity::SetMinMaxSize(float *min, float *max, qboolean rotate)
@@ -196,52 +319,6 @@ float CEntity::CheckBottom(edict_t *ent)
 };
 
 /*
-==============
-PF_changeyaw
-
-This was a major timewaster in progs, so it was converted to C
-==============
-*/
-void CEntity::ChangeYaw(edict_t *ent)
-{
-	float ideal, current, move, speed;
-
-	//ent = PROG_TO_EDICT(gGlobalVariables.self);
-	current = anglemod(ent->v.angles[1]);
-	ideal = ent->v.ideal_yaw;
-	speed = ent->v.yaw_speed;
-
-	if(current == ideal)
-		return;
-	
-	move = ideal - current;
-	
-	if(ideal > current)
-	{
-		if(move >= 180)
-			move = move - 360;
-	}
-	else
-	{
-		if(move <= -180)
-			move = move + 360;
-	};
-	
-	if(move > 0)
-	{
-		if(move > speed)
-			move = speed;
-	}
-	else
-	{
-		if(move < -speed)
-			move = -speed;
-	};
-
-	ent->v.angles[1] = anglemod(current + move);
-};
-
-/*
 ===============
 PF_droptofloor
 
@@ -268,27 +345,4 @@ int CEntity::DropToFloor(edict_t *ent)
 		ent->v.groundentity = EDICT_TO_PROG(trace.ent);
 		return 1;
 	};
-};
-
-/*
-===============
-PF_walkmove
-
-float(float yaw, float dist) walkmove
-===============
-*/
-float CEntity::WalkMove(edict_t *ent, float yaw, float dist)
-{
-	vec3_t move;
-
-	if(!((int)ent->v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM)))
-		return 0;
-
-	yaw = yaw * M_PI * 2 / 360;
-
-	move[0] = cos(yaw) * dist;
-	move[1] = sin(yaw) * dist;
-	move[2] = 0;
-
-	return SV_movestep(ent, move, true);
 };
