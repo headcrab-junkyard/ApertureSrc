@@ -186,7 +186,7 @@ void CL_KeepaliveMessage ()
 	memcpy (net_message.data, olddata, net_message.cursize);
 
 // check time
-	time = Sys_FloatTime ();
+	time = gpSystem->GetFloatTime ();
 	if (time - lastmsg < 5)
 		return;
 	lastmsg = time;
@@ -413,7 +413,7 @@ void CL_ParseUpdate(int bits)
 	else
 	{
 		if(i > cl.maxclients)
-			Sys_Error("i >= cl.maxclients");
+			gpSystem->Error("i >= cl.maxclients");
 		ent->colormap = cl.scores[i - 1].translations;
 	}
 
@@ -636,7 +636,7 @@ void CL_NewTranslation(int slot)
 	byte *dest, *source;
 
 	if(slot > cl.maxclients)
-		Sys_Error("CL_NewTranslation: slot > cl.maxclients");
+		gpSystem->Error("CL_NewTranslation: slot > cl.maxclients");
 	dest = cl.scores[slot].translations;
 	source = vid.colormap;
 	memcpy(dest, vid.colormap, sizeof(cl.scores[slot].translations));
@@ -825,7 +825,7 @@ void CL_ParseServerMessage()
 		case svc_lightstyle:
 			i = MSG_ReadByte();
 			if(i >= MAX_LIGHTSTYLES)
-				Sys_Error("svc_lightstyle > MAX_LIGHTSTYLES");
+				gpSystem->Error("svc_lightstyle > MAX_LIGHTSTYLES");
 			Q_strcpy(cl_lightstyle[i].map, MSG_ReadString());
 			cl_lightstyle[i].length = Q_strlen(cl_lightstyle[i].map);
 			break;
@@ -920,7 +920,7 @@ void CL_ParseServerMessage()
 		case svc_updatestat:
 			i = MSG_ReadByte();
 			if(i < 0 || i >= MAX_CL_STATS)
-				Sys_Error("svc_updatestat: %i is invalid", i);
+				gpSystem->Error("svc_updatestat: %i is invalid", i);
 			cl.stats[i] = MSG_ReadLong();
 			;
 			break;

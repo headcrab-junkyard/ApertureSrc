@@ -65,7 +65,7 @@ public:
 	void Printf(const char *message, ...);
 	void DPrintf(const char *message, ...);
 
-	void ForwardCmdToServer(const char *cmd) override;
+	void ForwardCmdToServer(const ICmdArgs &apArgs) override;
 
 	void HostEndGame() override;
 	void HostError() override;

@@ -72,7 +72,12 @@ cvar_t skin = { "skin", "", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t topcolor = { "topcolor", "0", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t bottomcolor = { "bottomcolor", "0", FCVAR_ARCHIVE | FCVAR_USERINFO };
 cvar_t rate = { "rate", "2500", FCVAR_ARCHIVE | FCVAR_USERINFO };
-cvar_t noaim = { "noaim", "0", FCVAR_ARCHIVE | FCVAR_USERINFO };
+
+cvar_t cl_dlmax = {"cl_dlmax","80", FCVAR_ARCHIVE | FCVAR_USERINFO};
+cvar_t cl_lc = {"cl_lc","1", FCVAR_ARCHIVE | FCVAR_USERINFO};
+cvar_t cl_lw = {"cl_lw","1", FCVAR_ARCHIVE | FCVAR_USERINFO};
+cvar_t cl_updaterate = {"cl_updaterate","30", FCVAR_ARCHIVE | FCVAR_USERINFO};
+cvar_t cl_autowepswitch = {"_cl_autowepswitch","1", FCVAR_ARCHIVE | FCVAR_USERINFO};
 
 static qboolean allowremotecmd = true; // TODO: purpose?
 
@@ -151,7 +156,7 @@ void CL_SendConnectPacket()
 	if(cls.state != ca_disconnected)
 		return;
 
-	t1 = Sys_FloatTime();
+	t1 = gpSystem->GetFloatTime();
 
 	if(!NET_StringToAdr(cls.servername, &adr))
 	{
@@ -163,7 +168,7 @@ void CL_SendConnectPacket()
 	if(adr.port == 0)
 		adr.port = BigShort(PORT_SERVER);
 
-	t2 = Sys_FloatTime();
+	t2 = gpSystem->GetFloatTime();
 
 	connect_time = realtime + t2 - t1; // for retransmit requests
 
@@ -199,7 +204,7 @@ void CL_CheckForResend()
 	if(connect_time && realtime - connect_time < 5.0)
 		return;
 
-	t1 = Sys_FloatTime();
+	t1 = gpSystem->GetFloatTime();
 	if(!NET_StringToAdr(cls.servername, &adr))
 	{
 		Con_Printf("Bad server address\n");
@@ -209,7 +214,7 @@ void CL_CheckForResend()
 
 	if(adr.port == 0)
 		adr.port = BigShort(27500);
-	t2 = Sys_FloatTime();
+	t2 = gpSystem->GetFloatTime();
 
 	connect_time = realtime + t2 - t1; // for retransmit requests
 

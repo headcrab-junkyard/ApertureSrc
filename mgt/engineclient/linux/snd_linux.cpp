@@ -141,6 +141,7 @@ bool SNDDMA_Init()
 
 	shm->buffer = (unsigned char *)mmap(nullptr, info.fragstotal * info.fragsize, PROT_WRITE, MAP_FILE | MAP_SHARED, audio_fd, 0);
 	if(!shm->buffer || shm->buffer == (unsigned char *)-1)
+	//if (!shm->buffer) // TODO: QW
 	{
 		perror("/dev/dsp");
 		Con_Printf("Could not mmap /dev/dsp\n");

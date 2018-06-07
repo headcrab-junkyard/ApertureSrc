@@ -1,21 +1,21 @@
 /*
-*	This file is part of Magenta Engine
+* This file is part of Magenta Engine
 *
-*	Copyright (C) 1996-1997 Id Software, Inc.
-*	Copyright (C) 2018 BlackPhrase
+* Copyright (C) 1996-1997 Id Software, Inc.
+* Copyright (C) 2018 BlackPhrase
 *
-*	Magenta Engine is free software: you can redistribute it and/or modify
-*	it under the terms of the GNU General Public License as published by
-*	the Free Software Foundation, either version 3 of the License, or
-*	(at your option) any later version.
+* Magenta Engine is free software: you can redistribute it and/or modify
+* it under the terms of the GNU General Public License as published by
+* the Free Software Foundation, either version 3 of the License, or
+* (at your option) any later version.
 *
-*	Magenta Engine is distributed in the hope that it will be useful,
-*	but WITHOUT ANY WARRANTY; without even the implied warranty of
-*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-*	GNU General Public License for more details.
+* Magenta Engine is distributed in the hope that it will be useful,
+* but WITHOUT ANY WARRANTY; without even the implied warranty of
+* MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+* GNU General Public License for more details.
 *
-*	You should have received a copy of the GNU General Public License
-*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
+* You should have received a copy of the GNU General Public License
+* along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /// @file
@@ -57,8 +57,10 @@ typedef struct
 } viddef_t;
 
 extern viddef_t vid; // global video state
+
 extern unsigned short d_8to16table[256];
 extern unsigned d_8to24table[256];
+
 extern void (*vid_menudrawfn)();
 extern void (*vid_menukeyfn)(int key);
 
@@ -80,8 +82,15 @@ void VID_Update(vrect_t *rects);
 // flushes the given rectangles from the view buffer to the screen
 
 int VID_SetMode(int modenum, unsigned char *palette);
-// sets the mode; only used by the Quake engine for resetting to mode 0 (the
+// sets the mode; only used by the engine for resetting to mode 0 (the
 // base mode) on memory allocation failures
 
 void VID_HandlePause(qboolean pause);
 // called only on Win32, when pause happens, so the mouse can be released
+
+//void VID_LockBuffer();
+//void VID_UnlockBuffer();
+
+#ifdef GLQUAKE
+//qboolean VID_Is8bit();
+#endif

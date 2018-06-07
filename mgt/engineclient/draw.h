@@ -23,6 +23,8 @@
 
 #pragma once
 
+//typedef struct qpic_s qpic_t;
+
 extern qpic_t *draw_disc; // also used on sbar
 
 void Draw_Init();

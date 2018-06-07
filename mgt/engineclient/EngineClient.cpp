@@ -34,11 +34,11 @@ Cmd_ForwardToServer
 Sends the entire command line over to the server
 ===================
 */
-void Cmd_ForwardToServer()
+void Cmd_ForwardToServer_f(const ICmdArgs &apArgs)
 {
 	if(cls.state != ca_connected)
 	{
-		Con_Printf("Can't \"%s\", not connected\n", Cmd_Argv(0));
+		Con_Printf("Can't \"%s\", not connected\n", apArgs.GetByIndex(0));
 		return;
 	};
 
@@ -48,14 +48,14 @@ void Cmd_ForwardToServer()
 
 	MSG_WriteByte(&cls.netchan.message, clc_stringcmd);
 
-	if(Q_strcasecmp(Cmd_Argv(0), "cmd") != 0)
+	if(Q_strcasecmp(apArgs.GetByIndex(0), "cmd") != 0)
 	{
-		SZ_Print(&cls.netchan.message, Cmd_Argv(0));
+		SZ_Print(&cls.netchan.message, apArgs.GetByIndex(0));
 		SZ_Print(&cls.netchan.message, " ");
 	};
 
-	if(Cmd_Argc() > 1)
-		SZ_Print(&cls.netchan.message, Cmd_Args());
+	if(apArgs.GetCount() > 1)
+		SZ_Print(&cls.netchan.message, apArgs.ToString());
 	else
 		SZ_Print(&cls.netchan.message, "\n");
 };
@@ -75,7 +75,9 @@ bool CEngineClient::Init(CreateInterfaceFn afnEngineFactory /*, tWinHandle ahWin
 	if(!mpSystem || !mpFileSystem || !mpConsole)
 		return false;
 
+	// TODO: temp to support legacy code
 	gpConsole = mpConsole;
+	gpSystem = mpSystem;
 	
 	cls.state = ca_disconnected;
 
@@ -219,9 +221,9 @@ void CEngineClient::Frame()
 	CDAudio_Update();
 };
 
-void CEngineClient::ForwardCmdToServer(const char *cmd)
+void CEngineClient::ForwardCmdToServer(const ICmdArgs &apArgs)
 {
-	// TODO
+	Cmd_ForwardToServer_f(apArgs);
 };
 
 void CEngineClient::HostEndGame()
@@ -260,7 +262,7 @@ void CEngineClient::LocalInit()
 	//
 	// register our commands
 	//
-	Cmd_AddCommand("cmd", Cmd_ForwardToServer);
+	Cmd_AddCommand("cmd", Cmd_ForwardToServer_f);
 };
 
 /*

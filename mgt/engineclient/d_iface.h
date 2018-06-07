@@ -177,7 +177,7 @@ extern void *acolormap; // FIXME: should go away
 
 //=======================================================================//
 
-// callbacks to Quake
+// callbacks to engine
 
 typedef struct
 {

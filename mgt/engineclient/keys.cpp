@@ -497,14 +497,14 @@ Key_WriteBindings
 Writes lines containing "bind key value"
 ============
 */
-void Key_WriteBindings(FILE *f)
+void Key_WriteBindings(IFile *f)
 {
 	int i;
 
 	for(i = 0; i < 256; i++)
 		if(keybindings[i])
 			if(*keybindings[i])
-				fprintf(f, "bind \"%s\" \"%s\"\n", Key_KeynumToString(i), keybindings[i]);
+				FS_FPrintf(f, "bind \"%s\" \"%s\"\n", Key_KeynumToString(i), keybindings[i]);
 }
 
 /*
@@ -601,10 +601,9 @@ void Key_Event(int key, qboolean down)
 
 	key_lastpress = key;
 	key_count++;
+	
 	if(key_count <= 0)
-	{
 		return; // just catching keys for Con_NotifyBox
-	}
 
 	// update auto-repeat status
 	if(down)
@@ -709,9 +708,7 @@ void Key_Event(int key, qboolean down)
 		return; // other systems only care about key down events
 
 	if(shift_down)
-	{
 		key = keyshift[key];
-	}
 
 	switch(key_dest)
 	{
@@ -729,6 +726,9 @@ void Key_Event(int key, qboolean down)
 	default:
 		Sys_Error("Bad key_dest");
 	}
+	
+	if(!ClientDLL_Key_Event(down, key, keybindings[key]))
+		return; // TODO
 }
 
 /*
