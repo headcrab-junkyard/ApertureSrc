@@ -31,7 +31,8 @@ interface IGameClientEventListener;
 
 interface IGameServer : public IBaseInterface
 {
-	/// @return True if the server is in dedicated mode
+	/// Is this a dedicated server?
+	/// @return true if the server is in dedicated mode
 	virtual bool IsDedicated() const = 0;
 	
 	///
@@ -58,8 +59,11 @@ interface IGameServer : public IBaseInterface
 	*/
 	virtual void BroadcastPrintf(const char *asMsg, ...) = 0;
 	
+	///
+	virtual int RegisterUserMsg(const char *sName, int nSize) = 0;
+	
 	/** Begin the Entity or UserMessage and dispatch to network layer */
-	virtual INetMsg *MessageBegin(int anMsgDest, int anMsgType, const Vector3 &avOrigin, IEntity *apEntity) = 0;
+	virtual INetMsg *MessageBegin(int anMsgDest, int anMsgType, const float *avOrigin, IEntity *apEntity) = 0;
 	
 	/** Begin a message from a server side entity to its client side counterpart (func_breakable glass, e.g.) */
 	//virtual INetMsg *EntityMessageBegin(int anEntIndex, ServerClass *apEntClass, bool abReliable) = 0;
@@ -70,9 +74,6 @@ interface IGameServer : public IBaseInterface
 	/** Finish the Entity or UserMessage and dispatch to network layer */
 	virtual void MessageEnd(INetMsg *apMsg) = 0;
 	
-	///
-	//virtual void WriteEntity(int anValue) = 0;
-	
 	/**
 	* Marks the filename for consistency checking
 	* This should be called after precaching the file
@@ -82,11 +83,11 @@ interface IGameServer : public IBaseInterface
 	
 	/**
 	*/
-	virtual int GetCurrentPlayer() const = 0;
+	virtual int GetCurrentPlayer() const = 0; // TODO: should be removed
 	
 	/**
 	* Create a bot with the given name
 	* @return nullptr if fake client can't be created
 	*/
-	virtual IGameClient *CreateFakeClient(const char *asName, bool abReportFakeClient = true) = 0;
+	virtual IGameClient *CreateFakeClient(const char *asName/*, bool abReportFakeClient = true*/) = 0;
 };

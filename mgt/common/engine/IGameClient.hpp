@@ -40,18 +40,22 @@ interface IGameClient
 	*/
 	virtual int GetUserID() const = 0;
 	
+	/// Useful for logging frags, etc
+	/// @return the server assigned WONid for this player or -1 if error
+	virtual uint GetWONID() const = 0;
+	
 	/// @return Player's authentication ID
 	virtual const char *GetAuthID() const = 0;
 	
 	/// @return Player's network ID as string
-	virtual const char *GetNetworkIDString() const = 0;
+	//virtual const char *GetNetworkIDString() const = 0;
 	
 	/**
 	* Get stats info interface for a client netchannel
 	*
 	* @return
 	*/
-	virtual INetChannelInfo *GetNetInfo() const = 0;
+	//virtual INetChannelInfo *GetNetInfo() const = 0;
 	
 	/**
 	* Get info about player's ping and packet loss
@@ -59,13 +63,12 @@ interface IGameClient
 	* @param
 	* @param
 	*/
-	/*
 	struct TGameClientNetworkStats
 	{
 		int mnPing;
 		int mnPacketLoss;
 	};
-	*/
+	
 	virtual void GetNetworkStats(TGameClientNetworkStats &apStats) = 0;
 	
 	/**
@@ -74,12 +77,12 @@ interface IGameClient
 	* @param
 	* @return
 	*/
-	virtual bool GetInfo(player_info_t *apInfo) const = 0;
+	//virtual bool GetInfo(player_info_t *apInfo) const = 0;
 	
 	/**
 	* Sets a USERINFO client ConVar for a fakeclient
 	*/
-	virtual void SetConVarValue(const char *asConVarName, const char *asValue) = 0;
+	//virtual void SetConVarValue(const char *asConVarName, const char *asValue) = 0;
 	
 	/**
 	* Get a convar keyvalue for s specified client
@@ -87,7 +90,7 @@ interface IGameClient
 	* @param
 	* @return
 	*/
-	virtual const char *GetConVarValue(const char *asName) const = 0;
+	//virtual const char *GetConVarValue(const char *asName) const = 0;
 	
 	/**
 	* Fade out the client's volume level toward silence (or fadePercent)
@@ -114,14 +117,7 @@ interface IGameClient
 	* @param
 	*/
 	//virtual void SetInfo(const char *asKey, const char *asValue) = 0;
-	virtual void SetKeyValue(char *asInfoBuffer, char *asKey, char *asValue) = 0;
-	
-	/**
-	* Returns true if this client has been fully authenticated by Steam
-	*
-	* @return
-	*/
-	virtual bool IsFullyAuthenticated() const = 0;
+	//virtual void SetKeyValue(char *asInfoBuffer, char *asKey, char *asValue) = 0;
 	
 	/**
 	* Change a specified player's "view entity" (i.e., use the view entity position/orientation for rendering the client view)
@@ -143,25 +139,22 @@ interface IGameClient
 	
 	/**
 	*/
-	virtual void RunPlayerMove(const Vector3 &avViewAngles, float afForwardMove, float afSideMove, float afUpMove, unsigned short anButtons, byte anImpulse, byte anMSec) = 0;
-	
-	///
-	virtual int CanSkipPlayer() const = 0;
+	//virtual void RunPlayerMove(const Vector3 &avViewAngles, float afForwardMove, float afSideMove, float afUpMove, unsigned short anButtons, byte anImpulse, byte anMSec) = 0;
 	
 	/**
 	* Print a message to the client console
-	*
-	* @param
-	*/
-	virtual void Printf(const char *asMsg, ...) = 0;
-	
-	/**
 	* Engine callbacks so game dll can print messages to individual clients
 	*
 	* @param
 	* @param
 	*/
-	virtual void Printf(PRINT_TYPE aeType, const char *asMsg, ...) = 0;
+	enum class PrintType : int
+	{
+		Console,
+		Center,
+		Chat
+	};
+	virtual void Printf(PrintType aeType, const char *asMsg, ...) = 0;
 	
 	/**
 	* Issue the specified command to the specified client (mimics that client typing the command at the console)
@@ -175,20 +168,20 @@ interface IGameClient
 	virtual IEntity *GetEntity() const = 0;
 	
 	///
-	virtual INetChannel *GetNetChan() const = 0;
+	//virtual INetChannel *GetNetChan() const = 0;
 	
 	///
-	virtual const char *GetName() const = 0;
-	
-	///
-	virtual const char *GetPhysicsKeyValue(const char *key) = 0;
+	//virtual const char *GetName() const = 0;
 	
 	///
 	virtual void SetPhysicsKeyValue(const char *key, const char *value) = 0;
 	
 	///
-	virtual const char *GetPhysicsInfoString() = 0;
-	//virtual IInfoKeyBuffer *GetPhysicsInfoBuffer() = 0;
+	virtual const char *GetPhysicsKeyValue(const char *key) const = 0;
+	
+	///
+	virtual const char *GetPhysicsInfoString() const = 0;
+	//virtual IInfoKeyBuffer *GetPhysicsInfoBuffer() = 0; // TODO
 	
 	/**
 	* Update client data
