@@ -29,10 +29,10 @@ interface IEntity;
 interface IGameEntity
 {
 	///
-	virtual void SetAbsBox() = 0;
+	//virtual void SetAbsBox() = 0;
 	
 	///
-	virtual void KeyValueData() = 0;
+	//virtual void KeyValueData(KeyValueData *pkvd) = 0;
 	
 	///
 	virtual int OnSpawn() = 0;
@@ -41,13 +41,13 @@ interface IGameEntity
 	virtual void OnThink() = 0;
 	
 	///
-	virtual void OnUse(IGameEntity *apOther) = 0;
+	virtual void OnUse(IEntity *apOther) = 0;
 	
 	///
-	virtual void OnTouch(IGameEntity *apOther) = 0;
+	virtual void OnTouch(IEntity *apOther) = 0;
 	
 	///
-	virtual void OnBlocked(IGameEntity *apOther) = 0;
+	virtual void OnBlocked(IEntity *apOther) = 0;
 	
 	///
 	virtual void OnSave(SAVERESTOREDATA *apSaveRestoreData) = 0;

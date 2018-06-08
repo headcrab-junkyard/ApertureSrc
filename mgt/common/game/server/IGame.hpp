@@ -22,8 +22,8 @@
 
 #pragma once
 
-#include "common/CommonTypes.hpp"
-#include "common/Interface.hpp"
+#include "CommonTypes.hpp"
+#include "Interface.hpp"
 
 constexpr auto MGT_GAME_INTERFACE_VERSION{"MGTGame001Alpha"};
 
@@ -34,7 +34,10 @@ interface IGame : public IBaseInterface
 	*/
 	virtual bool Init(CreateInterfaceFn afnModuleFactory) = 0;
 	
-	/// Shut down the entire game
+	/**
+	* Shut down the entire game
+	* Called once when the module is unloaded
+	*/
 	virtual void Shutdown() = 0;
 	
 	/**
