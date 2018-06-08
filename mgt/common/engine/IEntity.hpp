@@ -85,8 +85,14 @@ interface IEntity
 	///
 	virtual int DropToFloor() = 0;
 	
-	//
+	///
 	virtual int GetIndex() const = 0;
+	
+	///
+	virtual void EmitSound(int nChannel, const char *sSample, float fVolume, float fAttenuation, int nFlags, int nPitch) = 0;
+	
+	///
+	virtual void EmitAmbientSound(float *vPos, const char *sSample, float fVolume, float fAttenuation, int nFlags, int nPitch) = 0;
 	
 	///
 	//virtual void SetName(const char *asName) = 0;
