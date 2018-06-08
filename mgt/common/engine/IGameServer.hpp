@@ -79,7 +79,7 @@ interface IGameServer : public IBaseInterface
 	* This should be called after precaching the file
 	*/
 	virtual void ForceExactFile(const char *asName) = 0;
-	virtual void ForceModelBounds(const char *asName, const Vector3 &avMins, const Vector3 &avMaxs) = 0;
+	virtual void ForceModelBounds(const char *asName, const vec3_t &avMins, const vec3_t &avMaxs) = 0;
 	
 	/**
 	*/
@@ -90,4 +90,10 @@ interface IGameServer : public IBaseInterface
 	* @return nullptr if fake client can't be created
 	*/
 	virtual IGameClient *CreateFakeClient(const char *asName/*, bool abReportFakeClient = true*/) = 0;
+	
+	///
+	virtual IInfoBuffer *GetServerInfo() const = 0; // TODO
+	
+	///
+	virtual IInfoBuffer *GetPhysicsInfo() const = 0; // TODO
 };

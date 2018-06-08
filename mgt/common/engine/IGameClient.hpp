@@ -28,6 +28,29 @@ interface IEntity;
 
 interface IGameClient
 {
+	/**
+	* Print a message to the client console
+	* Engine callbacks so game dll can print messages to individual clients
+	*
+	* @param
+	* @param
+	*/
+	enum class PrintType : int
+	{
+		Console,
+		Center,
+		Chat
+	};
+	virtual void Printf(PrintType aeType, const char *asMsg, ...) = 0;
+	
+	/**
+	* Issue the specified command to the specified client (mimics that client typing the command at the console)
+	*
+	* @param
+	* @param
+	*/
+	virtual void SendCommand(const char *asCmd, ...) = 0;
+	
 	///
 	virtual void Disconnect(const char *asReason, ...) = 0;
 	
@@ -44,7 +67,7 @@ interface IGameClient
 	/// @return the server assigned WONid for this player or -1 if error
 	virtual uint GetWONID() const = 0;
 	
-	/// @return Player's authentication ID
+	/// @return player's authentication ID
 	virtual const char *GetAuthID() const = 0;
 	
 	/// @return Player's network ID as string
@@ -107,7 +130,7 @@ interface IGameClient
 	*
 	* @param
 	*/
-	virtual void SetMaxSpeed(float afSpeed) = 0;
+	virtual void SetMaxSpeed(float afSpeed) = 0; // TODO: pClient->GetEntity()->SetMaxSpeed?
 	
 	/**
 	* Change client's info key value
@@ -116,8 +139,13 @@ interface IGameClient
 	* @param
 	* @param
 	*/
-	//virtual void SetInfo(const char *asKey, const char *asValue) = 0;
-	//virtual void SetKeyValue(char *asInfoBuffer, char *asKey, char *asValue) = 0;
+	//virtual void SetKeyValue(const char *asKey, const char *asValue) = 0; // Was SetClientKeyValue; TODO: SetInfo?
+	
+	///
+	//virtual const char *GetKeyValue(const char *asKey) const = 0;
+	
+	///
+	virtual IInfoBuffer *GetInfo() const = 0;
 	
 	/**
 	* Change a specified player's "view entity" (i.e., use the view entity position/orientation for rendering the client view)
@@ -140,29 +168,6 @@ interface IGameClient
 	/**
 	*/
 	//virtual void RunPlayerMove(const Vector3 &avViewAngles, float afForwardMove, float afSideMove, float afUpMove, unsigned short anButtons, byte anImpulse, byte anMSec) = 0;
-	
-	/**
-	* Print a message to the client console
-	* Engine callbacks so game dll can print messages to individual clients
-	*
-	* @param
-	* @param
-	*/
-	enum class PrintType : int
-	{
-		Console,
-		Center,
-		Chat
-	};
-	virtual void Printf(PrintType aeType, const char *asMsg, ...) = 0;
-	
-	/**
-	* Issue the specified command to the specified client (mimics that client typing the command at the console)
-	*
-	* @param
-	* @param
-	*/
-	virtual void SendCommand(const char *asCmd, ...) = 0;
 	
 	/// @return Pointer to client's entity
 	virtual IEntity *GetEntity() const = 0;
