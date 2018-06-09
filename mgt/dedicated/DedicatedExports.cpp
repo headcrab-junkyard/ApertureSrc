@@ -21,7 +21,7 @@
 
 #include "DedicatedExports.hpp"
 
-EXPOSE_SINGLE_INTERFACE(CDedicatedExports, IDedicatedExports, MGT_DEDICATEDEXPORTS_API_VERSION);
+EXPOSE_SINGLE_INTERFACE(CDedicatedExports, IDedicatedExports, VENGINE_DEDICATEDEXPORTS_API_VERSION);
 
 CDedicatedExports::CDedicatedExports() = default;
 CDedicatedExports::~CDedicatedExports() = default;

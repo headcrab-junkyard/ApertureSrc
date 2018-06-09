@@ -27,9 +27,18 @@
 	#include "win/conproc.h"
 #endif
 
-#include "engine_hlds_api.h"
-
+#include "engine/IEngine.hpp"
 #include "interface.h"
+
+CreateInterfaceFn gfnFSFactory{nullptr};
+
+IBaseInterface *LauncherFactory(const char *name, int *retval)
+{
+	if(!strcmp(name, MGT_FILESYSTEM_INTERFACE_VERSION))
+		return gfnFSFactory;
+	
+	return Sys_GetFactoryThis();
+};
 
 bool InitConsole()
 {
@@ -97,10 +106,10 @@ int RunServer() // void?
 	
 	InitParams.sGameDir = ".";
 	InitParams.sCmdLine = "";
-	InitParams.pLauncherFactory = nullptr;
-	InitParams.pFSFactory = pFSFactory;
+	InitParams.fnLauncherFactory = LauncherFactory;
+	//InitParams.fnFSFactory = pFSFactory;
+	InitParams.bDedicated = true;
 	
-	//char *basedir, char *cmdline, CreateInterfaceFn launcherFactory, CreateInterfaceFn filesystemFactory
 	if(!pEngine->Init(InitParams))
 		return EXIT_FAILURE;
 	
