@@ -75,7 +75,7 @@ bool InitConsole()
 */
 };
 
-int RunServer() // void?
+int RunServer()
 {
 	auto pFSLib{Sys_LoadModule("filesystem_stdio")};
 	
@@ -113,8 +113,10 @@ int RunServer() // void?
 	if(!pEngine->Init(InitParams))
 		return EXIT_FAILURE;
 	
-	while(true)
-		pEngine->Frame();
+	bool bRunning{true};
+	
+	while(bRunning)
+		bRunning = pEngine->Frame();
 	
 	pEngine->Shutdown();
 	
