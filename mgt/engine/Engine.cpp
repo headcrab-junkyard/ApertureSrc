@@ -50,7 +50,7 @@ bool CEngine::Init(const SInitData &apInitParams)
 
 	//mParms. =;
 
-	//parms.memsize = 8*1024*1024;
+	//parms.memsize = 8*1024*1024; // TODO: 5861376 in QW
 	//parms.membase = malloc (parms.memsize);
 	//parms.basedir = ".";
 
@@ -73,46 +73,28 @@ void CEngine::Shutdown()
 	Host_Shutdown();
 };
 
-// TODO
-#ifdef _WIN32
-void SleepUntilInput(int time){
-	//MsgWaitForMultipleObjects(1, &tevent, FALSE, time, QS_ALLINPUT); // TODO
-};
-#endif
-
 bool /*void*/ CEngine::Frame() // TODO
 {
 	static double time, oldtime, newtime;
-
+	
+	if(!isDedicated) // TODO: if gpEngineClient is nullptr then we're in dedicated mode (right???), no need to check for isDedicated
+		if(gpEngineClient)
+			if(!gpEngineClient->PreFrame())
+				return false;
+	
+	newtime = Sys_FloatTime();
+	time = newtime - oldtime;
+	
 	if(isDedicated)
 	{
-		newtime = Sys_FloatTime();
-		time = newtime - oldtime;
-
 		while(time < sys_ticrate.value)
 		{
-			Sys_Sleep();
+			Sys_Sleep(1); // TODO: 1ms?
 			newtime = Sys_FloatTime();
 			time = newtime - oldtime;
-		}
-	}
-	else
-	{
-#ifdef _WIN32
-		// yield the CPU for a little while when paused, minimized, or not the focus
-		//if ((cl.paused && (!ActiveApp && !DDActive)) || Minimized || block_drawing) // TODO
-		{
-			SleepUntilInput(PAUSE_SLEEP);
-			//scr_skipupdate = 1;		// no point in bothering to draw // TODO
-		}
-		//else if (!ActiveApp && !DDActive) // TODO
-		SleepUntilInput(NOT_FOCUS_SLEEP);
-#endif // _WIN32
-
-		newtime = Sys_FloatTime();
-		time = newtime - oldtime;
+		};
 	};
-
+	
 	Host_Frame(time);
 	oldtime = newtime;
 
