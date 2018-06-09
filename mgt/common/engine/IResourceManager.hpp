@@ -1,4 +1,3 @@
-
 /*
  * This file is part of Magenta Engine
  *
@@ -29,11 +28,24 @@ constexpr auto MGT_SERVERRESOURCEMANAGER_INTERFACE_VERSION{"MGTServerResourceMan
 
 interface IResourceManager : public IBaseInterface
 {
+	// MODEL MANAGER
+	
 	///
 	virtual int PrecacheModel(const char *asName) = 0;
 	
 	///
+	virtual model_t *LoadModel(const char *name, int *index) = 0;
+	
+	///
+	virtual model_t *GetModelByIndex(int nIndex) const = 0;
+	
+	//
+	
+	///
 	virtual int PrecacheSound(const char *asName) = 0;
+	
+	///
+	virtual uint GetApproxWavePlayLen(const char *sFilePath) const = 0;
 	
 	///
 	virtual int PrecacheGeneric(const char *asName) = 0;
