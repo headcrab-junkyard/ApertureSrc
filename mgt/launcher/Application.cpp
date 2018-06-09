@@ -32,8 +32,8 @@ int CApplication::Run()
 		if(!Init())
 			return EXIT_FAILURE;
 		
-		if(!mpEngine->Run(nullptr, ".", "", "", nullptr, mfnFSFactory))
-			return EXIT_FAILURE;
+		while(mpEngine->Frame()) // TODO
+			;
 		
 		mbRestart = false; // TODO
 		
@@ -60,9 +60,16 @@ bool CApplication::Init()
 	if(!pEngineFactory)
 		return false;
 	
-	mpEngine = (IEngineAPI*)pEngineFactory(VENGINE_LAUNCHER_API_VERSION, nullptr);
+	mpEngine = (IEngine*)pEngineFactory(MGT_ENGINE_INTERFACE_VERSION, nullptr);
 	
 	if(!mpEngine)
+		return false;
+	
+	IEngine::SInitParams InitParams{};
+	
+	//nullptr, ".", "", "", nullptr, mfnFSFactory
+	
+	if(!mpEngine->Init(InitParams))
 		return false;
 	
 	return PostInit();
@@ -70,7 +77,7 @@ bool CApplication::Init()
 
 void CApplication::Shutdown()
 {
-	// TODO
+	mpEngine->Shutdown();
 };
 
 bool CApplication::LoadFileSystemModule(const char *name)
