@@ -32,8 +32,10 @@ int CApplication::Run()
 		if(!Init())
 			return EXIT_FAILURE;
 		
-		while(mpEngine->Frame()) // TODO
-			;
+		bool bRunning{true};
+		
+		while(bRunning)
+			bRunning = mpEngine->Frame();
 		
 		mbRestart = false; // TODO
 		
