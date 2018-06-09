@@ -18,17 +18,52 @@
 */
 
 /// @file
-/// @brief
 
-#pragma once
+#include "quakedef.h"
+#include "GameUI/IGameConsole.h"
+
+IGameConsole *gpGameConsole{nullptr};
 
 //void GameConsole_Initialize();
 
-void GameConsole_Activate();
-void GameConsole_Hide();
-void GameConsole_Clear();
+void GameConsole_Activate()
+{
+	if(gpGameConsole)
+		gpGameConsole->Activate();
+};
 
-bool GameConsole_IsVisible();
+void GameConsole_Hide()
+{
+	if(gpGameConsole)
+		gpGameConsole->Hide();
+};
 
-void GameConsole_Printf(const char *format, ...);
-void GameConsole_DPrintf(const char *format, ...);
+void GameConsole_Clear()
+{
+	if(gpGameConsole)
+		gpGameConsole->Clear();
+};
+
+bool GameConsole_IsVisible()
+{
+	if(gpGameConsole)
+		return gpGameConsole->IsConsoleVisible();
+	
+	return false;
+};
+
+void GameConsole_Printf(const char *format, ...)
+{
+	// TODO
+	
+	if(gpGameConsole)
+		gpGameConsole->Printf(msg);
+};
+
+void GameConsole_DPrintf(const char *format, ...)
+{
+	// TODO
+	
+	if(gpGameConsole)
+		gpGameConsole->DPrintf(msg);
+};
