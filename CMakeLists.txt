@@ -3,16 +3,16 @@ project(MagentaEngine)
 
 # Version
 set(MGT_VERSION_MAJOR 0)
-set(MGT_VERSION_MINOR 4)
-set(MGT_VERSION_PATCH 6)
+set(MGT_VERSION_MINOR 5)
+set(MGT_VERSION_PATCH 2)
 
 # Build number
 set(MGT_VERSION_BUILD 70)
 
-configure_file(
-	${CMAKE_CURRENT_SOURCE_DIR}/VersionInfo.hpp.in
-	${CMAKE_CURRENT_SOURCE_DIR}/mgt/core/VersionInfo.hpp
-)
+#configure_file(
+#	${CMAKE_CURRENT_SOURCE_DIR}/VersionInfo.hpp.in
+#	${CMAKE_CURRENT_SOURCE_DIR}/mgt/core/VersionInfo.hpp
+#)
 
 # Set CMake binaries output path
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/../bin)
