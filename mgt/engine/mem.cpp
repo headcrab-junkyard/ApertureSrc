@@ -23,7 +23,22 @@
 #include "quakedef.h"
 #include "mem.h"
 
+void *Mem_Alloc(size_t size)
+{
+	return malloc(size);
+};
+
 void *Mem_Calloc(int number, size_t size)
 {
 	return calloc((size_t)number, size);
+};
+
+void *Mem_Realloc(void *ptr, size_t size)
+{
+	return realloc(ptr, size);
+};
+
+void Mem_Free(void *ptr)
+{
+	free(ptr);
 };

@@ -18,9 +18,18 @@
 */
 
 /// @file
-/// @brief
+/// @brief dynamic memory management functions
 
 #pragma once
 
+/// Allocate memory block
+void *Mem_Alloc(size_t size);
+
 /// Allocate number * size bytes and zero it
 void *Mem_Calloc(int number, size_t size);
+
+/// Reallocate memory block
+void *Mem_Realloc(void *ptr, size_t size);
+
+/// Deallocate memory block
+void Mem_Free(void *ptr);
