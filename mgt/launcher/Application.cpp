@@ -20,7 +20,20 @@
 /// @file
 
 #include <stdexcept>
+
 #include "Application.hpp"
+#include "filesystem/IFileSystem.hpp"
+
+CreateInterfaceFn gfnFSFactory{nullptr};
+
+IBaseInterface *LauncherFactory(const char *name, int *retval)
+{
+	if(!strcmp(name, MGT_FILESYSTEM_INTERFACE_VERSION))
+		return gfnFSFactory(name, retval);
+	
+	auto fnThisFactory{Sys_GetFactoryThis()};
+	return fnThisFactory(name, retval);
+};
 
 CApplication::CApplication() = default;
 CApplication::~CApplication() = default;
@@ -67,9 +80,14 @@ bool CApplication::Init()
 	if(!mpEngine)
 		return false;
 	
-	IEngine::SInitParams InitParams{};
+	IEngine::SInitData InitParams{};
 	
-	//nullptr, ".", "", "", nullptr, mfnFSFactory
+	InitParams.sGameDir = ".";
+	InitParams.sCmdLine = "";
+	//InitParams.sPostRestartCmdLine = ""; // TODO
+	InitParams.fnLauncherFactory = LauncherFactory;
+	//InitParams.fnFSFactory = pFSFactory;
+	InitParams.bDedicated = false;
 	
 	if(!mpEngine->Init(InitParams))
 		return false;
@@ -100,5 +118,6 @@ bool CApplication::LoadFileSystemModule(const char *name)
 	if(!mfnFSFactory)
 		return false;
 	
+	gfnFSFactory = mfnFSFactory;
 	return true;
 };

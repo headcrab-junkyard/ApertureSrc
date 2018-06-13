@@ -24,8 +24,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "interface.h"
-#include "engine_launcher_api.h"
+#include "engine/IEngine.hpp"
 
 class CApplication
 {
@@ -45,7 +44,7 @@ private:
 	
 	CreateInterfaceFn mfnFSFactory{nullptr};
 	
-	IEngineAPI *mpEngine{nullptr};
+	IEngine *mpEngine{nullptr};
 	
 	bool mbRestart{false};
 protected:
