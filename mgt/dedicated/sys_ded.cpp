@@ -28,16 +28,17 @@
 #endif
 
 #include "engine/IEngine.hpp"
-#include "interface.h"
+#include "filesystem/IFileSystem.hpp"
 
 CreateInterfaceFn gfnFSFactory{nullptr};
 
 IBaseInterface *LauncherFactory(const char *name, int *retval)
 {
 	if(!strcmp(name, MGT_FILESYSTEM_INTERFACE_VERSION))
-		return gfnFSFactory;
+		return gfnFSFactory(name, retval);
 	
-	return Sys_GetFactoryThis();
+	auto fnThisFactory{Sys_GetFactoryThis()};
+	return fnThisFactory(name, retval);
 };
 
 bool InitConsole()
