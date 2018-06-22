@@ -37,12 +37,16 @@ void CFileSystem::Mount()
 
 void CFileSystem::Unmount()
 {
-	ClearAllSearchPaths();
+	RemoveAllSearchPaths();
 };
 
 void CFileSystem::AddSearchPath(const char *path, const char *alias, bool nowrite)
 {
-	mlstSearchPaths.emplace_back(alias, path, nowrite);
+	//mlstSearchPaths.emplace_back(alias, path, nowrite); // TODO
+};
+
+void CFileSystem::RemoveAllSearchPaths()
+{
 };
 
 IFile *CFileSystem::OpenFile(const char *asName)
@@ -57,15 +61,18 @@ void CFileSystem::CloseFile(IFile *apFile)
 	if(!apFile)
 		return;
 	
-	auto It{mlstOpenHandles.find(apFile)};
+	// TODO
 	
-	if(It)
+	//auto It{mlstOpenHandles.find(apFile)};
+	
+	//if(It)
 	{
-		delete It;
-		mlstOpenHandles.erase(It);
+		//delete It;
+		//mlstOpenHandles.erase(It);
 	};
 };
 
+/*
 int CFileSystem::FileOpen(const char *path, const char *mode)
 {
 	// FS_FileOpenRead
@@ -89,6 +96,7 @@ int CFileSystem::FileOpen(const char *path, const char *mode)
 	*/
 	//
 	
+	/*TODO
 	FILE *f{fopen(path, "wb")};
 	
 	if(!f)
@@ -100,7 +108,9 @@ int CFileSystem::FileOpen(const char *path, const char *mode)
 	
 	return i;
 };
+*/
 
+/*
 void CFileSystem::FileClose(int handle)
 {
 	if(!handle)
@@ -113,6 +123,7 @@ void CFileSystem::FileClose(int handle)
 	close(handle);
 #endif
 };
+*/
 
 void CFileSystem::FileSeek(int handle, int position) // TODO: seek mode
 {
@@ -158,6 +169,11 @@ int CFileSystem::GetFileTime(const char *path) const
 	};
 	
 	return -1;
+};
+
+int CFileSystem::GetFileSize(const char *path) const
+{
+	return 0; //filelength();
 };
 
 int CFileSystem::findhandle()

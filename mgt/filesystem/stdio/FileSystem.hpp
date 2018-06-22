@@ -1,20 +1,21 @@
 /*
- *	This file is part of Magenta Engine
- *	Copyright (C) 2016-2018 BlackPhrase
- *
- *	This program is free software: you can redistribute it and/or modify
- *	it under the terms of the GNU General Public License as published by
- *	the Free Software Foundation, either version 3 of the License, or
- *	(at your option) any later version.
- *
- *	This program is distributed in the hope that it will be useful,
- *	but WITHOUT ANY WARRANTY; without even the implied warranty of
- *	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
- *	GNU General Public License for more details.
- *
- *	You should have received a copy of the GNU General Public License
- *	along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
+*	This file is part of Magenta Engine
+*
+*	Copyright (C) 2016-2018 BlackPhrase
+*
+*	Magenta Engine is free software: you can redistribute it and/or modify
+*	it under the terms of the GNU General Public License as published by
+*	the Free Software Foundation, either version 3 of the License, or
+*	(at your option) any later version.
+*
+*	Magenta Engine is distributed in the hope that it will be useful,
+*	but WITHOUT ANY WARRANTY; without even the implied warranty of
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+*	GNU General Public License for more details.
+*
+*	You should have received a copy of the GNU General Public License
+*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
+*/
 
 /// @file
 /// @brief IFileSystem interface implementation
@@ -69,7 +70,7 @@ public:
 	void AddSearchPath(const char *path, const char *alias, bool bNoWrite) override; // NOTE: alias = pathID
 	//bool RemoveSearchPath(const char *pPath) override;
 	
-	//void RemoveAllSearchPaths() override;
+	void RemoveAllSearchPaths() override;
 	
 	//bool AddPackFile(const char *fullpath, const char *pathID) override;
 	
@@ -89,8 +90,8 @@ public:
 	
 	void CloseFile(IFile *apFile) override;
 	
-	int FileOpen(const char *path, const char *mode) override;
-	void FileClose(int handle) override;
+	//int FileOpen(const char *path, const char *mode) override;
+	//void FileClose(int handle) override;
 	
 	void FileSeek(int handle, int position) override;
 	
@@ -98,9 +99,9 @@ public:
 	int FileWrite(int handle, const void *data, int count) override;
 	
 	/*long*/ int GetFileTime(const char *path) const override;
-	//unsigned int GetFileSize(const char *pFileName) const override;
+	/*unsigned*/ int GetFileSize(const char *pFileName) const override;
 	
-	bool FileExists(const char *pFileName) override;
+	//bool FileExists(const char *pFileName) override;
 	
 	//void CreateDirHierarchy(const char *path, const char *pathID) override;
 	
@@ -119,9 +120,7 @@ public:
 	//void FindClose(FileFindHandle_t handle) override;
 	
 	//WaitForResourcesHandle_t WaitForResources(const char *resourcelist) override;
-	//bool GetWaitForResourcesProgress(WaitForResourcesHandle_t handle,
-	                                 float *progress /* out */,
-	                                 bool *complete /* out */) override;
+	//bool GetWaitForResourcesProgress(WaitForResourcesHandle_t handle, float *progress /* out */, bool *complete /* out */) override;
 	//void CancelWaitForResources(WaitForResourcesHandle_t handle) override;
 private:
 	static constexpr auto MAX_HANDLES{10};

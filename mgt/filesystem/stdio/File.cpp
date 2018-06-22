@@ -18,9 +18,10 @@
 
 /// @file
 
+#include <cassert>
 #include "File.hpp"
 
-CFile::CFile(const char *asName) : msName(asName), mpHandle(fopen(asName))
+CFile::CFile(const char *asName) : msName(asName), mpHandle(fopen(asName, "w+"))
 {
 	assert(mpHandle);
 	
@@ -66,6 +67,11 @@ void CFile::Printf(const char *text, ...)
 		fputs(text, mpHandle);
 };
 
+void CFile::Flush()
+{
+};
+
+/*
 int CFile::Seek(int position) const
 {
 	if(mpHandle)
@@ -73,6 +79,7 @@ int CFile::Seek(int position) const
 
 	return 0;
 };
+*/
 
 int CFile::Tell() const
 {
@@ -80,6 +87,11 @@ int CFile::Tell() const
 		return ftell(mpHandle);
 
 	return 0;
+};
+
+bool CFile::IsEOF() const
+{
+	return feof(mpHandle);
 };
 
 const char *CFile::GetName() const
