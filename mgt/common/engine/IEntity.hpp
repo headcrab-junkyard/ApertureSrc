@@ -29,6 +29,15 @@ interface IGameEntity;
 interface IEntity
 {
 	///
+	//virtual IEntity *GetParent() const = 0;
+	
+	///
+	//virtual void AddChild(IEntity *apChild) = 0;
+	
+	///
+	//virtual void RemoveChild(IEntity *apChild) = 0;
+	
+	///
 	virtual void SetGameEntity(IGameEntity *apGameEntity) = 0;
 	
 	///
@@ -50,7 +59,7 @@ interface IEntity
 	virtual void *GetModelPtr() const = 0;
 	
 	///
-	virtual void GetBonePosition(int nBone, float *vOrigin, float *vAngles) = 0;
+	virtual void GetBonePosition(int nBone, float *vOrigin, float *vAngles) = 0; // TODO: should be part of model
 	
 	///
 	virtual void GetAttachment(int nAttachment, float *vOrigin, float *vAngles) = 0;
@@ -65,7 +74,7 @@ interface IEntity
 	virtual void GetSpawnParms() = 0;
 	
 	///
-	virtual void AnimationAutomove(float fTime) = 0;
+	virtual void AnimationAutomove(float fTime) = 0; // TODO: should be part of model?
 	
 	///
 	virtual void MoveToOrigin(const float *vGoalPos, float fDist, int nMoveType) = 0;
@@ -86,7 +95,7 @@ interface IEntity
 	virtual int DropToFloor() = 0;
 	
 	///
-	virtual int GetIndex() const = 0;
+	virtual int GetIndex() const = 0; // TODO: int -> uint?
 	
 	///
 	virtual void EmitSound(int nChannel, const char *sSample, float fVolume, float fAttenuation, int nFlags, int nPitch) = 0;

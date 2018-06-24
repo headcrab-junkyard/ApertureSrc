@@ -24,6 +24,60 @@
 
 #include "CommonTypes.hpp"
 
+/*
+struct SEntityEvent
+{
+	enum class Type : int
+	{
+		Spawn,
+		Spawn_Post,
+		Think,
+		Think_Post,
+		Use,
+		Use_Post,
+		Touch,
+		Touch_Post,
+		Blocked,
+		Blocked_Post,
+		Save,
+		Save_Post,
+		Restore,
+		Restore_Post,
+		//FreePrivateData,
+		//FreePrivateData_Post
+	};
+	
+	Type meType{};
+	IEntity *mpEntity{nullptr};
+};
+
+struct SEntityUseEvent : SEntityEvent
+{
+	IEntity *mpUser{nullptr};
+};
+
+struct SEntityTouchEvent : SEntityEvent
+{
+	IEntity *mpOther{nullptr};
+};
+
+struct SEntityBlockedEvent : SEntityEvent
+{
+	IEntity *mpOther{nullptr};
+};
+
+struct SEntitySaveEvent : SEntityEvent
+{
+	SAVERESTOREDATA *mpData{nullptr};
+};
+
+struct SEntityRestoreEvent : SEntityEvent
+{
+	SAVERESTOREDATA *mpData{nullptr};
+	int mnGlobalEntity{0};
+};
+*/
+
 interface IEntityEventListener
 {
 	///
@@ -48,7 +102,7 @@ interface IEntityEventListener
 	virtual void OnEntitySave(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData, bool abPost) = 0;
 	
 	///
-	virtual int OnEntityRestore(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData, int nGlobalentity, bool abPost) = 0;
+	virtual int OnEntityRestore(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData, int nGlobalEntity, bool abPost) = 0;
 	
 	///
 	virtual void OnFreeEntPrivateData(edict_t *pent, bool abPost) = 0;
