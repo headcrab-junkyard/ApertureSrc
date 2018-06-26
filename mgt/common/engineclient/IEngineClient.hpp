@@ -27,14 +27,49 @@
 
 constexpr auto MGT_ENGINECLIENT_INTERFACE_VERSION{"MGTEngineClient001Alpha"};
 
+interface ICmdArgs;
+
 interface IEngineClient : public IBaseInterface
 {
 	///
-	virtual bool Init(CreateInterfaceFn afnEngineFactory, tWinHandle ahWindow = 0) = 0;
+	virtual bool Init(CreateInterfaceFn afnEngineFactory/*, tWinHandle ahWindow = 0*/) = 0;
 	
 	///
 	virtual void Shutdown() = 0;
 	
 	///
+	virtual void ClearMemory() = 0;
+	
+	///
+	virtual bool FilterTime(double frametime) const = 0;
+	
+	/// This allows to do something before the engine frame
+	/// Returning false will prevent the engine from running the frame
+	virtual bool PreFrame() = 0; // TODO: FrameBegin?
+	
+	///
 	virtual void Frame() = 0;
+	
+	///
+	//virtual void PostFrame() = 0;
+	
+	///
+	virtual void ForwardCmdToServer(const ICmdArgs &apArgs) = 0;
+	
+	// TEMP CRAP
+	
+	/// Host ends the game
+	virtual void HostEndGame() = 0;
+	
+	///
+	virtual void HostError() = 0;
+	
+	///
+	virtual void HostServerShutdown() = 0;
+	
+	///
+	virtual void ConInit() = 0;
+	
+	///
+	virtual void ConPrint(const char *msg) = 0;
 };

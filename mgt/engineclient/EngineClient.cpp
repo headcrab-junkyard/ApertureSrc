@@ -24,8 +24,20 @@
 #include "EngineClient.hpp"
 #include "r_local.h"
 
+#define PAUSE_SLEEP 50     ///< sleep time on pause or minimization (in ms)
+#define NOT_FOCUS_SLEEP 20 ///< sleep time when not focus (in ms)
+
 extern void Con_Init();
 extern void Con_Print(const char *msg);
+
+#ifdef _WIN32
+bool ActiveApp{true}, Minimized{false};
+
+void SleepUntilInput(int time)
+{
+	//MsgWaitForMultipleObjects(1, &tevent, FALSE, time, QS_ALLINPUT); // TODO
+};
+#endif
 
 /*
 ===================
@@ -121,6 +133,8 @@ bool CEngineClient::Init(CreateInterfaceFn afnEngineFactory /*, tWinHandle ahWin
 	IN_Init();
 #endif
 
+	R_InitTextures();
+	
 	// GUI should be initialized before the client dll start to use it
 	VGui_Startup();
 
@@ -158,6 +172,33 @@ void CEngineClient::ClearMemory()
 
 	cls.signon = 0;
 	memset(&cl, 0, sizeof(cl));
+};
+
+bool CEngineClient::FilterTime(double frametime) const
+{
+	//inline float GetTimeStep(float fps){return 1.0/fps;}
+	if(!cls.timedemo && frametime < 1.0 / 72.0) // TODO: use "fps_max" cvar value here
+		return false; // framerate is too high
+	
+	return true;
+};
+
+bool CEngineClient::PreFrame()
+{
+	// TODO
+
+#ifdef _WIN32
+	// yield the CPU for a little while when paused, minimized, or not the focus
+	if((cl.paused && (!ActiveApp && !DDActive)) || Minimized || block_drawing)
+	{
+		SleepUntilInput(PAUSE_SLEEP);
+		scr_skipupdate = 1; // no point in bothering to draw
+	}
+	else if(!ActiveApp && !DDActive)
+		SleepUntilInput(NOT_FOCUS_SLEEP);
+#endif // _WIN32
+	
+	return true;
 };
 
 void CEngineClient::Frame()
@@ -236,6 +277,8 @@ void CEngineClient::HostEndGame()
 
 void CEngineClient::HostError()
 {
+	SCR_EndLoadingPlaque(); // reenable screen updates
+	
 	CL_Disconnect();
 	cls.demonum = -1;
 };

@@ -52,7 +52,9 @@ public:
 
 	void ClearMemory() override;
 
-	//void PreFrame();
+	bool FilterTime(double frametime) const override;
+	
+	bool PreFrame() override;
 	//void PostFrame();
 
 	void Frame() override;
