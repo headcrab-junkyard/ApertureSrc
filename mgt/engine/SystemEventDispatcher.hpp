@@ -22,6 +22,7 @@
 #pragma once
 
 #include <list>
+#include "CommonTypes.hpp"
 
 interface ISystemEventListener;
 using tSystemEventListenerList = std::list<ISystemEventListener*>;
@@ -35,7 +36,7 @@ public:
 	void AddListener(ISystemEventListener *apListener);
 	void RemoveListener(ISystemEventListener *apListener);
 	
-	void OnError(const char *asMsg); // TODO: DispatchError?
+	void DispatchError(const char *asMsg);
 private:
 	tSystemEventListenerList mlstListeners;
 };

@@ -49,8 +49,12 @@ void CSystemEventDispatcher::RemoveListener(ISystemEventListener *apListener)
 	//mlstListeners.erase(apListener);
 };
 
-void CSystemEventDispatcher::OnError(const char *msg)
+void CSystemEventDispatcher::DispatchError(const char *msg)
 {
+	// TODO: Pre
+	
 	for(auto It : mlstListeners)
 		It->OnError(msg);
+	
+	// TODO: Post
 };
