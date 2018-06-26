@@ -22,7 +22,13 @@
 #include "GameClientEventDispatcher.hpp"
 #include "engine/IGameClientEventListener.hpp"
 
-CGameClientEventDispatcher::CGameClientEventDispatcher() = default;
+// TODO: temp
+CGameClientEventDispatcher *gpGameClientEventDispatcher{nullptr};
+
+CGameClientEventDispatcher::CGameClientEventDispatcher() //= default;
+{
+	gpGameClientEventDispatcher = this; // TODO
+};
 
 CGameClientEventDispatcher::~CGameClientEventDispatcher()
 {
@@ -49,41 +55,65 @@ void CGameClientEventDispatcher::RemoveListener(IGameClientEventListener *apList
 	//mlstListeners.erase(apListener);
 };
 
-bool CGameClientEventDispatcher::ClientConnect(edict_t *pEntity, const char *name, const char *adr, char *sRejectReason[128])
+bool CGameClientEventDispatcher::DispatchConnect(edict_t *pEntity, const char *name, const char *adr, char *sRejectReason[128])
 {
+	// TODO: Pre
+	
 	for(auto It : mlstListeners)
 		if(!It->OnClientConnect(pEntity, name, adr, sRejectReason))
 			return false;
 	
+	// TODO: Post
+	
 	return true; // TODO
 };
 
-void CGameClientEventDispatcher::ClientDisconnect(edict_t *pclent)
+void CGameClientEventDispatcher::DispatchDisconnect(edict_t *pclent)
 {
+	// TODO: Pre
+	
 	for(auto It : mlstListeners)
 		It->OnClientDisconnect(pclent);
+	
+	// TODO: Post
 };
 
-void CGameClientEventDispatcher::ClientKill(edict_t *pclent)
+void CGameClientEventDispatcher::DispatchKill(edict_t *pclent)
 {
+	// TODO: Pre
+	
 	for(auto It : mlstListeners)
 		It->OnClientKill(pclent);
+	
+	// TODO: Post
 };
 
-void CGameClientEventDispatcher::ClientPutInServer(edict_t *pclent)
+void CGameClientEventDispatcher::DispatchPutInServer(edict_t *pclent)
 {
+	// TODO: Pre
+	
 	for(auto It : mlstListeners)
 		It->OnClientPutInServer(pclent);
+	
+	// TODO: Post
 };
 
-void CGameClientEventDispatcher::ClientCommand(edict_t *pclent)
+void CGameClientEventDispatcher::DispatchCommand(edict_t *pclent)
 {
+	// TODO: Pre
+	
 	for(auto It : mlstListeners)
 		It->OnClientCommand(pclent);
+	
+	// TODO: Post
 };
 
-void CGameClientEventDispatcher::ClientUserInfoChanged(edict_t *pclent, char *userinfo)
+void CGameClientEventDispatcher::DispatchUserInfoChange(edict_t *pclent, char *userinfo)
 {
+	// TODO: Pre
+	
 	for(auto It : mlstListeners)
 		It->OnClientUserInfoChanged(pclent, userinfo);
+	
+	// TODO: Post
 };
