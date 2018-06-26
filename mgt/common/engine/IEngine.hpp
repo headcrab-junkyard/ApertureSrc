@@ -1,20 +1,20 @@
 /*
-*	This file is part of Magenta Engine
-*
-*	Copyright (C) 2015-2018 BlackPhrase
-*
-*	Magenta Engine is free software: you can redistribute it and/or modify
-*	it under the terms of the GNU General Public License as published by
-*	the Free Software Foundation, either version 3 of the License, or
-*	(at your option) any later version.
-*
-*	Magenta Engine is distributed in the hope that it will be useful,
-*	but WITHOUT ANY WARRANTY; without even the implied warranty of
-*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-*	GNU General Public License for more details.
-*
-*	You should have received a copy of the GNU General Public License
-*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of Magenta Engine
+ *
+ * Copyright (C) 2015-2018 BlackPhrase
+ *
+ * Magenta Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Magenta Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /// @file
@@ -33,10 +33,15 @@ interface IEngine : public IBaseInterface
 	{
 		CreateInterfaceFn fnLauncherFactory{nullptr}; ///< Factory function from launcher module to get interfaces from it
 		
-		const char *sGameFolder{""};	///< Game folder to load resources and game module from
+		const char *sGameDir{""};	///< Game folder to load resources and game module from (TODO: basedir?)
 		const char *sCmdLine{""};		///< Passed command line
 		
+		char *sPostRestartCmdLine{nullptr};
+		
 		bool bDedicated{false}; ///< Set to true to run in dedicated mode
+		
+		//void *pWindowPtr{nullptr}; ///< Custom window pointer
+		//bool bEditorMode{false}; ///< Initialize in editor mode
 	};
 	
 	/**

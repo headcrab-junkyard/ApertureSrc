@@ -1,40 +1,34 @@
 /*
-*	This file is part of Magenta Engine
-*
-*	Copyright (C) 1996-1997 Id Software, Inc.
-*	Copyright (C) 2018 BlackPhrase
-*
-*	Magenta Engine is free software: you can redistribute it and/or modify
-*	it under the terms of the GNU General Public License as published by
-*	the Free Software Foundation, either version 3 of the License, or
-*	(at your option) any later version.
-*
-*	Magenta Engine is distributed in the hope that it will be useful,
-*	but WITHOUT ANY WARRANTY; without even the implied warranty of
-*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-*	GNU General Public License for more details.
-*
-*	You should have received a copy of the GNU General Public License
-*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of Magenta Engine
+ *
+ * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 2018 BlackPhrase
+ *
+ * Magenta Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Magenta Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /// @file
-/// @brief
 
 #include "quakedef.h"
 #include "Engine.hpp"
 
 // TODO: temp
-#define PAUSE_SLEEP 50     // sleep time on pause or minimization
-#define NOT_FOCUS_SLEEP 20 // sleep time when not focus
+#include "engineclient/IEngineClient.hpp"
+extern IEngineClient *gpEngineClient;
 
 //static CEngine gEngine; // g_Engine
 //IEngine *gpEngine = &gEngine; // eng
-
-// TODO
-#ifdef _WIN32
-qboolean ActiveApp, Minimized;
-#endif
 
 EXPOSE_SINGLE_INTERFACE(CEngine, IEngine, MGT_ENGINE_INTERFACE_VERSION);
 
@@ -73,29 +67,27 @@ void CEngine::Shutdown()
 	Host_Shutdown();
 };
 
-bool /*void*/ CEngine::Frame() // TODO
+bool CEngine::Frame()
 {
-	static double time, oldtime, newtime;
-	
 	if(!isDedicated) // TODO: if gpEngineClient is nullptr then we're in dedicated mode (right???), no need to check for isDedicated
 		if(gpEngineClient)
 			if(!gpEngineClient->PreFrame())
-				return false;
+				return true; // TODO: returning true here because false will cause it to shutdown
 	
 	newtime = Sys_FloatTime();
-	time = newtime - oldtime;
+	frametime = newtime - oldtime;
 	
 	if(isDedicated)
 	{
-		while(time < sys_ticrate.value)
+		while(frametime < sys_ticrate.value)
 		{
-			Sys_Sleep(1); // TODO: 1ms?
+			Sys_Sleep(); // TODO: 1ms?
 			newtime = Sys_FloatTime();
-			time = newtime - oldtime;
+			frametime = newtime - oldtime;
 		};
 	};
 	
-	Host_Frame(time);
+	Host_Frame(frametime);
 	oldtime = newtime;
 
 	return true;
