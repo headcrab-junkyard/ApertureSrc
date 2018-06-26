@@ -22,10 +22,16 @@
 #pragma once
 
 #include <list>
+#include "CommonTypes.hpp"
 //#include "engine/IEntityEventDispatcher.hpp"
 
 interface IEntityEventListener;
 using tEntityEventListenerList = std::list<IEntityEventListener*>;
+
+// TODO: temp
+struct SAVERESTOREDATA
+{
+};
 
 class CEntityEventDispatcher final
 {
@@ -36,16 +42,16 @@ public:
 	void AddListener(IEntityEventListener *apListener);
 	void RemoveListener(IEntityEventListener *apListener);
 	
-	int EntitySpawn(edict_t *pent);
-	void EntityThink(edict_t *pent);
-	void EntityUse(edict_t *pent, edict_t *pother);
-	void EntityTouch(edict_t *pent, edict_t *pother);
-	void EntityBlocked(edict_t *pent, edict_t *pother);
+	int DispatchSpawn(edict_t *pent);
+	void DispatchThink(edict_t *pent);
+	void DispatchUse(edict_t *pent, edict_t *pother);
+	void DispatchTouch(edict_t *pent, edict_t *pother);
+	void DispatchBlocked(edict_t *pent, edict_t *pother);
 	
-	void EntitySave(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData);
-	int EntityRestore(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData, int globalentity);
+	void DispatchSave(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData);
+	int DispatchRestore(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData, int globalentity);
 	
-	void EntityFreePrivateData(edict_t *pent);
+	void DispatchFreePrivateData(edict_t *pent);
 private:
 	tEntityEventListenerList mlstListeners;
 };

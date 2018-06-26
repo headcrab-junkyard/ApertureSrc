@@ -84,26 +84,26 @@ interface IEntityEventListener
 	virtual void Release() = 0;
 	
 	///
-	virtual int OnEntitySpawn(edict_t *pent, bool abPost) = 0;
+	virtual int OnEntitySpawn(edict_t *pent/*, bool abPost*/) = 0;
 	
 	///
-	virtual void OnEntityThink(edict_t *pent, bool abPost) = 0;
+	virtual void OnEntityThink(edict_t *pent/*, bool abPost*/) = 0;
 	
 	///
-	virtual void OnEntityUse(edict_t *pent, edict_t *pother, bool abPost) = 0;
+	virtual void OnEntityUse(edict_t *pent, edict_t *pother/*, bool abPost*/) = 0;
 	
 	///
-	virtual void OnEntityTouch(edict_t *pent, edict_t *pother, bool abPost) = 0;
+	virtual void OnEntityTouch(edict_t *pent, edict_t *pother/*, bool abPost*/) = 0;
 	
 	///
-	virtual void OnEntityBlocked(edict_t *pent, edict_t *pother, bool abPost) = 0;
+	virtual void OnEntityBlocked(edict_t *pent, edict_t *pother/*, bool abPost*/) = 0;
 	
 	///
-	virtual void OnEntitySave(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData, bool abPost) = 0;
+	virtual void OnEntitySave(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData/*, bool abPost*/) = 0;
 	
 	///
-	virtual int OnEntityRestore(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData, int nGlobalEntity, bool abPost) = 0;
+	virtual int OnEntityRestore(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData, int nGlobalEntity/*, bool abPost*/) = 0;
 	
 	///
-	virtual void OnFreeEntPrivateData(edict_t *pent, bool abPost) = 0;
+	virtual void OnFreeEntPrivateData(edict_t *pent/*, bool abPost*/) = 0;
 };
