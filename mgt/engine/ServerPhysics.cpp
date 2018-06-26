@@ -19,9 +19,15 @@
 */
 
 /// @file
-/// @brief
 
 #include "quakedef.h"
+
+// TODO: temp
+#include "EntityEventDispatcher.hpp"
+extern CEntityEventDispatcher *gpEntityEventDispatcher;
+
+#include "game/server/IGame.hpp"
+extern IGame *gpGame;
 
 /*
 
@@ -138,9 +144,7 @@ qboolean SV_RunThink(edict_t *ent)
 	                         // by a trigger with a local time.
 	ent->v.nextthink = 0;
 	gGlobalVariables.time = thinktime;
-	gGlobalVariables.self = EDICT_TO_PROG(ent);
-	gGlobalVariables.other = EDICT_TO_PROG(sv.edicts);
-	gEntityInterface.pfnThink(ent);
+	gpEntityEventDispatcher->DispatchThink(ent);
 	return !ent->free;
 }
 
@@ -153,28 +157,13 @@ Two entities have touched, so run their touch functions
 */
 void SV_Impact(edict_t *e1, edict_t *e2)
 {
-	//int		old_self, old_other;
-
-	//old_self = gGlobalVariables.self;
-	//old_other = gGlobalVariables.other;
-
 	gGlobalVariables.time = sv.time;
+	
 	if(/*e1->v.touch &&*/ e1->v.solid != SOLID_NOT) // TODO
-	{
-		//gGlobalVariables.self = EDICT_TO_PROG(e1);
-		//gGlobalVariables.other = EDICT_TO_PROG(e2);
-		gEntityInterface.pfnTouch(e1, e2);
-	}
+		gpEntityEventDispatcher->DispatchTouch(e1, e2);
 
 	if(/*e2->v.touch &&*/ e2->v.solid != SOLID_NOT) // TODO
-	{
-		//gGlobalVariables.self = EDICT_TO_PROG(e2);
-		//gGlobalVariables.other = EDICT_TO_PROG(e1);
-		gEntityInterface.pfnTouch(e2, e1);
-	}
-
-	//gGlobalVariables.self = old_self;
-	//gGlobalVariables.other = old_other;
+		gpEntityEventDispatcher->DispatchTouch(e2, e1);
 }
 
 /*
@@ -470,7 +459,12 @@ void SV_PushMove(edict_t *pusher, float movetime)
 		// if the entity is standing on the pusher, it will definately be moved
 		if(!(((int)check->v.flags & FL_ONGROUND) && PROG_TO_EDICT(check->v.groundentity) == pusher))
 		{
-			if(check->v.absmin[0] >= maxs[0] || check->v.absmin[1] >= maxs[1] || check->v.absmin[2] >= maxs[2] || check->v.absmax[0] <= mins[0] || check->v.absmax[1] <= mins[1] || check->v.absmax[2] <= mins[2])
+			if(check->v.absmin[0] >= maxs[0]
+			|| check->v.absmin[1] >= maxs[1]
+			|| check->v.absmin[2] >= maxs[2]
+			|| check->v.absmax[0] <= mins[0]
+			|| check->v.absmax[1] <= mins[1]
+			|| check->v.absmax[2] <= mins[2])
 				continue;
 
 			// see if the ent's bbox is inside the pusher's final position
@@ -514,12 +508,7 @@ void SV_PushMove(edict_t *pusher, float movetime)
 
 			// if the pusher has a "blocked" function, call it
 			// otherwise, just stay in place until the obstacle is gone
-			if(gEntityInterface.pfnBlocked)
-			{
-				//gGlobalVariables.self = EDICT_TO_PROG(pusher);
-				//gGlobalVariables.other = EDICT_TO_PROG(check);
-				gEntityInterface.pfnBlocked(pusher, check);
-			}
+			gpEntityEventDispatcher->DispatchBlocked(pusher, check);
 
 			// move back any entities we already moved
 			for(i = 0; i < num_moved; i++)
@@ -578,13 +567,22 @@ void SV_PushRotate(edict_t *pusher, float movetime)
 	{
 		if(check->free)
 			continue;
-		if(check->v.movetype == MOVETYPE_PUSH || check->v.movetype == MOVETYPE_NONE || check->v.movetype == MOVETYPE_FOLLOW || check->v.movetype == MOVETYPE_NOCLIP)
+		if(check->v.movetype == MOVETYPE_PUSH
+		|| check->v.movetype == MOVETYPE_NONE
+		|| check->v.movetype == MOVETYPE_FOLLOW
+		|| check->v.movetype == MOVETYPE_NOCLIP)
 			continue;
 
 		// if the entity is standing on the pusher, it will definately be moved
-		if(!(((int)check->v.flags & FL_ONGROUND) && PROG_TO_EDICT(check->v.groundentity) == pusher))
+		if(!(((int)check->v.flags & FL_ONGROUND)
+		&& PROG_TO_EDICT(check->v.groundentity) == pusher))
 		{
-			if(check->v.absmin[0] >= pusher->v.absmax[0] || check->v.absmin[1] >= pusher->v.absmax[1] || check->v.absmin[2] >= pusher->v.absmax[2] || check->v.absmax[0] <= pusher->v.absmin[0] || check->v.absmax[1] <= pusher->v.absmin[1] || check->v.absmax[2] <= pusher->v.absmin[2])
+			if(check->v.absmin[0] >= pusher->v.absmax[0]
+			|| check->v.absmin[1] >= pusher->v.absmax[1]
+			|| check->v.absmin[2] >= pusher->v.absmax[2]
+			|| check->v.absmax[0] <= pusher->v.absmin[0]
+			|| check->v.absmax[1] <= pusher->v.absmin[1]
+			|| check->v.absmax[2] <= pusher->v.absmin[2])
 				continue;
 
 			// see if the ent's bbox is inside the pusher's final position
@@ -635,9 +633,7 @@ void SV_PushRotate(edict_t *pusher, float movetime)
 
 			// if the pusher has a "blocked" function, call it
 			// otherwise, just stay in place until the obstacle is gone
-			//gGlobalVariables.self = EDICT_TO_PROG(pusher);
-			//gGlobalVariables.other = EDICT_TO_PROG(check);
-			gEntityInterface.pfnBlocked(pusher, check);
+			gpEntityEventDispatcher->DispatchBlocked(pusher, check);
 
 			// move back any entities we already moved
 			for(i = 0; i < num_moved; i++)
@@ -694,9 +690,7 @@ void SV_Physics_Pusher(edict_t *ent)
 	{
 		ent->v.nextthink = 0;
 		gGlobalVariables.time = sv.time;
-		gGlobalVariables.self = EDICT_TO_PROG(ent);
-		gGlobalVariables.other = EDICT_TO_PROG(sv.edicts);
-		gEntityInterface.pfnThink(ent);
+		gpEntityEventDispatcher->DispatchThink(ent);
 		if(ent->free)
 			return;
 	}
@@ -1044,8 +1038,7 @@ void SV_Physics_Client(edict_t *ent, int num)
 	// call standard client pre-think
 	//
 	gGlobalVariables.time = sv.time;
-	//gGlobalVariables.self = EDICT_TO_PROG(ent);
-	gEntityInterface.pfnPlayerPreThink(ent);
+	//gpGameClientEventDispatcher->PlayerPreThink(ent); // TODO
 
 	//
 	// do a move
@@ -1105,8 +1098,7 @@ void SV_Physics_Client(edict_t *ent, int num)
 	SV_LinkEdict(ent, true);
 
 	gGlobalVariables.time = sv.time;
-	//gGlobalVariables.self = EDICT_TO_PROG(ent);
-	gEntityInterface.pfnPlayerPostThink(ent);
+	//gEntityInterface.pfnPlayerPostThink(ent); // TODO
 }
 
 //============================================================================
@@ -1483,11 +1475,9 @@ void SV_Physics()
 	int i;
 	edict_t *ent;
 
-	// let the progs know that a new frame has started
-	gGlobalVariables.self = EDICT_TO_PROG(sv.edicts);
-	gGlobalVariables.other = EDICT_TO_PROG(sv.edicts);
+	// let the game know that a new frame has started
 	gGlobalVariables.time = sv.time;
-	gEntityInterface.pfnStartFrame();
+	gpGame->StartFrame();
 
 	//SV_CheckAllEnts ();
 
