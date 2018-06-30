@@ -36,7 +36,7 @@ public:
 	void AddListener(IInputEventListener *apListener);
 	void RemoveListener(IInputEventListener *apListener);
 	
-	void KeyDown(int anKey, bool abDown);
+	void KeyEvent(int anKey, bool abDown);
 private:
-	tInputEventListenerList mlstListners;
+	tInputEventListenerList mlstListeners;
 };
