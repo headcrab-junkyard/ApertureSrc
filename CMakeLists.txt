@@ -26,7 +26,7 @@ set(MGT_HLSDK_PATH
 )
 
 # Define available options
-option(MGT_DEDICATED_ONLY "Build only dedicated server" OFF)
+option(MGT_DEDICATED "Build only dedicated server" OFF)
 option(MGT_NDK_BUILD_SAMPLES "Build engine samples" OFF)
 
 # Set C++ language standard
