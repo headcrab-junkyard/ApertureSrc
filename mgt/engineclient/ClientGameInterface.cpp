@@ -47,7 +47,7 @@ bool LoadClientDLL()
 	if(!fnClientDLLFactory)
 		return false;
 
-	gpClientGame = fnClientDLLFactory(MGT_CLIENTAME_INTERFACE_VERSION, nullptr);
+	gpClientGame = fnClientDLLFactory(MGT_CLIENTGAME_INTERFACE_VERSION, nullptr);
 
 	if(!gpClientGame->Init(Sys_GetFactoryThis(), &gEngFuncs)) // TODO: So.... Are you alive?
 		return false;

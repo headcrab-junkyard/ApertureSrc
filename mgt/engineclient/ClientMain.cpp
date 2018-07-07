@@ -86,13 +86,13 @@ client_state_t cl;
 
 // FIXME: put these on hunk?
 efrag_t cl_efrags[MAX_EFRAGS];
-entity_t cl_entities[MAX_EDICTS]; // TODO: dynamic-sized
-entity_t cl_static_entities[MAX_STATIC_ENTITIES];
+cl_entity_t cl_entities[MAX_EDICTS]; // TODO: dynamic-sized
+cl_entity_t cl_static_entities[MAX_STATIC_ENTITIES];
 lightstyle_t cl_lightstyle[MAX_LIGHTSTYLES];
 dlight_t cl_dlights[MAX_DLIGHTS];
 
 int cl_numvisedicts;
-entity_t *cl_visedicts[MAX_VISEDICTS];
+cl_entity_t *cl_visedicts[MAX_VISEDICTS];
 
 // TODO: cls.connect_time?
 double connect_time = -1; // for connection retransmits
@@ -440,7 +440,7 @@ CL_PrintEntities_f
 */
 void CL_PrintEntities_f()
 {
-	entity_t *ent;
+	cl_entity_t *ent;
 	int i;
 
 	for(i = 0, ent = cl_entities; i < cl.num_entities; i++, ent++)
@@ -628,7 +628,7 @@ CL_RelinkEntities
 */
 void CL_RelinkEntities()
 {
-	entity_t *ent;
+	cl_entity_t *ent;
 	int i, j;
 	float frac, f, d;
 	vec3_t delta;

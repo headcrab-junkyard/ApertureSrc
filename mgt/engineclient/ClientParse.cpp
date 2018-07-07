@@ -78,7 +78,7 @@ CL_EntityNum
 This error checks and tracks the total number of entities
 ===============
 */
-entity_t *CL_EntityNum(int num)
+cl_entity_t *CL_EntityNum(int num)
 {
 	if(num >= cl.num_entities)
 	{
@@ -335,7 +335,7 @@ void CL_ParseUpdate(int bits)
 	model_t *model;
 	int modnum;
 	qboolean forcelink;
-	entity_t *ent;
+	cl_entity_t *ent;
 	int num;
 	int skin;
 
@@ -491,7 +491,7 @@ void CL_ParseUpdate(int bits)
 CL_ParseBaseline
 ==================
 */
-void CL_ParseBaseline(entity_t *ent)
+void CL_ParseBaseline(cl_entity_t *ent)
 {
 	int i;
 
@@ -669,7 +669,7 @@ CL_ParseStatic
 */
 void CL_ParseStatic()
 {
-	entity_t *ent;
+	cl_entity_t *ent;
 	int i;
 
 	i = cl.num_statics;

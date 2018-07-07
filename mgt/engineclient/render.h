@@ -23,7 +23,7 @@
 
 #pragma once
 
-#define MAXCLIPPLANES 11
+//#define MAXCLIPPLANES 11 // TODO
 
 #define TOP_RANGE 16 // soldier uniform colors
 #define BOTTOM_RANGE 96
@@ -73,6 +73,8 @@ extern vec3_t r_origin, vpn, vright, vup;
 
 extern struct texture_s *r_notexture_mip;
 
+//extern cl_entity_t r_worldentity; // QW
+
 void R_Init();
 void R_InitTextures();
 void R_InitEfrags();
@@ -96,11 +98,15 @@ void R_DarkFieldParticles(cl_entity_t *ent);
 void R_EntityParticles(cl_entity_t *ent);
 void R_BlobExplosion(vec3_t org);
 void R_ParticleExplosion(vec3_t org);
-void R_ParticleExplosion2(vec3_t org, int colorStart, int colorLength);
+//void R_ParticleExplosion2(vec3_t org, int colorStart, int colorLength); // TODO
 void R_LavaSplash(vec3_t org);
 void R_TeleportSplash(vec3_t org);
 
 void R_PushDlights();
+//void R_InitParticles ();
+//void R_ClearParticles ();
+//void R_DrawParticles ();
+//void R_DrawWaterSurfaces ();
 
 //
 // surface cache related

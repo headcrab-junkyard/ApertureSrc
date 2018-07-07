@@ -114,7 +114,7 @@ void CL_ParseBeam(model_t *m)
 CL_ParseTEnt
 =================
 */
-void CL_ParseTEnt(void)
+void CL_ParseTEnt()
 {
 	int type;
 	vec3_t pos;

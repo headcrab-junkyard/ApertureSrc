@@ -31,8 +31,7 @@
 #define DINPUT_BUFFERSIZE 16
 #define iDirectInputCreate(a, b, c, d) pDirectInputCreate(a, b, c, d)
 
-HRESULT(WINAPI *pDirectInputCreate)
-(HINSTANCE hinst, DWORD dwVersion,
+HRESULT(WINAPI *pDirectInputCreate)(HINSTANCE hinst, DWORD dwVersion,
  LPDIRECTINPUT *lplpDirectInput, LPUNKNOWN punkOuter);
 
 // mouse variables
