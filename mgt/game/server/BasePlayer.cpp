@@ -891,53 +891,53 @@ void CBasePlayer::ChangeWeapon (edict_t *ent)
 {
 	int i;
 
-	if (ent->client->grenade_time)
+	if (this->grenade_time)
 	{
-		ent->client->grenade_time = level.time;
-		ent->client->weapon_sound = 0;
+		this->grenade_time = level.time;
+		this->weapon_sound = 0;
 		weapon_grenade_fire (ent, false);
-		ent->client->grenade_time = 0;
+		this->grenade_time = 0;
 	};
 
-	ent->client->pers.lastweapon = ent->client->pers.weapon;
-	ent->client->pers.weapon = ent->client->newweapon;
-	ent->client->newweapon = NULL;
-	ent->client->machinegun_shots = 0;
+	this->lastweapon = this->pers.weapon;
+	this->weapon = this->newweapon;
+	this->newweapon = nullptr;
+	this->machinegun_shots = 0;
 
 	// set visible model
 	if (ent->s.modelindex == 255) {
-		if (ent->client->pers.weapon)
-			i = ((ent->client->pers.weapon->weapmodel & 0xff) << 8);
+		if (this->pers.weapon)
+			i = ((this->pers.weapon->weapmodel & 0xff) << 8);
 		else
 			i = 0;
 		ent->s.skinnum = (ent - g_edicts - 1) | i;
 	}
 
-	if (ent->client->pers.weapon && ent->client->pers.weapon->ammo)
-		ent->client->ammo_index = ITEM_INDEX(FindItem(ent->client->pers.weapon->ammo));
+	if (this->pers.weapon && this->pers.weapon->ammo)
+		this->ammo_index = ITEM_INDEX(FindItem(this->pers.weapon->ammo));
 	else
-		ent->client->ammo_index = 0;
+		this->ammo_index = 0;
 
-	if (!ent->client->pers.weapon)
+	if (!this->pers.weapon)
 	{	// dead
-		ent->client->ps.gunindex = 0;
+		this->ps.gunindex = 0;
 		return;
 	}
 
-	ent->client->weaponstate = WEAPON_ACTIVATING;
-	ent->client->ps.gunframe = 0;
-	ent->client->ps.gunindex = gi.modelindex(ent->client->pers.weapon->view_model);
+	this->weaponstate = WEAPON_ACTIVATING;
+	this->ps.gunframe = 0;
+	this->ps.gunindex = gi.modelindex(this->pers.weapon->view_model);
 
-	ent->client->anim_priority = ANIM_PAIN;
-	if(ent->client->ps.pmove.pm_flags & PMF_DUCKED)
+	this->anim_priority = ANIM_PAIN;
+	if(this->ps.pmove.pm_flags & PMF_DUCKED)
 	{
-			ent->s.frame = FRAME_crpain1;
-			ent->client->anim_end = FRAME_crpain4;
+		ent->s.frame = FRAME_crpain1;
+		this->anim_end = FRAME_crpain4;
 	}
 	else
 	{
-			ent->s.frame = FRAME_pain301;
-			ent->client->anim_end = FRAME_pain304;
+		ent->s.frame = FRAME_pain301;
+		this->anim_end = FRAME_pain304;
 	};
 };
 
@@ -946,9 +946,9 @@ void CBasePlayer::ChangeWeapon (edict_t *ent)
 NoAmmoWeaponChange
 =================
 */
-void CBasePlayer::NoAmmoWeaponChange (edict_t *ent)
+void CBasePlayer::NoAmmoWeaponChange(edict_t *ent)
 {
-	if ( ent->client->pers.inventory[ITEM_INDEX(FindItem("slugs"))]
+	if ( this->pers.inventory[ITEM_INDEX(FindItem("slugs"))]
 		&&  ent->client->pers.inventory[ITEM_INDEX(FindItem("railgun"))] )
 	{
 		ent->client->newweapon = FindItem ("railgun");
@@ -999,19 +999,19 @@ void CBasePlayer::Think_Weapon (edict_t *ent)
 	// if just died, put the weapon away
 	if (ent->health < 1)
 	{
-		ent->client->newweapon = NULL;
+		this->newweapon = nullptr;
 		ChangeWeapon (ent);
 	}
 
 	// call active weapon think routine
-	if (ent->client->pers.weapon && ent->client->pers.weapon->weaponthink)
+	if (this->pers.weapon && this->pers.weapon->weaponthink)
 	{
-		is_quad = (ent->client->quad_framenum > level.framenum);
-		if (ent->client->silencer_shots)
+		is_quad = (this->quad_framenum > level.framenum);
+		if (this->silencer_shots)
 			is_silenced = MZ_SILENCED;
 		else
 			is_silenced = 0;
-		ent->client->pers.weapon->weaponthink (ent);
+		this->pers.weapon->weaponthink (ent);
 	}
 }
 
@@ -1022,13 +1022,13 @@ Use_Weapon
 Make the weapon ready if there is ammo
 ================
 */
-void CBasePlayer::Use_Weapon (edict_t *ent, gitem_t *item)
+void CBasePlayer::Use_Weapon (gitem_t *item)
 {
 	int			ammo_index;
 	gitem_t		*ammo_item;
 
 	// see if we're already using it
-	if (item == ent->client->pers.weapon)
+	if (item == this->pers.weapon)
 		return;
 
 	if (item->ammo && !g_select_empty->value && !(item->flags & IT_AMMO))
@@ -1036,13 +1036,13 @@ void CBasePlayer::Use_Weapon (edict_t *ent, gitem_t *item)
 		ammo_item = FindItem(item->ammo);
 		ammo_index = ITEM_INDEX(ammo_item);
 
-		if (!ent->client->pers.inventory[ammo_index])
+		if (!this->pers.inventory[ammo_index])
 		{
 			gi.cprintf (ent, PRINT_HIGH, "No %s for %s.\n", ammo_item->pickup_name, item->pickup_name);
 			return;
 		}
 
-		if (ent->client->pers.inventory[ammo_index] < item->quantity)
+		if (this->pers.inventory[ammo_index] < item->quantity)
 		{
 			gi.cprintf (ent, PRINT_HIGH, "Not enough %s for %s.\n", ammo_item->pickup_name, item->pickup_name);
 			return;
@@ -1050,7 +1050,7 @@ void CBasePlayer::Use_Weapon (edict_t *ent, gitem_t *item)
 	}
 
 	// change to this weapon when down
-	ent->client->newweapon = item;
+	this->newweapon = item;
 };
 
 /*
@@ -1058,21 +1058,20 @@ void CBasePlayer::Use_Weapon (edict_t *ent, gitem_t *item)
 Drop_Weapon
 ================
 */
-void CBasePlayer::Drop_Weapon (edict_t *ent, gitem_t *item)
+void CBasePlayer::Drop_Weapon(gitem_t *item)
 {
-	int		index;
-
 	if ((int)(dmflags->value) & DF_WEAPONS_STAY)
 		return;
 
-	index = ITEM_INDEX(item);
+	int index = ITEM_INDEX(item);
+	
 	// see if we're already using it
-	if ( ((item == ent->client->pers.weapon) || (item == ent->client->newweapon))&& (ent->client->pers.inventory[index] == 1) )
+	if ( ((item == this->pers.weapon) || (item == this->newweapon)) && (this->pers.inventory[index] == 1) )
 	{
 		gi.cprintf (ent, PRINT_HIGH, "Can't drop current weapon\n");
 		return;
 	}
 
-	Drop_Item (ent, item);
-	ent->client->pers.inventory[index]--;
+	Drop_Item (this, item);
+	this->pers.inventory[index]--;
 }

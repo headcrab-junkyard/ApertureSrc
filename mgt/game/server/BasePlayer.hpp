@@ -4,6 +4,8 @@
 
 #include "BaseEntity.hpp"
 
+class CBaseItem;
+
 class CBasePlayer : public CBaseEntity
 {
 public:
@@ -28,6 +30,10 @@ public:
 	void Die();
 	
 	virtual void OnKilled(CBaseEntity *inflictor, CBaseEntity *attacker, int damage, const Vec3 &dir, int location) override;
+	
+	edict_t *Drop_Item(gitem_t *item);
+	void ChangeWeapon();
+	void Think_Weapon(edict_t *ent);
 private:
 	// QC
 	
@@ -48,5 +54,7 @@ private:
 	void FlashlightOn();
 	void FlashlightOff();
 	
-	CEntityPtr<CBaseWeapon> weapon;
+	//CEntityPtr<CBaseWeapon> weapon;
+	CBaseItem *weapon{nullptr];
+	CBaseItem *lastweapon{nullptr];
 };
