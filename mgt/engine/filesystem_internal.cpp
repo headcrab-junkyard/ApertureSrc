@@ -18,7 +18,6 @@
 */
 
 /// @file
-/// @brief
 
 #include "quakedef.h"
 #include "filesystem/IFileSystem.hpp"
@@ -36,7 +35,7 @@ void FileSystem_Init(const char *basedir, void *filesystemFactory)
 	if(!filesystemFactory)
 		return;
 
-	gpFileSystem = (IFileSystem *)(((CreateInterfaceFn)filesystemFactory)(OGS_FILESYSTEM_INTERFACE_VERSION, nullptr)); // TODO: FILESYSTEM_INTERFACE_VERSION
+	gpFileSystem = (IFileSystem *)(((CreateInterfaceFn)filesystemFactory)(MGT_FILESYSTEM_INTERFACE_VERSION, nullptr));
 
 	if(!gpFileSystem)
 		return;
@@ -64,13 +63,13 @@ IFile *FS_FileOpenRead(const char *path, int *hndl)
 
 IFile *FS_FileOpenWrite(const char *path)
 {
-	return gpFileSystem->FileOpen(path, "wb");
+	return gpFileSystem->OpenFile(path/*, "wb"*/); // TODO: FileOpen
 };
 
 void FS_FileClose(IFile *handle)
 {
 	//handle->Close();
-	gpFileSystem->FileClose(handle);
+	gpFileSystem->CloseFile(handle); // TODO: FileClose
 };
 
 void FS_FileSeek(IFile *handle, int position)
@@ -85,7 +84,8 @@ int FS_FileRead(IFile *handle, void *dest, int count)
 
 int FS_FileWrite(IFile *handle, const void *data, int count)
 {
-	return handle->Write(data, count);
+	handle->Write(data, count);
+	return -1; // TODO
 };
 
 int FS_FileTime(const char *path)
