@@ -23,6 +23,10 @@
 
 #include "quakedef.h"
 
+// TODO: temp
+#include "EntityEventDispatcher.hpp"
+extern CEntityEventDispatcher *gpEntityEventDispatcher;
+
 /*
 
 entities never clip against themselves, or their owner
@@ -284,7 +288,7 @@ void SV_TouchLinks(edict_t *ent, areanode_t *node)
 			continue;
 
 		gGlobalVariables.time = sv.time;
-		gEntityInterface.pfnTouch(touch, ent);
+		gpEntityEventDispatcher->DispatchTouch(touch, ent);
 	}
 
 	// recurse down both sides
