@@ -25,6 +25,10 @@
 //#include "r_local.h"
 #include "engineclient/IEngineClient.hpp"
 
+// TODO: temp
+#include "GameClientEventDispatcher.hpp"
+extern CGameClientEventDispatcher *gpGameClientEventDispatcher;
+
 /*
 
 A server can always be started, even if the system started out as a client
@@ -104,13 +108,14 @@ void Host_EndGame(const char *message, ...)
 	if(sv.active)
 		Host_ShutdownServer(false);
 
-	if(gbDedicatedServer)
+	if(isDedicated) // TODO: gbDedicatedServer
 		Sys_Error("Host_EndGame: %s\n", string); // dedicated servers exit
 
 	// TODO: host event broadcaster -> notify about the game end?
-	gpEngineClient->HostEndGame();
+	if(gpEngineClient)
+		gpEngineClient->HostEndGame();
 
-	longjmp(host_abortserver, 1);
+	longjmp(host_abortserver, 1); // TODO
 };
 
 /*
@@ -131,9 +136,6 @@ void Host_Error(const char *error, ...)
 
 	inerror = true;
 
-	// TODO: revisit
-	SCR_EndLoadingPlaque(); // reenable screen updates
-
 	va_start(argptr, error);
 	vsprintf(string, error, argptr);
 	va_end(argptr);
@@ -147,15 +149,16 @@ void Host_Error(const char *error, ...)
 	if(sv.active)
 		Host_ShutdownServer(false);
 
-	if(gbDedicatedServer)
+	if(isDedicated) // TODO: gbDedicatedServer
 		Sys_Error("Host_Error: %s\n", string); // dedicated servers exit
 	
 	// TODO: host event listener -> onerror
-	gpEngineClient->HostError();
+	if(gpEngineClient)
+		gpEngineClient->HostError();
 	
 	inerror = false;
 
-	longjmp(host_abortserver, 1);
+	longjmp(host_abortserver, 1); // TODO
 };
 
 /*
@@ -171,7 +174,7 @@ void Host_FindMaxClients()
 
 	if(i)
 	{
-		gbDedicatedServer = true;
+		isDedicated = true; // TODO: gbDedicatedServer
 		if(i != (com_argc - 1))
 			svs.maxclients = Q_atoi(com_argv[i + 1]);
 		else
@@ -181,7 +184,7 @@ void Host_FindMaxClients()
 	i = COM_CheckParm("-listen");
 	if(i)
 	{
-		if(gbDedicatedServer)
+		if(isDedicated) // TODO: gbDedicatedServer
 			Sys_Error("Only one of -dedicated or -listen can be specified");
 		
 		if(i != (com_argc - 1))
@@ -296,7 +299,7 @@ Host_ClientCommands
 Send text over to the client to be executed
 =================
 */
-void SV_ClientCommands(client_t *host_client, const char *fmt, ...) // TODO: was Host_ClientCommands
+void Host_ClientCommands(client_t *host_client, const char *fmt, ...) // TODO: SV_ClientCommands
 {
 	va_list argptr;
 	char string[1024]{};
@@ -317,7 +320,7 @@ Called when the player is getting totally kicked off the host
 if (crash = true), don't bother sending signofs
 =====================
 */
-void SV_DropClient(client_t *drop, bool crash, char *fmt, ...)
+void SV_DropClient(client_t *drop, bool crash, const char *fmt, ...)
 {
 	// TODO: fmt support
 
@@ -337,8 +340,7 @@ void SV_DropClient(client_t *drop, bool crash, char *fmt, ...)
 		{
 			// call the prog function for removing a client
 			// this will set the body to a dead frame, among other things
-			//gGlobalVariables.self = EDICT_TO_PROG(drop->edict);
-			gpServerEventDispatcher->ClientDisconnect(drop->edict); // was gEntityInterface.pfnClientDisconnect
+			gpGameClientEventDispatcher->DispatchDisconnect(drop->edict);
 		};
 
 		Sys_Printf("Client %s removed\n", drop->name);
@@ -358,15 +360,10 @@ void SV_DropClient(client_t *drop, bool crash, char *fmt, ...)
 	{
 		if(!client->active)
 			continue;
-		MSG_WriteByte(&client->netchan.message, svc_updatename);
+		
+		MSG_WriteByte(&client->netchan.message, svc_updateuserinfo);
 		MSG_WriteByte(&client->netchan.message, drop - svs.clients);
 		MSG_WriteString(&client->netchan.message, "");
-		MSG_WriteByte(&client->netchan.message, svc_updatefrags);
-		MSG_WriteByte(&client->netchan.message, drop - svs.clients);
-		MSG_WriteShort(&client->netchan.message, 0);
-		MSG_WriteByte(&client->netchan.message, svc_updatecolors);
-		MSG_WriteByte(&client->netchan.message, drop - svs.clients);
-		MSG_WriteByte(&client->netchan.message, 0);
 	};
 };
 
@@ -391,7 +388,8 @@ void Host_ShutdownServer(bool crash)
 	sv.active = false;
 	
 	// TODO: host event listener -> onservershutdown
-	gpEngineClient->HostServerShutdown();
+	if(gpEngineClient)
+		gpEngineClient->HostServerShutdown();
 
 	// flush any pending messages - like the score!!!
 	start = Sys_FloatTime();
@@ -478,13 +476,13 @@ qboolean Host_FilterTime(float time)
 {
 	realtime += time;
 
-	//auto deltatime{realtime - oldrealtime};
-	//if(NOT TIMEDEMO AND DELTATIME IS LESS THAN TIMESTEP(FPX_MAX))
-	//inline float GetTimeStep(float fps){return 1.0/fps;}
-	if(!cls.timedemo && realtime - oldrealtime < 1.0 / 72.0) // TODO: use "fps_max" cvar value here
-		return false; // framerate is too high
+	auto frametime{realtime - oldrealtime};
 
-	host_frametime = realtime - oldrealtime;
+	if(gpEngineClient)
+		if(!gpEngineClient->FilterTime(frametime))
+			return false;
+	
+	host_frametime = frametime;
 	oldrealtime = realtime;
 
 	if(host_framerate.value > 0)
@@ -537,8 +535,10 @@ void _Host_Frame(float time)
 	static double time3 = 0;
 	int pass1, pass2, pass3;
 
-	if(setjmp(host_abortserver))
-		return; // something bad happened, or the server disconnected
+	// something bad happened, or the server disconnected
+	// BP: Something bad will happen when this will be called...
+	if(setjmp(host_abortserver)) // TODO
+		return;
 
 	// keep the random time dependent
 	rand();
@@ -576,7 +576,7 @@ void _Host_Frame(float time)
 		SV_Frame();
 
 	if(gpEngineClient)
-		gpEngineClient->Frame(time1, time2);
+		gpEngineClient->Frame(/*time1, time2*/); // TODO
 
 	if(host_speeds.value)
 	{
@@ -694,7 +694,7 @@ void Host_InitVCR (quakeparms_t *parms)
 
 bool InitEngineClient()
 {
-	gpEngineClientLib{ Sys_LoadModule("engineclient") };
+	gpEngineClientLib = Sys_LoadModule("engineclient");
 
 	if(!gpEngineClientLib)
 		return false;
@@ -773,9 +773,9 @@ void Host_Init(quakeparms_t *parms)
 	//Con_Printf ("Exe build: " __TIME__ " " __DATE__ "(%d)\n", buildnum()); // TODO
 	Con_Printf("%4.1f Mb heap\n", parms->memsize / (1024 * 1024.0));
 
-	R_InitTextures(); // needed even for dedicated servers (BP: not really)
+	//R_InitTextures(); // TODO: we need a blank texture instance for model loading code
 
-	if(!gbDedicatedServer)
+	if(!isDedicated) // TODO: gbDedicatedServer
 	{
 		host_basepal = (byte *)COM_LoadHunkFile("gfx/palette.lmp");
 		if(!host_basepal)
