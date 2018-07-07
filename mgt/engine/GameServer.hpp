@@ -10,7 +10,7 @@ using tGameClientVec = std::vector<IGameClient *>;
 class CGameServer final : public IGameServer
 {
 public:
-	CGameServer();
+	CGameServer(server_t *apsv, server_static_t *apsvs);
 	~CGameServer();
 
 	void BroadcastPrintf(const char *asMsg, ...);
@@ -20,7 +20,9 @@ public:
 	void DisconnectAllClients();
 
 	IGameClient *GetClient(int index) const override;
-
 private:
 	tGameClientVec mvClients;
+	
+	server_t *mpsv{nullptr};
+	server_static_t *mpsvs{nullptr};
 };
