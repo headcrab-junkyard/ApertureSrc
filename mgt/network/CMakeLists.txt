@@ -12,3 +12,11 @@ add_library(${PROJECT_NAME} MODULE ${MGT_NETWORK_SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	OUTPUT_NAME "network"
 )
+
+target_link_libraries(${PROJECT_NAME} ogs-interface)
+
+if(WIN32)
+	# NOTE: looks like wsock32 is loaded dynamically
+	# ws2_32
+	target_link_libraries(${PROJECT_NAME} wsock32 winmm)
+endif()
