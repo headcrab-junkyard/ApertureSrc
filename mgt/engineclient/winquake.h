@@ -59,7 +59,7 @@ typedef enum { MS_WINDOWED,
 extern modestate_t modestate;
 
 extern HWND mainwindow;
-extern qboolean ActiveApp, Minimized;
+extern bool ActiveApp, Minimized;
 
 extern qboolean WinNT;
 

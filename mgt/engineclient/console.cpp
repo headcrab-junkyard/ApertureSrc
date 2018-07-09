@@ -22,11 +22,13 @@
 
 #include "quakedef.h"
 
+#define MAXPRINTMSG 4096
+
+#define CON_TEXTSIZE 16384
+
 int con_linewidth;
 
 float con_cursorspeed = 4;
-
-#define CON_TEXTSIZE 16384
 
 bool con_forcedup; // because no entities to refresh
 
@@ -60,7 +62,7 @@ extern void M_Menu_Main_f();
 Con_ToggleConsole_f
 ================
 */
-void Con_ToggleConsole_f()
+void Con_ToggleConsole_f(const ICmdArgs &apArgs)
 {
 	if(key_dest == key_console)
 	{
@@ -87,7 +89,7 @@ Con_MessageMode_f
 */
 extern bool team_message;
 
-void Con_MessageMode_f()
+void Con_MessageMode_f(const ICmdArgs &apArgs)
 {
 	key_dest = key_message;
 	team_message = false;
@@ -98,7 +100,7 @@ void Con_MessageMode_f()
 Con_MessageMode2_f
 ================
 */
-void Con_MessageMode2_f()
+void Con_MessageMode2_f(const ICmdArgs &apArgs)
 {
 	key_dest = key_message;
 	team_message = true;
@@ -109,7 +111,7 @@ void Con_MessageMode2_f()
 Con_Clear_f
 ================
 */
-void Con_Clear_f()
+void Con_Clear_f(const ICmdArgs &apArgs)
 {
 	if(con_text)
 		Q_memset(con_text, ' ', CON_TEXTSIZE);
@@ -122,20 +124,7 @@ Con_Init
 */
 void Con_Init()
 {
-#define MAXGAMEDIRLEN 1000
-	char temp[MAXGAMEDIRLEN + 1];
-	char *t2 = "/qconsole.log";
-
-	if(con_debuglog)
-	{
-		if(strlen(com_gamedir) < (MAXGAMEDIRLEN - strlen(t2)))
-		{
-			sprintf(temp, "%s%s", com_gamedir, t2);
-			unlink(temp);
-		};
-	};
-
-	con_text = Hunk_AllocName(CON_TEXTSIZE, "context");
+	con_text = nullptr; //Hunk_AllocName(CON_TEXTSIZE, "context"); // TODO
 	Q_memset(con_text, ' ', CON_TEXTSIZE);
 	con_linewidth = -1;
 	Con_CheckResize();
@@ -544,14 +533,14 @@ void Con_NotifyBox(const char *text)
 
 	do
 	{
-		t1 = Sys_FloatTime();
+		t1 = gpSystem->GetFloatTime();
 		SCR_UpdateScreen();
-		Sys_SendKeyEvents();
-		t2 = Sys_FloatTime();
+		//Sys_SendKeyEvents(); // TODO
+		t2 = gpSystem->GetFloatTime();
 		realtime += t2 - t1; // make the cursor blink
 	} while(key_count < 0);
 
-	Con_Printf("\n");
+	gpConsole->Printf("\n");
 	key_dest = key_game;
 	realtime = 0; // put the cursor back to invisible
 }

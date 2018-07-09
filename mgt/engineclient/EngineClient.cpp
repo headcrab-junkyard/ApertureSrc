@@ -21,11 +21,26 @@
 /// @file
 
 #include "quakedef.h"
+
+#ifdef _WIN32
+	#include "winquake.h"
+#endif
+
 #include "EngineClient.hpp"
 #include "r_local.h"
+#include "vgui_int.h"
+
+#include "engine/ISystem.hpp"
+#include "filesystem/IFileSystem.hpp"
+#include "engine/IConsole.hpp"
+
+#include "engine/ICmdArgs.hpp"
 
 #define PAUSE_SLEEP 50     ///< sleep time on pause or minimization (in ms)
 #define NOT_FOCUS_SLEEP 20 ///< sleep time when not focus (in ms)
+
+ISystem *gpSystem{nullptr};
+IConsole *gpConsole{nullptr};
 
 extern void Con_Init();
 extern void Con_Print(const char *msg);
@@ -223,7 +238,7 @@ void CEngineClient::Frame()
 	else
 		CL_SendCmd();
 
-	host_time += host_frametime;
+	//host_time += host_frametime; // TODO
 
 	// fetch results from server
 	if(cls.state == ca_connected)
@@ -241,14 +256,7 @@ void CEngineClient::Frame()
 	// build a renderable entity list
 	CL_EmitEntities();
 
-	// update video
-	if(host_speeds.value)
-		time1 = mpSystem->GetFloatTime();
-
-	UpdateScreen(); // TODO: was SCR_UpdateScreen
-
-	if(host_speeds.value)
-		time2 = mpSystem->GetFloatTime();
+	// TODO: here were the screen update
 
 	// update audio
 	if(cls.signon == SIGNONS)
@@ -320,7 +328,7 @@ void CEngineClient::WriteConfig()
 	if(!host_initialized)
 		return;
 
-	auto f{FS_OpenPathID(va("%s/config.cfg", com_gamedir), "w")};
+	auto f{mpFileSystem->OpenPathID(va("%s/config.cfg", com_gamedir), "w")};
 
 	if(!f)
 	{
@@ -331,7 +339,7 @@ void CEngineClient::WriteConfig()
 	Key_WriteBindings(f);
 	Cvar_WriteVariables(f);
 
-	FS_CloseFile(f);
+	mpFileSystem->CloseFile(f);
 };
 
 void CEngineClient::UpdateScreen()

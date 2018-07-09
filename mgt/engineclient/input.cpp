@@ -1,15 +1,15 @@
 /// @file
 
-#include "quakedef.hpp"
+#include "quakedef.h"
 #include "input/IInput.hpp"
 
 void *gpInputLib{ nullptr };
 IInput *gpInput{ nullptr };
 
-bool InitInput()
+bool LoadInputModule()
 {
 	//if(gpInputLib)
-	//return false;
+		//return false;
 
 	gpInputLib = Sys_LoadModule("input");
 
@@ -29,14 +29,8 @@ bool InitInput()
 	return true;
 };
 
-void ShutdownInput()
+void UnloadInputModule()
 {
-	if(gpInput)
-	{
-		gpInput->Shutdown();
-		gpInput = nullptr;
-	};
-
 	if(gpInputLib)
 	{
 		Sys_UnloadModule(gpInputLib);
@@ -46,11 +40,20 @@ void ShutdownInput()
 
 void IN_Init()
 {
-	if(!InitInput())
-		gpInput = new CInputNull();
+	if(!LoadInputModule())
+		gpInput = nullptr; //new CInputNull(); // TODO
+	
+	if(!gpInput->Init())
+		return;
 };
 
 void IN_Shutdown()
 {
-	ShutdownInput();
+	if(gpInput)
+	{
+		gpInput->Shutdown();
+		gpInput = nullptr;
+	};
+	
+	UnloadInputModule();
 };

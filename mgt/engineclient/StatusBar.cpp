@@ -62,7 +62,7 @@ Sbar_ShowScores
 Tab key down
 ===============
 */
-void Sbar_ShowScores()
+void Sbar_ShowScores(const ICmdArgs &apArgs)
 {
 	if(sb_showscores)
 		return;
@@ -78,7 +78,7 @@ Sbar_DontShowScores
 Tab key up
 ===============
 */
-void Sbar_DontShowScores()
+void Sbar_DontShowScores(const ICmdArgs &apArgs)
 {
 	sb_showscores = false;
 	sb_updates = 0;
@@ -539,7 +539,7 @@ void Sbar_DrawInventory()
 			else
 			{
 				//MED 01/04/97 changed keys
-				if(!hipnotic || (i > 1))
+				if(i > 1)
 				{
 					Sbar_DrawPic(192 + i * 16, -16, sb_items[i]);
 				}
@@ -639,58 +639,6 @@ Sbar_DrawFace
 void Sbar_DrawFace()
 {
 	int f, anim;
-
-	// PGM 01/19/97 - team color drawing
-	// PGM 03/02/97 - fixed so color swatch only appears in CTF modes
-	if(rogue &&
-	   (cl.maxclients != 1) &&
-	   (teamplay.value > 3) &&
-	   (teamplay.value < 7))
-	{
-		int top, bottom;
-		int xofs;
-		char num[12];
-		scoreboard_t *s;
-
-		s = &cl.scores[cl.viewentity - 1];
-		// draw background
-		top = s->colors & 0xf0;
-		bottom = (s->colors & 15) << 4;
-		top = Sbar_ColorForMap(top);
-		bottom = Sbar_ColorForMap(bottom);
-
-		if(cl.gametype == GAME_DEATHMATCH)
-			xofs = 113;
-		else
-			xofs = ((vid.width - 320) >> 1) + 113;
-
-		Sbar_DrawPic(112, 0, rsb_teambord);
-		Draw_Fill(xofs, vid.height - SBAR_HEIGHT + 3, 22, 9, top);
-		Draw_Fill(xofs, vid.height - SBAR_HEIGHT + 12, 22, 9, bottom);
-
-		// draw number
-		f = s->frags;
-		sprintf(num, "%3i", f);
-
-		if(top == 8)
-		{
-			if(num[0] != ' ')
-				Sbar_DrawCharacter(109, 3, 18 + num[0] - '0');
-			if(num[1] != ' ')
-				Sbar_DrawCharacter(116, 3, 18 + num[1] - '0');
-			if(num[2] != ' ')
-				Sbar_DrawCharacter(123, 3, 18 + num[2] - '0');
-		}
-		else
-		{
-			Sbar_DrawCharacter(109, 3, num[0]);
-			Sbar_DrawCharacter(116, 3, num[1]);
-			Sbar_DrawCharacter(123, 3, num[2]);
-		}
-
-		return;
-	}
-	// PGM 01/19/97 - team color drawing
 
 	if((cl.items & (IT_INVISIBILITY | IT_INVULNERABILITY)) == (IT_INVISIBILITY | IT_INVULNERABILITY))
 	{

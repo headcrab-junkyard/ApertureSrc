@@ -23,7 +23,7 @@
 
 #pragma once
 
-#define QUAKEDEF_H
+//#define QUAKEDEF_H // TODO: the hell is cache_user_t???
 
 //#define	GLTEST			// experimental stuff
 
@@ -40,13 +40,14 @@
 
 #define GAMENAME "valve" // directory to look in by default
 
-#include <math.h>
-#include <string.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <setjmp.h>
-//#include <ctype.h>
+#include <cmath>
+#include <cstring>
+#include <cstdarg>
+#include <cstdio>
+#include <cstdlib>
+#include <csetjmp>
+//#include <cctype>
+//#include <ctime>
 
 #if defined(_WIN32) && !defined(WINDED)
 
@@ -187,16 +188,26 @@ void VID_UnlockBuffer();
 
 #define SOUND_CHANNELS 8
 
-#ifdef __cplusplus
-extern "C" {
-#endif
+// TODO
+//#ifdef __cplusplus
+//extern "C" {
+//#endif
 
 #include "common.h"
 #include "cvardef.h"
 #include "bspfile.h"
 #include "vid.h"
-//#include "sys.h"
+#include "com_model.h" //#include "engine/IMemory.hpp"
+#include "engine/ISystem.hpp" //#include "sys.h"
+
+extern ISystem *gpSystem;
+
 //#include "filesystem_internal.h"
+#include "filesystem/IFileSystem.hpp"
+#include "filesystem/IFile.hpp"
+
+extern IFileSystem *gpFileSystem;
+
 //#include "zone.h"
 #include "mathlib.h"
 //#include "info.h"
@@ -205,7 +216,10 @@ extern "C" {
 #include "entity_state.h"
 
 #include "wad.h"
+#include "cvar.h"
+#include "network/INetwork.hpp"
 #include "protocol.h"
+#include "cmd.h"
 #include "draw.h"
 #include "screen.h"
 #include "sbar.h"
@@ -225,6 +239,10 @@ extern "C" {
 //#include "pmove.h"
 #include "keys.h"
 #include "console.h"
+#include "engine/IConsole.hpp"
+
+extern IConsole *gpConsole;
+
 #include "view.h"
 #include "menu.h"
 #include "cdaudio.h"
@@ -257,6 +275,7 @@ extern int minimum_memory;
 
 #include "chase.h"
 
-#ifdef __cplusplus
-};
-#endif
+// TODO
+//#ifdef __cplusplus
+//};
+//#endif

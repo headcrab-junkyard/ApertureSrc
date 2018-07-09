@@ -26,11 +26,12 @@
 // loading and does nothing inside these wrapper functions below)
 
 #include "quakedef.h"
+#include "game/client/IClientGame.hpp"
 
 static cl_enginefunc_t gEngFuncs; // TODO: name overlap with server-side version? cl_enginefuncs in GS
-IClientGame *gpClientGame{ nullptr };
+IClientGame *gpClientGame{nullptr};
 
-void *gpClientDLL{ nullptr };
+void *gpClientDLL{nullptr};
 
 bool LoadClientDLL()
 {
@@ -47,7 +48,7 @@ bool LoadClientDLL()
 	if(!fnClientDLLFactory)
 		return false;
 
-	gpClientGame = fnClientDLLFactory(MGT_CLIENTGAME_INTERFACE_VERSION, nullptr);
+	gpClientGame = (IClientGame*)fnClientDLLFactory(MGT_CLIENTGAME_INTERFACE_VERSION, nullptr);
 
 	if(!gpClientGame->Init(Sys_GetFactoryThis(), &gEngFuncs)) // TODO: So.... Are you alive?
 		return false;

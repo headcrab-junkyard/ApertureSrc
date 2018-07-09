@@ -290,7 +290,7 @@ void CL_ParseTEnt()
 #endif
 
 	default:
-		Sys_Error("CL_ParseTEnt: bad type");
+		gpSystem->Error("CL_ParseTEnt: bad type");
 	}
 }
 

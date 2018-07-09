@@ -25,7 +25,10 @@
 #include <memory>
 #include "engineclient/IEngineClient.hpp"
 
+struct ISystem;
 struct IFileSystem;
+struct IConsole;
+
 struct ISound;
 struct IInput;
 struct IGameUI;
@@ -60,7 +63,9 @@ public:
 	void Frame() override;
 	//void Update(float afTimeStep);
 	//void PostUpdate(float afTimeStep);
-
+	
+	void UpdateScreen() override;
+	
 	//void Render();
 	//void PostRender();
 
@@ -86,27 +91,28 @@ private:
 	void CheckStartupVids();
 	//void CreateStartupVids();
 
-	void UpdateScreen();
-
 	ISound *LoadSoundModule();
 	IInput *LoadInputModule();
 	IGameUI *LoadGameUIModule();
 	//IClientGame *LoadClientGameModule();
 
-	std::unique_ptr<CConsole> mpConsole;
-	std::unique_ptr<CCDAudio> mpCDAudio;
-	std::unique_ptr<CVideo> mpVideo;
-	std::unique_ptr<CScreen> mpScreen;
-	std::unique_ptr<CView> mpView;
-	std::unique_ptr<CKey> mpKey;
-	std::unique_ptr<CMenu> mpMenu;
-	std::unique_ptr<CClient> mpClient;
-	std::unique_ptr<CChase> mpChase;
-	std::unique_ptr<CClientGame> mpClientGame;
+	//std::unique_ptr<CConsole> mpConsole;
+	//std::unique_ptr<CCDAudio> mpCDAudio;
+	//std::unique_ptr<CVideo> mpVideo;
+	//std::unique_ptr<CScreen> mpScreen;
+	//std::unique_ptr<CView> mpView;
+	//std::unique_ptr<CKey> mpKey;
+	//std::unique_ptr<CMenu> mpMenu;
+	//std::unique_ptr<CClient> mpClient;
+	//std::unique_ptr<CChase> mpChase;
+	//std::unique_ptr<CClientGame> mpClientGame;
 
 	//ICvarRegistry *mpCvarRegistry{nullptr};
 
+	ISystem *mpSystem{nullptr};
 	IFileSystem *mpFileSystem{ nullptr };
+	IConsole *mpConsole{nullptr};
+	
 	ISound *mpSound{ nullptr };
 	IInput *mpInput{ nullptr };
 	IGameUI *mpGameUI{ nullptr };

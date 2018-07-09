@@ -19,11 +19,12 @@
 */
 
 /// @file
-/// @brief
 
 #pragma once
 
 #include "keydefs.h"
+
+struct IFile;
 
 typedef enum { key_game,
 	           key_console,
@@ -38,8 +39,8 @@ extern int key_lastpress;
 
 void Key_Event(int key, qboolean down);
 void Key_Init();
-void Key_WriteBindings(FILE *f);
-void Key_SetBinding(int keynum, char *binding);
+void Key_WriteBindings(IFile *f);
+void Key_SetBinding(int keynum, const char *binding);
 void Key_ClearStates();
-char *Key_KeynumToString(int keynum);
+const char *Key_KeynumToString(int keynum);
 //int Key_GetKey (); // Q2

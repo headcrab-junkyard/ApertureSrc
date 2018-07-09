@@ -140,6 +140,8 @@ typedef enum
 } dltype_t;
 */
 
+//struct INetChannel;
+
 //
 // the client_static_t structure is persistant through an arbitrary number
 // of server connections
@@ -150,7 +152,7 @@ typedef struct
 	cactive_t state;
 
 	// network stuff
-	netchan_t netchan;
+	netchan_t /*INetChannel **/ netchan; // TODO
 
 	// private userinfo for sending to masterless servers
 	char userinfo[MAX_INFO_STRING];
@@ -341,6 +343,7 @@ extern cvar_t m_side;
 
 extern client_state_t cl;
 
+typedef struct playermove_s playermove_t;
 extern	playermove_t g_clmove;
 
 // FIXME, allocate dynamically

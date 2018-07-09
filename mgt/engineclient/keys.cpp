@@ -19,7 +19,6 @@
 */
 
 /// @file
-/// @brief
 
 #include "quakedef.h"
 
@@ -51,7 +50,7 @@ qboolean keydown[256];
 
 typedef struct
 {
-	char *name;
+	const char *name;
 	int keynum;
 } keyname_t;
 
@@ -160,7 +159,7 @@ Interactive line editing and console scrollback
 */
 void Key_Console(int key)
 {
-	char *cmd;
+	const char *cmd;
 
 	if(key == K_ENTER)
 	{
@@ -336,7 +335,7 @@ the given string.  Single ascii characters return themselves, while
 the K_* names are matched up.
 ===================
 */
-int Key_StringToKeynum(char *str)
+int Key_StringToKeynum(const char *str)
 {
 	keyname_t *kn;
 
@@ -362,7 +361,7 @@ given keynum.
 FIXME: handle quote special (general escape sequence?)
 ===================
 */
-char *Key_KeynumToString(int keynum)
+const char *Key_KeynumToString(int keynum)
 {
 	keyname_t *kn;
 	static char tinystr[2];
@@ -388,9 +387,9 @@ char *Key_KeynumToString(int keynum)
 Key_SetBinding
 ===================
 */
-void Key_SetBinding(int keynum, char *binding)
+void Key_SetBinding(int keynum, const char *binding)
 {
-	char *new;
+	char *pnew;
 	int l;
 
 	if(keynum == -1)
@@ -405,10 +404,10 @@ void Key_SetBinding(int keynum, char *binding)
 
 	// allocate memory for new binding
 	l = Q_strlen(binding);
-	new = Z_Malloc(l + 1);
-	Q_strcpy(new, binding);
-	new[l] = 0;
-	keybindings[keynum] = new;
+	pnew = Z_Malloc(l + 1);
+	Q_strcpy(pnew, binding);
+	pnew[l] = 0;
+	keybindings[keynum] = pnew;
 }
 
 /*
@@ -416,7 +415,7 @@ void Key_SetBinding(int keynum, char *binding)
 Key_Unbind_f
 ===================
 */
-void Key_Unbind_f()
+void Key_Unbind_f(const ICmdArgs &apArgs)
 {
 	int b;
 
@@ -436,7 +435,7 @@ void Key_Unbind_f()
 	Key_SetBinding(b, "");
 }
 
-void Key_Unbindall_f()
+void Key_Unbindall_f(const ICmdArgs &apArgs)
 {
 	int i;
 
@@ -450,7 +449,7 @@ void Key_Unbindall_f()
 Key_Bind_f
 ===================
 */
-void Key_Bind_f()
+void Key_Bind_f(const ICmdArgs &apArgs)
 {
 	int i, c, b;
 	char cmd[1024];
@@ -499,12 +498,10 @@ Writes lines containing "bind key value"
 */
 void Key_WriteBindings(IFile *f)
 {
-	int i;
-
-	for(i = 0; i < 256; i++)
+	for(int i = 0; i < 256; i++)
 		if(keybindings[i])
 			if(*keybindings[i])
-				FS_FPrintf(f, "bind \"%s\" \"%s\"\n", Key_KeynumToString(i), keybindings[i]);
+				f->Printf("bind \"%s\" \"%s\"\n", Key_KeynumToString(i), keybindings[i]);
 }
 
 /*
@@ -641,7 +638,7 @@ void Key_Event(int key, qboolean down)
 			M_ToggleMenu_f();
 			break;
 		default:
-			Sys_Error("Bad key_dest");
+			gpSystem->Error("Bad key_dest");
 		}
 		return;
 	}
@@ -724,7 +721,7 @@ void Key_Event(int key, qboolean down)
 		Key_Console(key);
 		break;
 	default:
-		Sys_Error("Bad key_dest");
+		gpSystem->Error("Bad key_dest");
 	}
 	
 	if(!ClientDLL_Key_Event(down, key, keybindings[key]))
