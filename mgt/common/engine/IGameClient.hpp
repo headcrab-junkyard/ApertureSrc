@@ -25,6 +25,7 @@
 #include "CommonTypes.hpp"
 
 interface IEntity;
+interface IInfoBuffer;
 
 interface IGameClient
 {

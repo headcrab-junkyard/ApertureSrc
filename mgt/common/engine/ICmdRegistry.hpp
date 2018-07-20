@@ -32,5 +32,5 @@ constexpr auto MGT_SERVERCMDREGISTRY_INTERFACE_VERSION{"MGTServerCmdRegistry001A
 interface ICmdRegistry
 {
 	///
-	virtual void AddCommand(const char *asName, pfnCmdCallback afnCallback) = 0;
+	virtual void Add(const char *asName, pfnCmdCallback afnCallback) = 0;
 };

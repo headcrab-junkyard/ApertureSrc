@@ -24,7 +24,10 @@
 
 #include "CommonTypes.hpp"
 
+typedef struct hud_player_info_s hud_player_info_t;
+
 interface IEntity;
+interface IInfoBuffer;
 
 interface IGameWorld
 {
@@ -57,38 +60,6 @@ interface IGameWorld
 	
 	///
 	virtual void CreateStaticDecal(const float *vOrigin, int nDecalIndex, int nEntityIndex, int nModelIndex) = 0;
-};
-
-interface IClientWorld
-{
-	///
-	virtual int CreateVisibleEntity(int nType, /*struct cl_entity_s*/ IEntity *pEntity) = 0;
-	
-	///
-	virtual /*struct cl_entity_s*/ ILocalPlayer *GetLocalPlayer() const = 0;
-	
-	///
-	virtual /*struct cl_entity_s*/ IEntity *GetEntityByIndex(int nIndex) const = 0;
-	
-	///
-	virtual void PlaySoundAtOrigin(const char *sSound, float fVolume, float *vOrigin) = 0;
-	
-	///
-	virtual void PlaySoundByName(const char *sSound, float fVolume) = 0;
-	
-	///
-	virtual void PlaySoundByIndex(int nIndex, float fVolume) = 0;
-	
-	/// read-only access to user info of each player
-	/// nPlayerNum should be in the range (1, MaxClients)
-	/// @return "" if no value is set or nullptr if player doesn't exist
-	virtual const IInfoBuffer *GetUserInfo(int nPlayerNum) const = 0;
-	
-	///
-	virtual void GetPlayerInfo(int nPlayerNum, hud_player_info_t *pInfo) = 0;
-	
-	///
-	virtual bool IsLocalPlayer(int nPlayerNum) const = 0;
 };
 
 interface ILocalPlayer
@@ -125,4 +96,36 @@ interface ILocalPlayer
 	
 	/// read-only server info accesss
 	virtual const IInfoBuffer *GetServerInfo() const = 0;
+};
+
+interface IClientWorld
+{
+	///
+	virtual int CreateVisibleEntity(int nType, /*struct cl_entity_s*/ IEntity *pEntity) = 0;
+	
+	///
+	virtual /*struct cl_entity_s*/ ILocalPlayer *GetLocalPlayer() const = 0;
+	
+	///
+	virtual /*struct cl_entity_s*/ IEntity *GetEntityByIndex(int nIndex) const = 0;
+	
+	///
+	virtual void PlaySoundAtOrigin(const char *sSound, float fVolume, float *vOrigin) = 0;
+	
+	///
+	virtual void PlaySoundByName(const char *sSound, float fVolume) = 0;
+	
+	///
+	virtual void PlaySoundByIndex(int nIndex, float fVolume) = 0;
+	
+	/// read-only access to user info of each player
+	/// nPlayerNum should be in the range (1, MaxClients)
+	/// @return "" if no value is set or nullptr if player doesn't exist
+	virtual const IInfoBuffer *GetUserInfo(int nPlayerNum) const = 0;
+	
+	///
+	virtual void GetPlayerInfo(int nPlayerNum, hud_player_info_t *pInfo) = 0;
+	
+	///
+	virtual bool IsLocalPlayer(int nPlayerNum) const = 0;
 };

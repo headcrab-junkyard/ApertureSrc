@@ -27,8 +27,13 @@
 constexpr auto MGT_CLIENTCVARREGISTRY_INTERFACE_VERSION{"MGTClientCvarRegistry001Alpha"};
 constexpr auto MGT_SERVERCVARREGISTRY_INTERFACE_VERSION{"MGTServerCvarRegistry001Alpha"};
 
+interface IFile;
+
 interface ICvarRegistry
 {
 	///
 	virtual void Add(const char *asName, const char *asDefValue, int anFlags, const char *asDesc = "") = 0;
+	
+	///
+	virtual void WriteVariables(IFile *apFile) = 0; // TODO: WriteToFile; wrong place?
 };

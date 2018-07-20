@@ -53,6 +53,9 @@ interface IEngineClient : public IBaseInterface
 	///
 	//virtual void PostFrame() = 0;
 	
+	// TODO: probably temp
+	virtual void UpdateScreen() = 0;
+	
 	///
 	virtual void ForwardCmdToServer(const ICmdArgs &apArgs) = 0;
 	
@@ -72,4 +75,19 @@ interface IEngineClient : public IBaseInterface
 	
 	///
 	virtual void ConPrint(const char *msg) = 0;
+	
+	///
+	virtual bool OnQuit() = 0;
+	
+	///
+	virtual void OnMap(const ICmdArgs &apArgs) = 0;
+	
+	///
+	virtual void ConnectToLocalServer(const ICmdArgs &apArgs) = 0;
+	
+	///
+	virtual bool IsDemoPlayback() = 0;
+	
+	///
+	virtual bool CanSaveGame() = 0;
 };

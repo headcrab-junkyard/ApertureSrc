@@ -109,11 +109,8 @@ constexpr auto PORT_SERVER{ 27015 };
 //
 // server to client
 //
-#define svc_bad 0
-#define svc_nop 1
-#define svc_disconnect 2
+/*
 #define svc_updatestat 3 // [byte] [long]
-#define svc_version 4    // [long] server version
 #define svc_setview 5    // [short] entity number
 #define svc_sound 6      // <see code>
 #define svc_time 7       // [float] server time
@@ -158,15 +155,16 @@ constexpr auto PORT_SERVER{ 27015 };
 #define svc_sellscreen 33
 
 #define svc_cutscene 34
+*/
 
 // PROTOCOL 48
 enum
 {
-	//svc_bad                = 0,
+	svc_bad                  = 0,
 	svc_nop                  = 1,
 	svc_disconnect           = 2,
 	svc_event                = 3,
-	svc_version              = 4,
+	svc_version              = 4, // [long] server version
 	svc_setview              = 5,
 	svc_sound                = 6,
 	svc_time                 = 7,
@@ -229,11 +227,16 @@ enum
 //
 // client to server
 //
-#define clc_bad 0
-#define clc_nop 1
-#define clc_disconnect 2
-#define clc_move 3      // [usercmd_t]
-#define clc_stringcmd 4 // [string] message
+enum clc_ops_e
+{
+	clc_bad = 0,
+	clc_nop,
+	clc_disconnect,
+	clc_move, // [usercmd_t]
+	clc_stringcmd, // [string] message
+	clc_tmove,
+	clc_delta
+};
 
 #define DEFAULT_SOUND_PACKET_VOLUME 255
 #define DEFAULT_SOUND_PACKET_ATTENUATION 1.0

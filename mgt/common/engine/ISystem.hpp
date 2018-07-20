@@ -37,6 +37,9 @@ interface ISystem
 	virtual void RemoveEventListener(ISystemEventListener *apListener) = 0;
 	
 	///
+	virtual void Printf(const char *asMsg, ...) = 0;
+	
+	///
 	//virtual void Warning(const char *asMsg, ...) = 0;
 	
 	/// An error will cause the entire program to exit

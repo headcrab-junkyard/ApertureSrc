@@ -18,7 +18,7 @@
 */
 
 /// @file
-/// @brief interface that game module exposes to the engine
+/// @brief server-side game interface(interface that game module exposes to the engine)
 
 #pragma once
 
@@ -42,8 +42,10 @@ interface IGame : public IBaseInterface
 	
 	/**
 	*/
-	virtual void Update(float afTimeStep) = 0;
+	//virtual void Update(float afTimeStep) = 0;
+	virtual void StartFrame() = 0;
+	//virtual void Frame(double frametime) = 0;
 	
-	/// @return Current game title
+	/// @return current game title string
 	virtual const char *GetDescription() const = 0;
 };

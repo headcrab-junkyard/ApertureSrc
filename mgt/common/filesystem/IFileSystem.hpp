@@ -48,6 +48,9 @@ struct IFileSystem : public IBaseInterface
 	virtual void RemoveAllSearchPaths() = 0; // ClearAllSearchPaths
 	
 	///
+	virtual IFile *OpenPathID(const char *asPath, const char *asPathID) = 0;
+	
+	///
 	virtual IFile *OpenFile(const char *asName) = 0;
 	
 	///
