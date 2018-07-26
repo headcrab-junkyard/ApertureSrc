@@ -17,9 +17,46 @@
  */
 
 /// @file
+/// @brief file i/o
 
 #include <cstring>
 #include "FileSystem.hpp"
+
+// TODO
+/*
+// .pak support
+#define MAX_FILES_IN_PACK 2048
+
+//
+// on disk
+//
+typedef struct
+{
+	char name[56];
+	int filepos, filelen;
+} dpackfile_t;
+
+typedef struct
+{
+	char id[4];
+	int dirofs;
+	int dirlen;
+} dpackheader_t;
+//
+
+typedef struct pack_s pack_t;
+
+// search paths
+typedef struct searchpath_s
+{
+	char filename[MAX_OSPATH];
+	pack_t *pack; // only one of filename / pack will be used
+	struct searchpath_s *next;
+} searchpath_t;
+
+searchpath_t *com_searchpaths;
+//
+*/
 
 // TODO: temp
 void Sys_Error(const char *msg, ...)
@@ -49,6 +86,12 @@ void CFileSystem::RemoveAllSearchPaths()
 {
 };
 
+IFile *CFileSystem::OpenPathID(const char *asFilePath, const char *asPathID)
+{
+	// TODO
+	return nullptr;
+};
+
 IFile *CFileSystem::OpenFile(const char *asName)
 {
 	IFile *pFile{nullptr}; //new CFile(asName);
@@ -76,9 +119,12 @@ void CFileSystem::CloseFile(IFile *apFile)
 int CFileSystem::FileOpen(const char *path, const char *mode)
 {
 	// FS_FileOpenRead
+	//int Sys_FileOpenRead(char *path, int *hndl)
 	/*
-	FILE    *f;
-	int             i;
+	FILE *f;
+	int i, retval;
+	
+	//int t = VID_ForceUnlockedAndReturnState(); // TODO
 	
 	i = findhandle ();
 
@@ -86,12 +132,18 @@ int CFileSystem::FileOpen(const char *path, const char *mode)
 	if (!f)
 	{
 		*hndl = -1;
-		return -1;
+		return -1; // retval = -1 // TODO
 	}
-	sys_handles[i] = f;
-	*hndl = i;
+	else
+	{
+		sys_handles[i] = f;
+		*hndl = i;
+		retval = filelength(f);
+	};
 	
-	return filelength(f);
+	//VID_ForceLockState(t); // TODO
+	
+	return retval;
 	
 	*/
 	//
@@ -116,22 +168,30 @@ void CFileSystem::FileClose(int handle)
 	if(!handle)
 		return;
 
+	//int t = VID_ForceUnlockedAndReturnState(); // TODO: windows & not dedicated
+	
 #ifdef _WIN32
 	fclose(sys_handles[handle]);
 	sys_handles[handle] = nullptr;
 #else
 	close(handle);
 #endif
+
+	//VID_ForceLockState(t); // TODO: windows & not dedicated
 };
 */
 
 void CFileSystem::FileSeek(int handle, int position) // TODO: seek mode
 {
+	//int t = VID_ForceUnlockedAndReturnState(); // TODO: windows & not dedicated
+	
 #ifdef _WIN32
 	fseek(sys_handles[handle], position, SEEK_SET);
 #else
 	lseek(handle, position, SEEK_SET);
 #endif
+
+	//VID_ForceLockState(t); // TODO: windows & not dedicated
 };
 
 int CFileSystem::FileRead(int handle, void *dest, int count)
@@ -139,11 +199,18 @@ int CFileSystem::FileRead(int handle, void *dest, int count)
 	if(!dest)
 		return -1;
 	
+	//int t = VID_ForceUnlockedAndReturnState(); // TODO
+	
+	int x;
+	
 #ifdef _WIN32
-	return fread(dest, 1, count, sys_handles[handle]);
+	x = fread(dest, 1, count, sys_handles[handle]);
 #else
-	return read(handle, dest, count);
+	x = read(handle, dest, count);
 #endif
+
+	//VID_ForceLockState(t); // TODO
+	return x;
 };
 
 int CFileSystem::FileWrite(int handle, const void *data, int count)
@@ -151,24 +218,36 @@ int CFileSystem::FileWrite(int handle, const void *data, int count)
 	if(!data)
 		return -1;
 	
+	//int t = VID_ForceUnlockedAndReturnState(); // TODO
+	
+	int x;
+	
 #ifdef _WIN32
-	return fwrite(data, 1, count, sys_handles[handle]);
+	x = fwrite(data, 1, count, sys_handles[handle]);
 #else
-	return write(handle, src, count);
+	x = write(handle, src, count);
 #endif
+
+	//VID_ForceLockState(t); // TODO
+	return x;
 };
 
 int CFileSystem::GetFileTime(const char *path) const
 {
+	int t = 0; //VID_ForceUnlockedAndReturnState(); // TODO windows
 	FILE *f{fopen(path, "rb")};
+	int retval;
 	
 	if(f)
 	{
 		fclose(f);
-		return 1;
-	};
+		return 1; // TODO: retval = 1;
+	}
+	//else // TODO
+		//retval = -1; // TODO
 	
-	return -1;
+	//VID_ForceLockState(t); // TODO windows
+	return -1; //return retval; // TODO
 };
 
 int CFileSystem::GetFileSize(const char *path) const
@@ -193,11 +272,15 @@ filelength
 */
 int CFileSystem::filelength(FILE *f)
 {
+	//int t = VID_ForceUnlockedAndReturnState(); // TODO: windows & not dedicated
+	
 	int pos = ftell(f);
 	fseek(f, 0, SEEK_END);
 	
 	int end = ftell(f);
 	fseek(f, pos, SEEK_SET);
 
+	//VID_ForceLockState(t); // TODO: windows & not dedicated
+	
 	return end;
 };
