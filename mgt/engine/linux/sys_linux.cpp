@@ -19,41 +19,152 @@
 */
 
 /// @file
-/// @brief
 
+#include "quakedef.h"
 #include <unistd.h>
 #include <signal.h>
-#include <stdlib.h>
 #include <limits.h>
 #include <sys/time.h>
 #include <sys/types.h>
-#include <unistd.h>
 #include <fcntl.h>
-#include <stdarg.h>
-#include <stdio.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <sys/stat.h>
-#include <string.h>
-#include <ctype.h>
 #include <sys/wait.h>
 #include <sys/mman.h>
 #include <errno.h>
-
-#include "quakedef.h"
+//#include <sys/param.h>
+//#include <stddef.h>
 
 bool isDedicated;
 
 int nostdout = 0;
 
-char *basedir = ".";
-char *cachedir = "/tmp";
+const char *basedir = ".";
+const char *cachedir = "/tmp";
 
 cvar_t sys_linerefresh = { "sys_linerefresh", "0" }; // set for entity display
 
-// =======================================================================
-// General routines
-// =======================================================================
+#define MAX_HANDLES 10
+
+typedef struct
+{
+	FILE *hFile;
+	char *pMap;
+	int nLen;
+	int nPos;
+} MEMFILE;
+
+MEMFILE sys_handles[MAX_HANDLES];
+
+int findhandle(void)
+{
+	int i;
+
+	for(i = 1; i < MAX_HANDLES; i++)
+		if(!sys_handles[i].hFile)
+			return i;
+	Sys_Error("out of handles");
+	return -1;
+}
+
+int Sys_FileOpenRead(char *path, int *hndl)
+{
+	FILE *f;
+	int i;
+
+	i = findhandle();
+
+	f = fopen(path, "rb");
+	if(!f)
+	{
+		*hndl = -1;
+		return -1;
+	}
+	sys_handles[i].hFile = f;
+	sys_handles[i].nLen = filelength(f);
+	sys_handles[i].nPos = 0;
+	sys_handles[i].pMap = mmap(0, sys_handles[i].nLen, PROT_READ, MAP_SHARED, fileno(sys_handles[i].hFile), 0);
+	if(!sys_handles[i].pMap || (sys_handles[i].pMap == (char *)-1))
+	{
+		printf("mmap %s failed!", path);
+		sys_handles[i].pMap = nullptr;
+	}
+
+	*hndl = i;
+
+	return (sys_handles[i].nLen);
+}
+
+int Sys_FileOpenWrite(char *path)
+{
+	FILE *f;
+	int i;
+
+	i = findhandle();
+
+	f = fopen(path, "wb");
+	if(!f)
+		Sys_Error("Error opening %s: %s", path, strerror(errno));
+	sys_handles[i].hFile = f;
+	sys_handles[i].nLen = 0;
+	sys_handles[i].nPos = 0;
+	sys_handles[i].pMap = nullptr;
+
+	return i;
+}
+
+void Sys_FileClose(int handle)
+{
+	if(sys_handles[handle].pMap)
+		if(munmap(sys_handles[handle].pMap, sys_handles[handle].nLen) != 0)
+			printf("failed to unmap handle %d\n", handle);
+
+	fclose(sys_handles[handle].hFile);
+	sys_handles[handle].hFile = nullptr;
+}
+
+void Sys_FileSeek(int handle, int position)
+{
+	if(sys_handles[handle].pMap)
+	{
+		sys_handles[handle].nPos = position;
+	}
+	else
+		fseek(sys_handles[handle].hFile, position, SEEK_SET);
+}
+
+int Sys_FileRead(int handle, void *dest, int count)
+{
+	if(sys_handles[handle].pMap)
+	{
+		int nPos = sys_handles[handle].nPos;
+		if(count < 0)
+			count = 0;
+		if(nPos + count > sys_handles[handle].nLen)
+			count = sys_handles[handle].nLen - nPos;
+		memcpy(dest, &sys_handles[handle].pMap[nPos], count);
+		sys_handles[handle].nPos = nPos + count;
+		return (count);
+	}
+	else
+		return fread(dest, 1, count, sys_handles[handle].hFile);
+}
+
+int Sys_FileWrite(int handle, void *data, int count)
+{
+	if(sys_handles[handle].pMap)
+		Sys_Error("Attempted to write to read-only file %d!\n", handle);
+	return fwrite(data, 1, count, sys_handles[handle].hFile);
+}
+
+/*
+===============================================================================
+
+SYSTEM IO
+
+===============================================================================
+*/
 
 void Sys_DebugNumber(int y, int val)
 {
@@ -105,32 +216,6 @@ void Sys_Printf (char *fmt, ...)
 
 }
 */
-
-void Sys_Quit()
-{
-	Host_Shutdown();
-	fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) & ~FNDELAY);
-
-	fflush(stdout);
-	exit(0);
-}
-
-void Sys_Error(const char *error, ...)
-{
-	va_list argptr;
-	char string[1024];
-
-	// change stdin to non blocking
-	fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) & ~FNDELAY);
-
-	va_start(argptr, error);
-	vsprintf(string, error, argptr);
-	va_end(argptr);
-	fprintf(stderr, "Error: %s\n", string);
-
-	Host_Shutdown();
-	exit(1);
-}
 
 void Sys_Warn(const char *warning, ...)
 {
@@ -247,32 +332,6 @@ void floating_point_exception_handler(int whatever)
 	signal(SIGFPE, floating_point_exception_handler);
 }
 
-char *Sys_ConsoleInput()
-{
-	static char text[256];
-	int len;
-	fd_set fdset;
-	struct timeval timeout;
-
-	if(cls.state == ca_dedicated)
-	{
-		FD_ZERO(&fdset);
-		FD_SET(0, &fdset); // stdin
-		timeout.tv_sec = 0;
-		timeout.tv_usec = 0;
-		if(select(1, &fdset, nullptr, nullptr, &timeout) == -1 || !FD_ISSET(0, &fdset))
-			return nullptr;
-
-		len = read(0, text, sizeof(text));
-		if(len < 1)
-			return nullptr;
-		text[len - 1] = 0; // rip off the /n and terminate
-
-		return text;
-	}
-	return nullptr;
-}
-
 #if !id386
 void Sys_HighFPPrecision()
 {
@@ -283,10 +342,12 @@ void Sys_LowFPPrecision()
 }
 #endif
 
+//=============================================================================
+
 /*
 int main (int c, char **v)
 {
-
+	static quakeparms_t parms;
 	double		time, oldtime, newtime;
 	extern int vcrFile;
 	extern int recording;
@@ -308,12 +369,19 @@ int main (int c, char **v)
 		parms.memsize = (int) (Q_atof(com_argv[j+1]) * 1024 * 1024);
 	parms.membase = malloc (parms.memsize);
 
-	parms.basedir = basedir;
+	parms.basedir = basedir; // TODO: "."
 // caching is disabled by default, use -cachedir to enable
 //	parms.cachedir = cachedir;
+	parms.cachedir = nullptr;
 
+	COM_InitArgv(argc, argv);
+
+	parms.argc = com_argc;
+	parms.argv = com_argv;
+	
 	fcntl(0, F_SETFL, fcntl (0, F_GETFL, 0) | FNDELAY);
 
+	//printf("Host_Init\n");
     Host_Init(&parms);
 
 	Sys_Init();
@@ -324,6 +392,12 @@ int main (int c, char **v)
 		fcntl(0, F_SETFL, fcntl (0, F_GETFL, 0) | FNDELAY);
 		printf ("Linux Quake -- Version %0.3f\n", LINUX_VERSION);
 	}
+	
+#ifdef __sun__
+	// unroll the simulation loop to give the video side a chance to see _vid_default_mode
+	Host_Frame(0.1);
+	VID_SetDefaultMode();
+#endif
 
     oldtime = Sys_FloatTime () - 0.1;
     while (1)
@@ -353,28 +427,6 @@ int main (int c, char **v)
         if (sys_linerefresh.value)
             Sys_LineRefresh ();
     }
-
+	return 0;
 }
 */
-
-/*
-================
-Sys_MakeCodeWriteable
-================
-*/
-void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
-{
-	int r;
-	unsigned long addr;
-	int psize = getpagesize();
-
-	addr = (startaddr & ~(psize - 1)) - psize;
-
-	//	fprintf(stderr, "writable code %lx(%lx)-%lx, length=%lx\n", startaddr,
-	//			addr, startaddr+length, length);
-
-	r = mprotect((char *)addr, length + startaddr - addr + psize, 7);
-
-	if(r < 0)
-		Sys_Error("Protection change failed\n");
-}

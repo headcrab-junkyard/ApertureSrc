@@ -19,7 +19,14 @@
 */
 
 /// @file
-/// @brief
+
+/*
+===============================================================================
+
+SYSTEM IO
+
+===============================================================================
+*/
 
 #include "quakedef.h"
 
@@ -34,10 +41,35 @@ static double lastcurtime = 0.0;
 static int lowshift;
 #endif
 
+volatile int sys_checksum;
+
+bool isDedicated{false};
+
 void MaskExceptions();
 void Sys_InitFloatTime();
 void Sys_PushFPCW_SetHigh();
 void Sys_PopFPCW();
+
+// TODO: NONINTEL
+#ifndef _M_IX86
+
+void Sys_SetFPCW()
+{
+};
+
+void Sys_PushFPCW_SetHigh()
+{
+};
+
+void Sys_PopFPCW()
+{
+};
+
+void MaskExceptions()
+{
+};
+
+#endif
 
 void Sys_InitAuthentication(){
 	// TODO
@@ -71,11 +103,9 @@ Sys_InitFloatTime
 #ifdef _WIN32
 void Sys_InitFloatTime()
 {
-	int j;
-
 	Sys_FloatTime();
 
-	j = COM_CheckParm("-starttime");
+	int j = COM_CheckParm("-starttime");
 
 	if(j)
 		curtime = (double)(Q_atof(com_argv[j + 1]));
@@ -116,7 +146,7 @@ void Sys_Init()
 		lowpart >>= 1;
 		lowpart |= (highpart & 1) << 31;
 		highpart >>= 1;
-	}
+	};
 
 	pfreq = 1.0 / (double)lowpart;
 
@@ -127,11 +157,8 @@ void Sys_Init()
 	if(!GetVersionEx(&vinfo))
 		Sys_Error("Couldn't get OS info");
 
-	if((vinfo.dwMajorVersion < 4) ||
-	   (vinfo.dwPlatformId == VER_PLATFORM_WIN32s))
-	{
+	if((vinfo.dwMajorVersion < 4) || (vinfo.dwPlatformId == VER_PLATFORM_WIN32s))
 		Sys_Error("WinQuake requires at least Win95 or NT 4.0");
-	}
 
 	if(vinfo.dwPlatformId == VER_PLATFORM_WIN32_NT)
 		WinNT = true;
@@ -156,6 +183,31 @@ void Sys_ShutdownArgv(){
 	// TODO
 };
 
+/*
+================
+Sys_PageIn
+================
+*/
+void Sys_PageIn(void *ptr, int size)
+{
+	byte *x;
+	int j, m, n;
+
+	// touch all the memory to make sure it's there. The 16-page skip is to
+	// keep Win 95 from thinking we're trying to page ourselves in (we are
+	// doing that, of course, but there's no reason we shouldn't)
+	x = (byte *)ptr;
+
+	for(n = 0; n < 4; n++)
+	{
+		for(m = 0; m < (size - 16 * 0x1000); m += 4)
+		{
+			sys_checksum += *(int *)&x[m];
+			sys_checksum += *(int *)&x[m + 16 * 0x1000];
+		};
+	};
+};
+
 void Sys_Printf(const char *fmt, ...)
 {
 #ifdef _WIN32
@@ -171,7 +223,7 @@ void Sys_Printf(const char *fmt, ...)
 
 		//WriteFile(houtput, text, strlen (text), &dummy, nullptr); // TODO: IDedicatedExports->Printf
 	};
-#else  // if linux
+#elif __linux__
 	va_list argptr;
 	char text[1024];
 	unsigned char *p;
@@ -194,6 +246,12 @@ void Sys_Printf(const char *fmt, ...)
 		else
 			putc(*p, stdout);
 	};
+#elif __sun__ // TODO: or windows dedicated server
+	va_list argptr;
+
+	va_start(argptr, fmt);
+	vprintf(fmt, argptr);
+	va_end(argptr);
 #endif // _WIN32
 };
 
@@ -272,5 +330,159 @@ double Sys_FloatTime()
 	};
 
 	return (tp.tv_sec - secbase) + tp.tv_usec / 1000000.0;
+#endif
+};
+
+void Sys_Error(const char *error, ...)
+{
+#ifdef _WIN32
+	va_list argptr;
+	char text[1024], text2[1024];
+	const char *text3 = "Press Enter to exit\n";
+	const char *text4 = "***********************************\n";
+	const char *text5 = "\n";
+	DWORD dummy;
+	double starttime;
+	static int in_sys_error0 = 0;
+	static int in_sys_error1 = 0;
+	static int in_sys_error3 = 0;
+
+	if(!in_sys_error3)
+	{
+		in_sys_error3 = 1;
+		//VID_ForceUnlockedAndReturnState(); // TODO
+	};
+
+	va_start(argptr, error);
+	vsprintf(text, error, argptr);
+	va_end(argptr);
+
+	if(isDedicated)
+	{
+		va_start(argptr, error);
+		vsprintf(text, error, argptr);
+		va_end(argptr);
+
+		sprintf(text2, "ERROR: %s\n", text);
+		WriteFile(houtput, text5, strlen(text5), &dummy, nullptr);
+		WriteFile(houtput, text4, strlen(text4), &dummy, nullptr);
+		WriteFile(houtput, text2, strlen(text2), &dummy, nullptr);
+		WriteFile(houtput, text3, strlen(text3), &dummy, nullptr);
+		WriteFile(houtput, text4, strlen(text4), &dummy, nullptr);
+
+		starttime = Sys_FloatTime();
+		//sc_return_on_enter = true; // so Enter will get us out of here // TODO
+
+		//while(!Sys_ConsoleInput() && ((Sys_FloatTime() - starttime) < CONSOLE_ERROR_TIMEOUT)) // TODO
+		{
+		};
+	}
+	else
+	{
+		// switch to windowed so the message box is visible, unless we already
+		// tried that and failed
+		if(!in_sys_error0)
+		{
+			in_sys_error0 = 1;
+			//VID_SetDefaultMode(); // TODO
+			MessageBox(nullptr, text, "Engine Error", MB_OK | MB_SETFOREGROUND | MB_ICONSTOP);
+		}
+		else
+			MessageBox(nullptr, text, "Double Engine Error", MB_OK | MB_SETFOREGROUND | MB_ICONSTOP);
+	};
+
+	if(!in_sys_error1)
+	{
+		in_sys_error1 = 1;
+		Host_Shutdown();
+	};
+
+	exit(1);
+#elif __linux__
+	va_list argptr;
+	char string[1024];
+
+	// change stdin to non blocking
+	fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) & ~FNDELAY);
+
+	va_start(argptr, error);
+	vsprintf(string, error, argptr);
+	va_end(argptr);
+	fprintf(stderr, "Error: %s\n", string);
+
+	Host_Shutdown();
+	exit(1);
+#elif __sun_
+	va_list argptr;
+
+	printf("Sys_Error: ");
+	va_start(argptr, error);
+	vprintf(error, argptr);
+	va_end(argptr);
+	printf("\n");
+	Host_Shutdown();
+	exit(1);
+#endif
+};
+
+/*
+================
+Sys_MakeCodeWriteable
+================
+*/
+void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
+{
+#ifdef _WIN32
+	DWORD flOldProtect;
+
+	if(!VirtualProtect((LPVOID)startaddr, length, PAGE_READWRITE, &flOldProtect))
+		Sys_Error("Protection change failed\n");
+#elif __linux__ || __sun__
+	int r;
+	unsigned long addr;
+	int psize = getpagesize();
+
+	addr = (startaddr & ~(psize - 1)) - psize;
+
+	//	fprintf(stderr, "writable code %lx(%lx)-%lx, length=%lx\n", startaddr,
+	//			addr, startaddr+length, length);
+
+	r = mprotect((char *)addr, length + startaddr - addr + psize, 7);
+
+	if(r < 0)
+		Sys_Error("Protection change failed\n");
+#endif
+};
+
+void Sys_Quit()
+{
+#ifdef _WIN32
+	//VID_ForceUnlockedAndReturnState(); // TODO
+
+	Host_Shutdown();
+
+	//if(tevent) // TODO
+		//CloseHandle(tevent); // TODO
+
+	exit(0);
+#elif __linux__
+	Host_Shutdown();
+	fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) & ~FNDELAY);
+
+	fflush(stdout);
+	exit(0);
+#elif __sun__
+	Host_Shutdown();
+	exit(0);
+#endif
+};
+
+void Sys_Sleep()
+{
+#ifdef _WIN32
+	Sleep(1);
+#elif __linux__
+	usleep(1 * 1000);
+#elif __sun__ // TODO: or dedicated
 #endif
 };
