@@ -70,6 +70,10 @@ public:
 
 	void SetSleep(bool state) override;
 	bool GetShouldVGuiControlSleep() override;
+private:
+	void DispatchMessages();
+	
+	CEGUI::OpenGLRenderer *gpRenderer{nullptr};
 };
 
 }; // namespace vgui3

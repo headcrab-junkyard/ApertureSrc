@@ -47,6 +47,8 @@ public:
 
 	const char *GetName() override;
 	void SetName(const char *name) override;
+private:
+	const char *msName{""};
 };
 
 }; // namespace vgui3

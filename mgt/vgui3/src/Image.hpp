@@ -17,6 +17,8 @@
  * along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
+/// @file
+
 #pragma once
 
 #include "vgui3/IImage.h"

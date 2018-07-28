@@ -29,6 +29,9 @@ namespace vgui3
 class CScheme : public IScheme
 {
 public:
+	CScheme();
+	~CScheme();
+	
 	const char *GetResourceString(const char *stringName) override;
 	IBorder *GetBorder(const char *borderName) override;
 	HFont GetFont(const char *fontName, bool proportional) override;
