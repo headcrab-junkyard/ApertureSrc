@@ -26,13 +26,28 @@
 namespace vgui3
 {
 
-class CScheme : public IScheme
+class CSchemeManager : public ISchemeManager
 {
 public:
-	const char *GetResourceString(const char *stringName);
-	IBorder *GetBorder(const char *borderName);
-	HFont GetFont(const char *fontName, bool proportional);
-	Color GetColor(const char *colorName, Color defaultColor);
+	CSchemeManager();
+	~CSchemeManager();
+	
+	HScheme LoadSchemeFromFile(const char *fileName, const char *tag) override;
+
+	void ReloadSchemes() override;
+
+	HScheme GetDefaultScheme() override;
+	HScheme GetScheme(const char *tag) override;
+
+	IImage *GetImage(const char *imageName, bool hardwareFiltered) override;
+	HTexture GetImageID(const char *imageName, bool hardwareFiltered) override;
+
+	IScheme *GetIScheme(HScheme scheme) override;
+
+	void Shutdown(bool full = true) override;
+
+	int GetProportionalScaledValue(int normalizedValue) override;
+	int GetProportionalNormalizedValue(int scaledValue) override;
 };
 
 }; // namespace vgui3

@@ -21,46 +21,32 @@
 
 #pragma once
 
-#include "vgui3/IInput.hpp"
+#include "vgui3/IBorder.h"
 
 namespace vgui3
 {
 
-class CInput : public IInput
+class CBorder : public IBorder
 {
 public:
-	void SetMouseFocus(VPANEL newMouseFocus);
-	void SetMouseCapture(VPANEL panel);
+	CBorder();
+	~CBorder();
+	
+	void Paint(VPANEL panel) override;
+	void Paint(int x0, int y0, int x1, int y1) override;
+	void Paint(int x0, int y0, int x1, int y1, int breakSide, int breakStart, int breakStop) override;
 
-	void GetKeyCodeText(KeyCode code, char *buf, int buflen);
+	void SetInset(int left, int top, int right, int bottom) override;
+	void GetInset(int &left, int &top, int &right, int &bottom) override;
 
-	VPANEL GetFocus();
-	VPANEL GetMouseOver();
+	void AddLine(sides_e side, Color color, int startOffset, int endOffset) override;
 
-	void SetCursorPos(int x, int y);
-	void GetCursorPos(int &x, int &y);
+	void ApplySchemeSettings(IScheme *pScheme, KeyValues *inResourceData) override;
 
-	bool WasMousePressed(MouseCode code);
-	bool WasMouseDoublePressed(MouseCode code);
+	void ParseSideSettings(int side_index, KeyValues *inResourceData, IScheme *pScheme) override;
 
-	bool IsMouseDown(MouseCode code);
-
-	void SetCursorOveride(HCursor cursor);
-	HCursor GetCursorOveride();
-
-	bool WasMouseReleased(MouseCode code);
-	bool WasKeyPressed(KeyCode code);
-
-	bool IsKeyDown(KeyCode code);
-
-	bool WasKeyTyped(KeyCode code);
-	bool WasKeyReleased(KeyCode code);
-
-	VPANEL GetAppModalSurface();
-	void SetAppModalSurface(VPANEL panel);
-	void ReleaseAppModalSurface();
-
-	void GetCursorPosition(int &x, int &y);
+	const char *GetName() override;
+	void SetName(const char *name) override;
 };
 
 }; // namespace vgui3
