@@ -19,11 +19,36 @@
 
 /// @file
 
-#include "VPanel.hpp"
+#pragma once
 
 namespace vgui3
 {
 
-//void VPanel::
+CImage::CImage() = default;
+CImage::~CImage() = default;
+
+void CImage::Paint()
+{
+};
+
+void CImage::SetPos(int x, int y)
+{
+};
+
+void CImage::GetContentSize(int &wide, int &tall)
+{
+};
+
+void CImage::GetSize(int &wide, int &tall)
+{
+};
+
+void CImage::SetSize(int wide, int tall)
+{
+};
+
+void CImage::SetColor(Color color)
+{
+};
 
 }; // namespace vgui3

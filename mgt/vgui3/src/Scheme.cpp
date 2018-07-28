@@ -19,11 +19,32 @@
 
 /// @file
 
-#include "VPanel.hpp"
+#include "Scheme.hpp"
 
 namespace vgui3
 {
 
-//void VPanel::
+CScheme::CScheme() = default;
+CScheme::~CScheme() = default;
 
+const char *CScheme::GetResourceString(const char *stringName)
+{
+	return "";
+};
+
+IBorder *CScheme::GetBorder(const char *borderName)
+{
+	return nullptr;
+};
+
+HFont CScheme::GetFont(const char *fontName, bool proportional)
+{
+	return 0;
+};
+
+Color CScheme::GetColor(const char *colorName, Color defaultColor)
+{
+	return defaultColor;
+};
+	
 }; // namespace vgui3

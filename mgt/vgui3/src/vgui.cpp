@@ -19,9 +19,17 @@
 
 /// @file
 
-CEGUI::OpenGLRenderer *gpRenderer{nullptr};
+#include "VGUI.hpp"
 
-void CVGUI::Init() // TODO: Startup?
+namespace vgui3
+{
+
+EXPOSE_SINGLE_INTERFACE(CVGui, IVgui, MGT_VGUI3_INTERFACE_VERSION);
+
+CVGui::CVGui() = default;
+CVGui::~CVGui() = default;
+
+bool CVGUI::Init(CreateInterfaceFn *factoryList, int numFactories) // TODO: Startup?
 {
 	// TODO
 	// * CEGUI::OpenGLRenderer for r_gl
@@ -37,11 +45,102 @@ void CVGUI::Shutdown()
 	CEGUI::OpenGLRenderer::destroySystem();
 };
 
+void CVGui::Start()
+{
+};
+
+void CVGui::Stop()
+{
+};
+
+bool CVGui::IsRunning()
+{
+};
+
 void CVGui::Frame() // TODO: RunFrame?
 {
 	CEGUI::System::renderAllGUIContexts();
 };
 
+void CVGui::ShutdownMessage(unsigned int shutdownID)
+{
+};
+
+VPANEL CVGui::AllocPanel()
+{
+	return 0;
+};
+
+void CVGui::FreePanel(VPANEL panel)
+{
+};
+
+void CVGui::DPrintf(const char *format, ...)
+{
+};
+
+void CVGui::DPrintf2(const char *format, ...)
+{
+};
+
+void CVGui::SpewAllActivePanelNames()
+{
+};
+
+HPanel CVGui::PanelToHandle(VPANEL panel)
+{
+	return 0;
+};
+
+VPANEL CVGui::HandleToPanel(HPanel index)
+{
+	return 0;
+};
+
+void CVGui::MarkPanelForDeletion(VPANEL panel)
+{
+};
+
+void CVGui::AddTickSignal(VPANEL panel, int intervalMilliseconds = 0)
+{
+};
+
+void CVGui::RemoveTickSignal(VPANEL panekl)
+{
+};
+
+void CVGui::PostMessage(VPANEL target, KeyValues *params, VPANEL from, float delaySeconds = 0.0f)
+{
+};
+
+HContext CVGui::CreateContext()
+{
+	return 0;
+};
+
+void CVGui::DestroyContext(HContext context)
+{
+};
+
+void CVGui::AssociatePanelWithContext(HContext context, VPANEL pRoot)
+{
+};
+
+void CVGui::ActivateContext(HContext context)
+{
+};
+
+void CVGui::SetSleep(bool state)
+{
+};
+
+bool CVGui::GetShouldVGuiControlSleep()
+{
+	return false;
+};
+
 void CVGui::DispatchMessages()
 {
 };
+
+}; // namespace vgui3
