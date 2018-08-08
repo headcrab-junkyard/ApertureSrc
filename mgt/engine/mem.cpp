@@ -18,7 +18,6 @@
 */
 
 /// @file
-/// @brief
 
 #include "quakedef.h"
 #include "mem.h"
