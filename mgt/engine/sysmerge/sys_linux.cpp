@@ -45,6 +45,7 @@ const char *cachedir = "/tmp";
 
 cvar_t sys_linerefresh = { "sys_linerefresh", "0" }; // set for entity display
 
+// TODO: sun-specific fs code
 #define MAX_HANDLES 10
 
 typedef struct

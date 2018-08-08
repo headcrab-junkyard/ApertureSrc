@@ -21,11 +21,16 @@
 /// @file
 /// @brief Win32 system interface code
 
+#include <errno.h>
 #include "quakedef.h"
 #include "winquake.h"
-#include "errno.h"
 #include "resource.h"
 #include "conproc.h"
+
+#ifdef SWDS
+#include <sys\types.h>
+#include <sys\timeb.h>
+#endif
 
 #define MINIMUM_WIN_MEMORY 0x0880000
 #define MAXIMUM_WIN_MEMORY 0x1000000
@@ -34,20 +39,22 @@
 
 int starttime;
 
-static char *tracking_tag{"Clams & Mooses"};
+static char *tracking_tag{"Clams & Mooses"}; // TODO: unused?
 
+// TODO: unused by dedicated
 static HANDLE tevent;
 static HANDLE hFile;
 static HANDLE heventParent;
 static HANDLE heventChild;
+//
 
-int Sys_FileOpenWrite(char *path)
+int Sys_FileOpenWrite(const char *path)
 {
 	FILE *f;
 	int i;
 	int t;
 
-	t = VID_ForceUnlockedAndReturnState();
+	t = VID_ForceUnlockedAndReturnState(); // TODO: non-dedicated win only
 
 	i = findhandle();
 
@@ -56,9 +63,127 @@ int Sys_FileOpenWrite(char *path)
 		Sys_Error("Error opening %s: %s", path, strerror(errno));
 	sys_handles[i] = f;
 
-	VID_ForceLockState(t);
+	VID_ForceLockState(t); // TODO: non-dedicated win only
 
 	return i;
+}
+
+/*
+===============================================================================
+
+SYSTEM IO
+
+===============================================================================
+*/
+
+void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
+{
+#if defined(_WIN32) && defined(SWDS)
+	// Nothing
+#endif
+}
+
+void Sys_DebugLog(const char *file, const char *fmt, ...)
+{
+#if defined(_WIN32) && defined(SWDS)
+	// Nothing
+#endif
+}
+
+void Sys_Error(const char *error, ...)
+{
+#if defined(_WIN32) && defined(SWDS)
+	va_list argptr;
+	char text[1024];
+
+	va_start(argptr, error);
+	vsprintf(text, error, argptr);
+	va_end(argptr);
+
+	//    MessageBox(nullptr, text, "Error", 0 /* MB_OK */ );
+	printf("ERROR: %s\n", text);
+
+	exit(1);
+#endif
+}
+
+void Sys_Quit()
+{
+#if defined(_WIN32) && defined(SWDS)
+	exit(0);
+#endif
+}
+
+double Sys_FloatTime()
+{
+#if defined(_WIN32) && defined(SWDS)
+	double t;
+	struct _timeb tstruct;
+	static int starttime;
+
+	_ftime(&tstruct);
+
+	if(!starttime)
+		starttime = tstruct.time;
+	t = (tstruct.time - starttime) + tstruct.millitm * 0.001;
+
+	return t;
+#endif
+}
+
+void Sys_HighFPPrecision()
+{
+#if defined(_WIN32) && defined(SWDS)
+	// Nothing
+#endif
+}
+
+void Sys_LowFPPrecision()
+{
+#if defined(_WIN32) && defined(SWDS)
+	// Nothing
+#endif
+}
+
+char *Sys_ConsoleInput()
+{
+#if defined(_WIN32) && defined(SWDS)
+	static char text[256];
+	static int len;
+	INPUT_RECORD recs[1024];
+	int count;
+	int i;
+	int c;
+
+	// read a line out
+	while(_kbhit())
+	{
+		c = _getch();
+		putch(c);
+		if(c == '\r')
+		{
+			text[len] = 0;
+			putch('\n');
+			len = 0;
+			return text;
+		}
+		if(c == 8)
+		{
+			putch(' ');
+			putch(c);
+			len--;
+			text[len] = 0;
+			continue;
+		}
+		text[len] = c;
+		len++;
+		text[len] = 0;
+		if(len == sizeof(text))
+			len = 0;
+	}
+
+	return nullptr;
+#endif
 }
 
 /*
@@ -68,6 +193,39 @@ int Sys_FileOpenWrite(char *path)
 
 ==============================================================================
 */
+
+/*
+==================
+main
+
+==================
+*/
+#ifdef SWDS
+char *newargv[256];
+
+int main(int argc, char **argv)
+{
+	double time, oldtime;
+	static char cwd[1024];
+
+	parms.memsize = 16384 * 1024;
+
+	_getcwd(cwd, sizeof(cwd));
+	if(cwd[Q_strlen(cwd) - 1] == '\\')
+		cwd[Q_strlen(cwd) - 1] = 0;
+	parms.basedir = cwd;
+
+	oldtime = Sys_FloatTime();
+
+	/* main window message loop */
+	while(1)
+	{
+	}
+
+	/* return success of application */
+	return TRUE;
+}
+#endif
 
 /*
 ==================
