@@ -57,6 +57,33 @@ interface from being ambiguous.
 
 #include "cvardef.h"
 
+class CConVar
+{
+public:
+	CConVar(const char *asName, const char *asValue, int anFlags = 0, const char *asDesc = "") : msDesc(asDesc)
+	{
+		mpData->name = (char*)asName; // TODO
+		mpData->string = (char*)asValue; // TODO
+		mpData->flags = anFlags;
+	};
+
+	~CConVar() = default;
+	
+	const char *GetName() const {return mpData->name;}
+	const char *GetDesc() const {return msDesc;}
+	
+	int GetFlags() const {return mpData->flags;}
+	
+	void SetValue(float afValue){mpData->value = afValue;}
+	float GetValue() const {return mpData->value;}
+	
+	cvar_t *internal() const {return mpData;} // TODO: temp
+private:
+	cvar_t *mpData{nullptr};
+	
+	const char *msDesc{""};
+};
+
 extern cvar_t *cvar_vars;
 
 void Cvar_RegisterVariable(cvar_t *variable);
@@ -72,7 +99,7 @@ void Cvar_SetValue(const char *var_name, float value);
 float Cvar_VariableValue(const char *var_name);
 // returns 0 if not defined or non numeric
 
-char *Cvar_VariableString(const char *var_name);
+const char *Cvar_VariableString(const char *var_name);
 // returns an empty string if not defined
 
 char *Cvar_CompleteVariable(const char *partial);
