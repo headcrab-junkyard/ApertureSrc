@@ -83,7 +83,7 @@ HANDLE hinput, houtput;
 
 char *Sys_ConsoleInput()
 {
-#ifdef _WIN32
+#if 0 //#ifdef _WIN32 // TODO
 	static char text[256]{};
 	static int len;
 	INPUT_RECORD recs[1024]{};
@@ -221,7 +221,7 @@ void Host_GetConsoleCommands()
 		cmd = Sys_ConsoleInput();
 		if(!cmd)
 			break;
-		Cbuf_AddText(cmd);
+		//Cbuf_AddText(cmd); // TODO
 	};
 };
 
