@@ -22,8 +22,12 @@
 
 // net_ws.c
 
+#include <memory>
 #include "quakedef.h"
 #include "network/INetwork.hpp"
+
+// TODO
+#include "null/NetworkNull.hpp"
 
 void *gpNetworkLib{ nullptr };
 INetwork *gpNetwork{ nullptr };
@@ -101,27 +105,35 @@ void NetadrToSockadr(netadr_t *a, struct sockaddr_in *s)
 void SockadrToNetadr(struct sockaddr_in *s, netadr_t *a)
 {
 };
+*/
 
 bool NET_CompareBaseAdr(netadr_t a, netadr_t b)
 {
-	return false;
+	return false; // TODO: gpNetwork->CompareBaseAdr(a, b);
 };
 
+/*
 bool NET_CompareAdr(netadr_t a, netadr_t b)
 {
 	return false;
 };
+*/
 
+/*
 char *NET_AdrToString(netadr_t a)
 {
-	return s;
+	return nullptr;
 };
+*/
 
+/*
 char *NET_BaseAdrToString(netadr_t a)
 {
 	return s;
 };
+*/
 
+/*
 bool NET_StringToAdr(char *s, netadr_t *a)
 {
 	return true;
@@ -150,9 +162,15 @@ void NET_GetLocalAddress()
 
 void NET_Init(/*int port*/)
 {
+	static std::unique_ptr<CNetworkNull> pNetworkNull;
+	
 	if(!LoadNetworkModule())
-		//gpNetwork = new CNetworkNull(); // TODO
-		return;
+	{
+		if(!pNetworkNull)
+			pNetworkNull = std::make_unique<CNetworkNull>();
+		
+		gpNetwork = pNetworkNull.get();
+	};
 
 	if(!gpNetwork->Init(Sys_GetFactoryThis()))
 		return;
