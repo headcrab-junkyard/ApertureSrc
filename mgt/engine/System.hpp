@@ -32,10 +32,15 @@ public:
 	CSystem();
 	~CSystem();
 
+	//bool Init() override {return true;}
+	//void Shutdown() override {}
+	
 	void AddEventListener(ISystemEventListener *apListener) override;
 	void RemoveEventListener(ISystemEventListener *apListener) override;
 	
-	void Error(const char *fmt, ...) override;
+	void Printf(const char *asMsg, ...) override;
+	
+	void Error(const char *asMsg, ...) override;
 
 	double GetFloatTime() const override;
 private:
