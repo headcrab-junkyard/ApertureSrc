@@ -33,13 +33,13 @@ void *gpNetworkLib{ nullptr };
 INetwork *gpNetwork{ nullptr };
 
 // TODO
-/*
 
-netadr_t net_local_adr;
+//netadr_t net_local_adr;
 
 netadr_t net_from;
 sizebuf_t net_message;
 
+/*
 #ifdef _WIN32
 
 int net_socket;
