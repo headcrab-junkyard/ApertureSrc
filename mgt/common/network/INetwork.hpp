@@ -99,6 +99,9 @@ interface INetwork : public IBaseInterface
 	virtual bool GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message) = 0;
 	virtual void SendPacket(netsrc_t sock, int length, void *data, netadr_t to) = 0;
 	
+	virtual bool CompareAdr(netadr_t *a, netadr_t *b) const = 0;
+	virtual char *AdrToString(netadr_t *a) const = 0;
+	
 	//
 	
 	/**

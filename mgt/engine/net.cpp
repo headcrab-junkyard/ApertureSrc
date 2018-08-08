@@ -112,19 +112,15 @@ bool NET_CompareBaseAdr(netadr_t a, netadr_t b)
 	return false; // TODO: gpNetwork->CompareBaseAdr(a, b);
 };
 
-/*
 bool NET_CompareAdr(netadr_t a, netadr_t b)
 {
-	return false;
+	return gpNetwork->CompareAdr(&a, &b);
 };
-*/
 
-/*
 char *NET_AdrToString(netadr_t a)
 {
-	return nullptr;
+	return gpNetwork->AdrToString(&a);
 };
-*/
 
 /*
 char *NET_BaseAdrToString(netadr_t a)

@@ -33,6 +33,9 @@ public:
 	
 	bool GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message) override {return true;}
 	void SendPacket(netsrc_t sock, int length, void *data, netadr_t to) override {}
+	
+	bool CompareAdr(netadr_t *a, netadr_t *b) const override {return false;}
+	char *AdrToString(netadr_t *a) const override {return nullptr;}
 };
 
 EXPOSE_SINGLE_INTERFACE(CNetworkNull, INetwork, MGT_NETWORK_INTERFACE_VERSION);
