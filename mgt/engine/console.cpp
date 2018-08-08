@@ -33,9 +33,13 @@
 
 #include "engine/IConsole.hpp"
 
+// TODO: temp
+#include "engineclient/IEngineClient.hpp"
+extern IEngineClient *gpEngineClient;
+
 bool con_debuglog{false};
 
-void Con_Debug_f()
+void Con_Debug_f(const ICmdArgs &apArgs)
 {
 	// TODO
 };
@@ -49,6 +53,19 @@ void Con_Init()
 {
 	con_debuglog = COM_CheckParm("-condebug");
 
+	if(con_debuglog)
+	{
+		#define MAXGAMEDIRLEN 1000
+		char temp[MAXGAMEDIRLEN + 1];
+		const char *t2 = "/qconsole.log";
+		
+		if(strlen(com_gamedir) < (MAXGAMEDIRLEN - strlen(t2)))
+		{
+			sprintf(temp, "%s%s", com_gamedir, t2);
+			unlink(temp);
+		};
+	};
+	
 	//
 	// register our commands
 	//
@@ -121,7 +138,7 @@ void Con_DPrintf(const char *fmt, ...)
 	char msg[MAXPRINTMSG]{};
 
 	// don't confuse non-developers with techie stuff...
-	if(!developer.value)
+	if(!developer.GetValue())
 		return;
 
 	va_start(argptr, fmt);
@@ -147,10 +164,11 @@ void Con_SafePrintf(const char *fmt, ...)
 	vsprintf(msg, fmt, argptr);
 	va_end(argptr);
 
-	bool temp = scr_disabled_for_loading;
-	scr_disabled_for_loading = true;
+	// TODO
+	//bool temp{scr_disabled_for_loading};
+	//scr_disabled_for_loading = true;
 	Con_Printf("%s", msg);
-	scr_disabled_for_loading = temp;
+	//scr_disabled_for_loading = temp;
 };
 
 class CConsole final : public IConsole
