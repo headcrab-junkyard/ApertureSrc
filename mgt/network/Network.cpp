@@ -109,13 +109,6 @@ void SockadrToNetadr(struct sockaddr_in *s, netadr_t *a)
 	a->port = s->sin_port;
 };
 
-char *NET_AdrToString(netadr_t a)
-{
-	static char s[64];
-	sprintf(s, "%i.%i.%i.%i:%i", a.ip[0], a.ip[1], a.ip[2], a.ip[3], ntohs(a.port));
-	return s;
-};
-
 /*
 =============
 NET_StringToAdr
@@ -256,7 +249,7 @@ bool CNetwork::GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_messa
 			return false;
 		if(err == WSAEMSGSIZE)
 		{
-			mpConsole->Printf("Warning:  Oversize packet from %s\n", NET_AdrToString(*net_from));
+			mpConsole->Printf("Warning:  Oversize packet from %s\n", AdrToString(net_from));
 			return false;
 		};
 
@@ -280,7 +273,7 @@ bool CNetwork::GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_messa
 #ifdef _WIN32	
 	if(ret == sizeof(net_message_buffer))
 	{
-		mpConsole->Printf("Oversize packet from %s\n", NET_AdrToString(*net_from));
+		mpConsole->Printf("Oversize packet from %s\n", AdrToString(net_from));
 		return false;
 	};
 #elif __linux__
@@ -324,6 +317,22 @@ void CNetwork::SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
 		mpSystem->Printf("NET_SendPacket: %s\n", strerror(errno));
 #endif
 	};
+};
+
+bool CNetwork::CompareAdr(netadr_t *a, netadr_t *b) const
+{
+	// TODO: use references or validate them
+	
+	if(a->ip[0] == b->ip[0] && a->ip[1] == b->ip[1] && a->ip[2] == b->ip[2] && a->ip[3] == b->ip[3] && a->port == b->port)
+		return true;
+	return false;
+};
+
+char *CNetwork::AdrToString(netadr_t *a) const
+{
+	static char s[64];
+	sprintf(s, "%i.%i.%i.%i:%i", a->ip[0], a->ip[1], a->ip[2], a->ip[3], ntohs(a->port));
+	return s;
 };
 
 int CNetwork::UDP_OpenSocket(int port)
@@ -386,5 +395,5 @@ void CNetwork::GetLocalAddress()
 
 	net_local_adr.port = address.sin_port;
 
-	mpConsole->Printf("IP address %s\n", NET_AdrToString(net_local_adr));
+	mpConsole->Printf("IP address %s\n", AdrToString(&net_local_adr));
 };
