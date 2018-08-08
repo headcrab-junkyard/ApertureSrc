@@ -39,9 +39,9 @@ typedef struct
 
 extern quakeparms_t host_parms;
 
-extern cvar_t sys_ticrate;
-extern cvar_t sys_nostdout;
-extern cvar_t developer;
+extern CConVar sys_ticrate;
+extern CConVar sys_nostdout;
+extern CConVar developer;
 
 extern bool host_initialized; // true if into command execution
 extern double host_frametime;
@@ -59,7 +59,7 @@ void Host_Error(const char *error, ...);
 void Host_EndGame(const char *message, ...);
 void Host_Frame(float time); // TODO: state, stateinfo
 void Host_Quit_f();
-void Host_ClientCommands(const char *fmt, ...);
+void Host_ClientCommands(client_t *host_client, const char *fmt, ...);
 void Host_ShutdownServer(bool crash);
 //void Host_WriteConfiguration ();
 

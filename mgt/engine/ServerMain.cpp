@@ -23,98 +23,11 @@
 
 #include "quakedef.h"
 
-server_t sv;         // local server
-server_static_t svs; // persistent server info
+// TODO
+#include "GameClientEventDispatcher.hpp"
+extern CGameClientEventDispatcher *gpGameClientEventDispatcher;
 
-char localmodels[MAX_MODELS][5]; // inline model names for precache
-
-cvar_t sv_timeout = { "sv_timeout", "60" }; // seconds without any message
-
-//============================================================================
-
-/*
-===============
-SV_Init
-===============
-*/
-void SV_Init()
-{
-	int i;
-	extern cvar_t sv_maxvelocity;
-	extern cvar_t sv_gravity;
-	extern cvar_t sv_nostep;
-	extern cvar_t sv_friction;
-	extern cvar_t sv_edgefriction;
-	extern cvar_t sv_stopspeed;
-	extern cvar_t sv_maxspeed;
-	extern cvar_t sv_accelerate;
-	extern cvar_t sv_idealpitchscale;
-	extern cvar_t sv_aim;
-
-	Cvar_RegisterVariable(&sv_timeout);
-
-	Cvar_RegisterVariable(&sv_maxvelocity);
-	Cvar_RegisterVariable(&sv_gravity);
-	Cvar_RegisterVariable(&sv_friction);
-	Cvar_RegisterVariable(&sv_edgefriction);
-	Cvar_RegisterVariable(&sv_stopspeed);
-	Cvar_RegisterVariable(&sv_maxspeed);
-	Cvar_RegisterVariable(&sv_accelerate);
-	Cvar_RegisterVariable(&sv_idealpitchscale);
-	Cvar_RegisterVariable(&sv_aim);
-	Cvar_RegisterVariable(&sv_nostep);
-
-	for(i = 0; i < MAX_MODELS; i++)
-		sprintf(localmodels[i], "*%i", i);
-}
-
-/*
-=================
-SV_SendBan
-=================
-*/
-void SV_SendBan ()
-{
-	char		data[128];
-
-	data[0] = data[1] = data[2] = data[3] = 0xff;
-	data[4] = A2C_PRINT;
-	data[5] = 0;
-	strcat (data, "\nbanned.\n");
-	
-	NET_SendPacket (NS_SERVER, strlen(data), data, net_from);
-}
-
-/*
-==============================================================================
-
-PACKET FILTERING
- 
-
-You can add or remove addresses from the filter list with:
-
-addip <ip>
-removeip <ip>
-
-The ip address is specified in dot format, and any unspecified digits will match any value, so you can specify an entire class C network with "addip 192.246.40".
-
-Removeip will only remove an address specified exactly the same way.  You cannot addip a subnet, then removeip a single host.
-
-listip
-Prints the current list of filters.
-
-writeip
-Dumps "addip <ip>" commands to listip.cfg so it can be execed at a later date.  The filter lists are not saved and restored by default, because I beleive it would cause too much confusion.
-
-sv_filterban <0 or 1>
-
-If 1 (the default), then ip addresses matching the current list will be prohibited from entering the game.  This is the default setting.
-
-If 0, then only addresses matching the list will be allowed.  This lets you easily set up a private game, or a game that only allows players from your local network.
-
-
-==============================================================================
-*/
+#define	MAX_IPFILTERS	1024
 
 typedef struct
 {
@@ -122,19 +35,409 @@ typedef struct
 	unsigned	compare;
 } ipfilter_t;
 
-#define	MAX_IPFILTERS	1024
+server_t sv;         // local server
+server_static_t svs; // persistent server info
 
 ipfilter_t	ipfilters[MAX_IPFILTERS];
 int			numipfilters;
 
-cvar_t	sv_filterban = {"sv_filterban", "1"};
+char localinfo[MAX_LOCALINFO_STRING+1]; // local game info
+
+char localmodels[MAX_MODELS][5]; // inline model names for precache
+
+CConVar	sv_filterban("sv_filterban", "1");
+
+CConVar sv_timeout("sv_timeout", "60"); // seconds without any message
+
+//============================================================================
+
+void SV_WriteSpawn(client_t *client)
+{
+	client->spawned = true;
+};
+
+void SV_New_f(const ICmdArgs &apArgs);
+
+/*
+==================
+SV_Spawn_f
+==================
+*/
+void SV_Spawn_f(const ICmdArgs &apArgs) // TODO: was Host_Spawn_f
+{
+	int i;
+	client_t *client;
+	edict_t *ent;
+
+	if(cmd_source == src_command)
+	{
+		Con_Printf("spawn is not valid from the console\n");
+		return;
+	}
+
+	if(host_client->spawned)
+	{
+		Con_Printf("Spawn not valid -- allready spawned\n");
+		return;
+	}
+
+	// handle the case of a level changing while a client was connecting
+	if ( atoi(Cmd_Argv(1)) != svs.spawncount )
+	{
+		Con_Printf ("SV_Spawn_f from different level\n");
+		SV_New_f (apArgs);
+		return;
+	}
+	
+	// TODO
+	//SV_WriteSpawn(host_client);
+	
+	// run the entrance script
+	if(sv.loadgame)
+	{ // loaded games are fully inited allready
+		// if this is the last client to be connected, unpause
+		sv.paused = false;
+	}
+	else
+	{
+		// set up the edict
+		ent = host_client->edict;
+
+		memset(&ent->v, 0, sizeof(ent->v));
+		ent->v.colormap = NUM_FOR_EDICT(ent);
+		ent->v.team = (host_client->topcolor & 15) + 1;
+		ent->v.netname = PR_SetString(host_client->name);
+
+		// TODO: check for spectator in QW; unused in GS
+		/*
+		if(host_client->spectator)
+		{
+			SV_SpawnSpectator();
+
+			if(gEntityInterface.pfnSpectatorConnect)
+			{
+				// copy spawn parms out of the client_t
+				for (i=0 ; i< NUM_SPAWN_PARMS ; i++)
+					(&gGlobalVariables.parm1)[i] = host_client->spawn_parms[i];
+		
+				// call the spawn function
+				gGlobalVariables.time = sv.time;
+				gEntityInterface.pfnSpectatorConnect(sv_player);
+			};
+		}
+		else
+		*/
+		{
+		// copy spawn parms out of the client_t
+		for(i = 0; i < NUM_SPAWN_PARMS; i++)
+			(&gGlobalVariables.parm1)[i] = host_client->spawn_parms[i];
+
+		// call the spawn function
+
+		gGlobalVariables.time = sv.time;
+		if(!gpGameClientEventDispatcher->DispatchConnect(sv_player, host_client->name, "", nullptr)) // TODO
+			return; // TODO
+
+		//if ((Sys_FloatTime() - host_client->netchan.connecttime) <= sv.time) // TODO
+			Sys_Printf("%s entered the game\n", host_client->name);
+
+		// actually spawn the player // TODO: QW
+		//gGlobalVariables.time = sv.time; // TODO: QW
+		gpGameClientEventDispatcher->DispatchPutInServer(sv_player);
+		}
+	}
+
+	// send all current names, colors, and frag counts
+	SZ_Clear(&host_client->netchan.message);
+
+	// send time of update
+	MSG_WriteByte(&host_client->netchan.message, svc_time);
+	MSG_WriteFloat(&host_client->netchan.message, sv.time);
+
+	for(i = 0, client = svs.clients; i < svs.maxclients; i++, client++)
+	{
+		// TODO
+		/*
+		MSG_WriteByte(&host_client->netchan.message, svc_updatename);
+		MSG_WriteByte(&host_client->netchan.message, i);
+		MSG_WriteString(&host_client->netchan.message, client->name);
+		MSG_WriteByte(&host_client->netchan.message, svc_updatefrags);
+		MSG_WriteByte(&host_client->netchan.message, i);
+		MSG_WriteShort(&host_client->netchan.message, client->old_frags);
+		MSG_WriteByte(&host_client->netchan.message, svc_updatecolors);
+		MSG_WriteByte(&host_client->netchan.message, i);
+		MSG_WriteByte(&host_client->netchan.message, client->topcolor);
+		MSG_WriteByte(&host_client->netchan.message, client->bottomcolor);
+		*/
+	}
+
+	// send all current light styles
+	for(i = 0; i < MAX_LIGHTSTYLES; i++)
+	{
+		MSG_WriteByte(&host_client->netchan.message, svc_lightstyle);
+		MSG_WriteByte(&host_client->netchan.message, (char)i);
+		MSG_WriteString(&host_client->netchan.message, sv.lightstyles[i]);
+	}
+
+	//
+	// send some stats
+	//
+// TODO
+/*
+	MSG_WriteByte(&host_client->netchan.message, svc_updatestat);
+	MSG_WriteByte(&host_client->netchan.message, STAT_TOTALSECRETS);
+	MSG_WriteLong(&host_client->netchan.message, gGlobalVariables.total_secrets);
+
+	MSG_WriteByte(&host_client->netchan.message, svc_updatestat);
+	MSG_WriteByte(&host_client->netchan.message, STAT_TOTALMONSTERS);
+	MSG_WriteLong(&host_client->netchan.message, gGlobalVariables.total_monsters);
+
+	MSG_WriteByte(&host_client->netchan.message, svc_updatestat);
+	MSG_WriteByte(&host_client->netchan.message, STAT_SECRETS);
+	MSG_WriteLong(&host_client->netchan.message, gGlobalVariables.found_secrets);
+
+	MSG_WriteByte(&host_client->netchan.message, svc_updatestat);
+	MSG_WriteByte(&host_client->netchan.message, STAT_MONSTERS);
+	MSG_WriteLong(&host_client->netchan.message, gGlobalVariables.killed_monsters);
+*/
+
+	//
+	// send a fixangle
+	// Never send a roll angle, because savegames can catch the server
+	// in a state where it is expecting the client to correct the angle
+	// and it won't happen if the game was just loaded, so you wind up
+	// with a permanent head tilt
+	ent = EDICT_NUM(1 + (host_client - svs.clients));
+	MSG_WriteByte(&host_client->netchan.message, svc_setangle);
+	for(i = 0; i < 2; i++)
+		MSG_WriteAngle(&host_client->netchan.message, ent->v.angles[i]);
+	MSG_WriteAngle(&host_client->netchan.message, 0);
+
+	SV_WriteClientdataToMessage(sv_player, &host_client->netchan.message);
+
+	MSG_WriteByte(&host_client->netchan.message, svc_signonnum);
+	MSG_WriteByte(&host_client->netchan.message, 3);
+	//host_client->sendsignon = true;
+};
+
+/*
+================
+SV_New_f
+
+Sends the first message from the server to a connected client.
+This will be sent on the initial connection and upon each server load.
+================
+*/
+void SV_New_f(const ICmdArgs &apArgs)
+{
+	const char		*gamedir;
+	int			playernum;
+
+	if (host_client->spawned)
+		return;
+
+	host_client->connected = true;
+	host_client->connection_started = realtime;
+
+	// send the info about the new client to all connected clients
+//	SV_FullClientUpdate (host_client, &sv.reliable_datagram);
+//	host_client->sendinfo = true;
+
+	gamedir = Info_ValueForKey (svs.info, "*gamedir");
+	if (!gamedir[0])
+		gamedir = "qw";
+
+	// NOTE: This doesn't go through ClientReliableWrite since it's before the user
+	// spawns. These functions are written to not overflow
+	// TODO
+	/*
+	if (host_client->num_backbuf)
+	{
+		Con_Printf("WARNING %s: [SV_New] Back buffered (%d0, clearing", host_client->name, host_client->netchan.message.cursize); 
+		host_client->num_backbuf = 0;
+		SZ_Clear(&host_client->netchan.message);
+	};
+	*/
+
+	// send the serverdata
+	//MSG_WriteByte (&host_client->netchan.message, svc_serverdata); // TODO
+	MSG_WriteLong (&host_client->netchan.message, PROTOCOL_VERSION);
+	MSG_WriteLong (&host_client->netchan.message, svs.spawncount);
+	MSG_WriteString (&host_client->netchan.message, gamedir);
+
+	playernum = NUM_FOR_EDICT(host_client->edict)-1;
+	//if (host_client->spectator) // TODO
+		//playernum |= 128;
+	MSG_WriteByte (&host_client->netchan.message, playernum);
+
+	// send full levelname
+	MSG_WriteString (&host_client->netchan.message, PR_GetString(sv.edicts->v.message));
+
+	// send the movevars
+	MSG_WriteFloat(&host_client->netchan.message, movevars.gravity);
+	MSG_WriteFloat(&host_client->netchan.message, movevars.stopspeed);
+	MSG_WriteFloat(&host_client->netchan.message, movevars.maxspeed);
+	MSG_WriteFloat(&host_client->netchan.message, movevars.spectatormaxspeed);
+	MSG_WriteFloat(&host_client->netchan.message, movevars.accelerate);
+	MSG_WriteFloat(&host_client->netchan.message, movevars.airaccelerate);
+	MSG_WriteFloat(&host_client->netchan.message, movevars.wateraccelerate);
+	MSG_WriteFloat(&host_client->netchan.message, movevars.friction);
+	MSG_WriteFloat(&host_client->netchan.message, movevars.waterfriction);
+	MSG_WriteFloat(&host_client->netchan.message, movevars.entgravity);
+
+	// send music
+	MSG_WriteByte (&host_client->netchan.message, svc_cdtrack);
+	MSG_WriteByte (&host_client->netchan.message, sv.edicts->v.sounds);
+
+	// send server info string
+	MSG_WriteByte (&host_client->netchan.message, svc_stufftext);
+	MSG_WriteString (&host_client->netchan.message, va("fullserverinfo \"%s\"\n", svs.info) );
+};
+
+// TODO
+void SV_SendServerInfoChange(const char *key, const char *value)
+{
+	if (!sv.state)
+		return;
+
+	MSG_WriteByte (&sv.reliable_datagram, svc_serverinfo);
+	MSG_WriteString (&sv.reliable_datagram, key);
+	MSG_WriteString (&sv.reliable_datagram, value);
+};
+
+/*
+===========
+SV_Serverinfo_f
+
+  Examine or change the serverinfo string
+===========
+*/
+char *CopyString(const char *s);
+void SV_Serverinfo_f (const ICmdArgs &apArgs)
+{
+	cvar_t	*var;
+
+	if (Cmd_Argc() == 1)
+	{
+		Con_Printf ("Server info settings:\n");
+		Info_Print (svs.info);
+		return;
+	};
+
+	if (Cmd_Argc() != 3)
+	{
+		Con_Printf ("usage: serverinfo [ <key> <value> ]\n");
+		return;
+	};
+
+	if (Cmd_Argv(1)[0] == '*')
+	{
+		Con_Printf ("Star variables cannot be changed.\n");
+		return;
+	};
+	
+	Info_SetValueForKey (svs.info, Cmd_Argv(1), Cmd_Argv(2), MAX_SERVERINFO_STRING);
+
+	// if this is a cvar, change it too	
+	var = Cvar_FindVar (Cmd_Argv(1));
+	if (var)
+	{
+		Z_Free (var->string);	// free the old value string	
+		var->string = CopyString (Cmd_Argv(2));
+		var->value = Q_atof (var->string);
+	};
+
+	SV_SendServerInfoChange(Cmd_Argv(1), Cmd_Argv(2));
+};
+
+/*
+===========
+SV_Localinfo_f
+
+  Examine or change the localinfo string
+===========
+*/
+void SV_Localinfo_f (const ICmdArgs &apArgs)
+{
+	if (Cmd_Argc() == 1)
+	{
+		Con_Printf ("Local info settings:\n");
+		Info_Print (localinfo);
+		return;
+	};
+
+	if (Cmd_Argc() != 3)
+	{
+		Con_Printf ("usage: localinfo [ <key> <value> ]\n");
+		return;
+	};
+
+	if (Cmd_Argv(1)[0] == '*')
+	{
+		Con_Printf ("Star variables cannot be changed.\n");
+		return;
+	};
+	Info_SetValueForKey (localinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_LOCALINFO_STRING);
+};
+
+// TODO
+/*
+==================
+SV_SetPlayer
+
+Sets host_client and sv_player to the player with idnum Cmd_Argv(1)
+==================
+*/
+qboolean SV_SetPlayer ()
+{
+	client_t	*cl;
+	int			i;
+	int			idnum;
+
+	idnum = atoi(Cmd_Argv(1));
+
+	for (i=0,cl=svs.clients ; i<svs.maxclients ; i++,cl++)
+	{
+		if (!cl->connected)
+			continue;
+		if (cl->userid == idnum)
+		{
+			host_client = cl;
+			sv_player = host_client->edict;
+			return true;
+		}
+	}
+	Con_Printf ("Userid %i is not on the server\n", idnum);
+	return false;
+};
+
+/*
+===========
+SV_User_f
+
+Examine a users info strings
+===========
+*/
+void SV_User_f (const ICmdArgs &apArgs)
+{
+	if (Cmd_Argc() != 2)
+	{
+		Con_Printf ("Usage: info <userid>\n");
+		return;
+	};
+
+	if (!SV_SetPlayer ())
+		return;
+
+	Info_Print (host_client->userinfo);
+};
 
 /*
 =================
 StringToFilter
 =================
 */
-qboolean StringToFilter (char *s, ipfilter_t *f)
+qboolean StringToFilter (const char *s, ipfilter_t *f)
 {
 	char	num[128];
 	int		i, j;
@@ -174,7 +477,208 @@ qboolean StringToFilter (char *s, ipfilter_t *f)
 	f->compare = *(unsigned *)b;
 	
 	return true;
+};
+
+/*
+=================
+SV_AddIP_f
+=================
+*/
+void SV_AddIP_f (const ICmdArgs &apArgs)
+{
+	int		i;
+	
+	for (i=0 ; i<numipfilters ; i++)
+		if (ipfilters[i].compare == 0xffffffff)
+			break;		// free spot
+	if (i == numipfilters)
+	{
+		if (numipfilters == MAX_IPFILTERS)
+		{
+			Con_Printf ("IP filter list is full\n");
+			return;
+		}
+		numipfilters++;
+	}
+	
+	if (!StringToFilter (Cmd_Argv(1), &ipfilters[i]))
+		ipfilters[i].compare = 0xffffffff;
 }
+
+/*
+=================
+SV_RemoveIP_f
+=================
+*/
+void SV_RemoveIP_f (const ICmdArgs &apArgs)
+{
+	ipfilter_t	f;
+	int			i, j;
+
+	if (!StringToFilter (Cmd_Argv(1), &f))
+		return;
+	for (i=0 ; i<numipfilters ; i++)
+		if (ipfilters[i].mask == f.mask
+		&& ipfilters[i].compare == f.compare)
+		{
+			for (j=i+1 ; j<numipfilters ; j++)
+				ipfilters[j-1] = ipfilters[j];
+			numipfilters--;
+			Con_Printf ("Removed.\n");
+			return;
+		}
+	Con_Printf ("Didn't find %s.\n", Cmd_Argv(1));
+}
+
+/*
+=================
+SV_ListIP_f
+=================
+*/
+void SV_ListIP_f (const ICmdArgs &apArgs)
+{
+	int		i;
+	byte	b[4];
+
+	Con_Printf ("Filter list:\n");
+	for (i=0 ; i<numipfilters ; i++)
+	{
+		*(unsigned *)b = ipfilters[i].compare;
+		Con_Printf ("%3i.%3i.%3i.%3i\n", b[0], b[1], b[2], b[3]);
+	}
+}
+
+/*
+=================
+SV_WriteIP_f
+=================
+*/
+void SV_WriteIP_f (const ICmdArgs &apArgs)
+{
+	FILE	*f;
+	char	name[MAX_OSPATH];
+	byte	b[4];
+	int		i;
+
+	sprintf (name, "%s/listip.cfg", com_gamedir);
+
+	Con_Printf ("Writing %s.\n", name);
+
+	f = fopen (name, "wb");
+	if (!f)
+	{
+		Con_Printf ("Couldn't open %s\n", name);
+		return;
+	}
+	
+	for (i=0 ; i<numipfilters ; i++)
+	{
+		*(unsigned *)b = ipfilters[i].compare;
+		fprintf (f, "addip %i.%i.%i.%i\n", b[0], b[1], b[2], b[3]);
+	}
+	
+	fclose (f);
+}
+
+/*
+===============
+SV_Init
+===============
+*/
+void SV_Init()
+{
+	int i;
+	extern cvar_t sv_maxvelocity;
+	extern cvar_t sv_gravity;
+	extern cvar_t sv_nostep;
+	extern cvar_t sv_friction;
+	extern cvar_t sv_edgefriction;
+	extern cvar_t sv_stopspeed;
+	extern cvar_t sv_maxspeed;
+	extern cvar_t sv_accelerate;
+	extern cvar_t sv_idealpitchscale;
+	extern cvar_t sv_aim;
+
+	// TODO: SV_InitOperatorCommands()?
+	Cmd_AddCommand("spawn", SV_Spawn_f);
+	Cmd_AddCommand("new", SV_New_f);
+	
+	Cmd_AddCommand ("serverinfo", SV_Serverinfo_f);
+	Cmd_AddCommand ("localinfo", SV_Localinfo_f);
+	
+	Cmd_AddCommand ("user", SV_User_f);
+	//
+	
+	Cmd_AddCommand ("addip", SV_AddIP_f);
+	Cmd_AddCommand ("removeip", SV_RemoveIP_f);
+	Cmd_AddCommand ("listip", SV_ListIP_f);
+	Cmd_AddCommand ("writeip", SV_WriteIP_f);
+	
+	Cvar_RegisterVariable(sv_timeout.internal());
+
+	Cvar_RegisterVariable(&sv_maxvelocity);
+	Cvar_RegisterVariable(&sv_gravity);
+	Cvar_RegisterVariable(&sv_friction);
+	Cvar_RegisterVariable(&sv_edgefriction);
+	Cvar_RegisterVariable(&sv_stopspeed);
+	Cvar_RegisterVariable(&sv_maxspeed);
+	Cvar_RegisterVariable(&sv_accelerate);
+	Cvar_RegisterVariable(&sv_idealpitchscale);
+	Cvar_RegisterVariable(&sv_aim);
+	Cvar_RegisterVariable(&sv_nostep);
+
+	for(i = 0; i < MAX_MODELS; i++)
+		sprintf(localmodels[i], "*%i", i);
+}
+
+/*
+=================
+SV_SendBan
+=================
+*/
+void SV_SendBan ()
+{
+	char		data[128];
+
+	data[0] = data[1] = data[2] = data[3] = 0xff;
+	data[4] = A2C_PRINT;
+	data[5] = 0;
+	
+	Q_strcat (data, "\nbanned.\n");
+	
+	NET_SendPacket (NS_SERVER, Q_strlen(data), data, net_from);
+}
+
+/*
+==============================================================================
+
+PACKET FILTERING
+ 
+
+You can add or remove addresses from the filter list with:
+
+addip <ip>
+removeip <ip>
+
+The ip address is specified in dot format, and any unspecified digits will match any value, so you can specify an entire class C network with "addip 192.246.40".
+
+Removeip will only remove an address specified exactly the same way.  You cannot addip a subnet, then removeip a single host.
+
+listip
+Prints the current list of filters.
+
+writeip
+Dumps "addip <ip>" commands to listip.cfg so it can be execed at a later date.  The filter lists are not saved and restored by default, because I beleive it would cause too much confusion.
+
+sv_filterban <0 or 1>
+
+If 1 (the default), then ip addresses matching the current list will be prohibited from entering the game.  This is the default setting.
+
+If 0, then only addresses matching the list will be allowed.  This lets you easily set up a private game, or a game that only allows players from your local network.
+
+
+==============================================================================
+*/
 
 /*
 =================
@@ -190,9 +694,9 @@ qboolean SV_FilterPacket ()
 
 	for (i=0 ; i<numipfilters ; i++)
 		if ( (in & ipfilters[i].mask) == ipfilters[i].compare)
-			return sv_filterban.value;
+			return sv_filterban.GetValue();
 
-	return !sv_filterban.value;
+	return !sv_filterban.GetValue();
 }
 
 // TODO
@@ -269,7 +773,7 @@ void SV_ReadPackets()
 ==================
 SV_CheckTimeouts
 
-If a packet has not been received from a client in sv_timeout.value
+If a packet has not been received from a client in sv_timeout.GetValue()
 seconds, drop the conneciton.
 
 When a client is normally dropped, the client_t goes into a zombie state
@@ -284,7 +788,7 @@ void SV_CheckTimeouts()
 	float droptime;
 	int nclients;
 
-	droptime = realtime - sv_timeout.value;
+	droptime = realtime - sv_timeout.GetValue();
 	nclients = 0;
 
 	for(i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
@@ -941,6 +1445,72 @@ void SV_ConnectionlessPacket()
 /*
 =============================================================================
 
+Con_Printf redirection
+
+=============================================================================
+*/
+
+char	outputbuf[8000];
+
+redirect_t	sv_redirected;
+
+extern cvar_t sv_phs;
+
+/*
+==================
+SV_FlushRedirect
+==================
+*/
+void SV_FlushRedirect ()
+{
+	char	send[8000+6];
+
+	if (sv_redirected == RD_PACKET)
+	{
+		send[0] = 0xff;
+		send[1] = 0xff;
+		send[2] = 0xff;
+		send[3] = 0xff;
+		send[4] = A2C_PRINT;
+		
+		Q_memcpy (send+5, outputbuf, Q_strlen(outputbuf)+1);
+
+		NET_SendPacket (NS_SERVER, Q_strlen(send)+1, send, net_from);
+	}
+	else if (sv_redirected == RD_CLIENT)
+	{
+		MSG_WriteByte (&host_client->netchan.message, svc_print);
+		//MSG_WriteByte (&host_client->netchan.message, PRINT_HIGH); // TODO
+		MSG_WriteString (&host_client->netchan.message, outputbuf);
+	}
+
+	// clear it
+	outputbuf[0] = 0;
+}
+
+/*
+==================
+SV_BeginRedirect
+
+  Send Con_Printf data to the remote client
+  instead of the console
+==================
+*/
+void SV_BeginRedirect (redirect_t rd)
+{
+	sv_redirected = rd;
+	outputbuf[0] = 0;
+}
+
+void SV_EndRedirect ()
+{
+	SV_FlushRedirect ();
+	sv_redirected = RD_NONE;
+}
+
+/*
+=============================================================================
+
 EVENT MESSAGES
 
 =============================================================================
@@ -1073,7 +1643,7 @@ void SV_SendServerinfo(client_t *client)
 	MSG_WriteLong(&client->netchan.message, PROTOCOL_VERSION);
 	MSG_WriteByte(&client->netchan.message, svs.maxclients);
 
-	if(!coop.value && deathmatch.value)
+	if(!coop.GetValue() && deathmatch.GetValue())
 		MSG_WriteByte(&client->netchan.message, GAME_DEATHMATCH);
 	else
 		MSG_WriteByte(&client->netchan.message, GAME_COOP);
@@ -1267,7 +1837,7 @@ void SV_WriteEntitiesToClient(edict_t *clent, sizebuf_t *msg)
 	VectorAdd(clent->v.origin, clent->v.view_ofs, org);
 	pvs = SV_FatPVS(org);
 
-	// send over all entities (excpet the client) that touch the pvs
+	// send over all entities (except the client) that touch the pvs
 	ent = NEXT_EDICT(sv.edicts);
 	for(e = 1; e < sv.num_edicts; e++, ent = NEXT_EDICT(ent))
 	{
@@ -2098,9 +2668,9 @@ void SV_SpawnServer(const char *server, const char *startspot)
 	//
 	// make cvars consistant
 	//
-	if(coop.value)
+	if(coop.GetValue())
 		Cvar_SetValue("deathmatch", 0);
-	current_skill = (int)(skill.value + 0.5);
+	current_skill = (int)(skill.GetValue() + 0.5);
 	if(current_skill < 0)
 		current_skill = 0;
 	if(current_skill > 3)
@@ -2191,10 +2761,10 @@ void SV_SpawnServer(const char *server, const char *startspot)
 	ent->v.solid = SOLID_BSP;
 	ent->v.movetype = MOVETYPE_PUSH;
 
-	if(coop.value)
-		gGlobalVariables.coop = coop.value;
+	if(coop.GetValue())
+		gGlobalVariables.coop = coop.GetValue();
 	else
-		gGlobalVariables.deathmatch = deathmatch.value;
+		gGlobalVariables.deathmatch = deathmatch.GetValue();
 
 	gGlobalVariables.mapname = sv.name - pr_strings;
 	gGlobalVariables.startspot = sv.startspot - pr_strings;

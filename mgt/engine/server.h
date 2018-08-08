@@ -19,7 +19,6 @@
 */
 
 /// @file
-/// @brief
 
 #include "usercmd.h"
 
@@ -60,12 +59,13 @@ typedef struct
 	svstats_t stats;
 
 	challenge_t challenges[MAX_CHALLENGES]; // to prevent invalid IPs from connecting
+	
+	char info[MAX_SERVERINFO_STRING]; // TODO
 } server_static_t;
 
 //=============================================================================
 
-typedef enum { ss_loading,
-	           ss_active } server_state_t;
+typedef enum { ss_loading, ss_active } server_state_t;
 
 typedef struct
 {
@@ -86,7 +86,7 @@ typedef struct
 	char *model_precache[MAX_MODELS]; // NULL terminated
 	struct model_s *models[MAX_MODELS];
 	char *sound_precache[MAX_SOUNDS]; // NULL terminated
-	char *lightstyles[MAX_LIGHTSTYLES];
+	const char *lightstyles[MAX_LIGHTSTYLES];
 	int num_edicts;
 	int max_edicts;
 	edict_t *edicts;      // can NOT be array indexed, because
@@ -177,12 +177,12 @@ typedef struct client_s
 
 //============================================================================
 
-extern cvar_t teamplay;
-extern cvar_t skill;
-extern cvar_t deathmatch;
-extern cvar_t coop;
-extern cvar_t fraglimit;
-extern cvar_t timelimit;
+extern CConVar teamplay;
+extern CConVar skill;
+extern CConVar deathmatch;
+extern CConVar coop;
+extern CConVar fraglimit;
+extern CConVar timelimit;
 
 extern server_static_t svs; // persistant server info
 extern server_t sv;         // local server
@@ -202,7 +202,7 @@ void SV_Init();
 void SV_StartParticle(vec3_t org, vec3_t dir, int color, int count);
 void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume, float attenuation);
 
-void SV_DropClient(client_t *drop, qboolean crash, char *fmt, ...);
+void SV_DropClient(client_t *drop, bool crash, const char *fmt, ...);
 
 void SV_SendClientMessages();
 void SV_ClearDatagram();
@@ -242,7 +242,8 @@ void SV_SpawnServer(const char *server, const char *startspot);
 
 void SV_ExecuteClientMessage(client_t *cl);
 
-typedef enum {
+typedef enum
+{
 	RD_NONE,
 	RD_CLIENT,
 	RD_PACKET

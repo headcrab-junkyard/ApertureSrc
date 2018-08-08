@@ -67,27 +67,27 @@ byte *host_colormap;
 void *gpEngineClientLib{ nullptr };
 IEngineClient *gpEngineClient{ nullptr };
 
-cvar_t host_framerate = { "host_framerate", "0" }; // set for slow motion
-cvar_t host_speeds = { "host_speeds", "0" };       // set for running times
-cvar_t host_profile = { "host_profile", "0" };
+CConVar host_framerate("host_framerate", "0"); // set for slow motion
+CConVar host_speeds("host_speeds", "0");       // set for running times
+CConVar host_profile("host_profile", "0");
 
-cvar_t sys_ticrate = { "sys_ticrate", "0.05" }; // TODO: 100
+CConVar sys_ticrate("sys_ticrate", "0.05"); // TODO: 100
 
-cvar_t fraglimit = { "fraglimit", "0", false, true };
-cvar_t timelimit = { "timelimit", "0", false, true };
-cvar_t teamplay = { "teamplay", "0", false, true };
+CConVar fraglimit("fraglimit", "0", FCVAR_SERVER);
+CConVar timelimit("timelimit", "0", FCVAR_SERVER);
+CConVar teamplay("teamplay", "0", FCVAR_SERVER);
 
 #if defined(OGS_DEV) || defined(OGS_DEBUG)
-cvar_t developer = { "developer", "1" }; // show extra messages (should be 0 for release!)
+CConVar developer("developer", "1"); // show extra messages (should be 0 for release!)
 #else
-cvar_t developer = { "developer", "0" };
+CConVar developer("developer", "0");
 #endif
 
-cvar_t skill = { "skill", "1" };           // 0 - 3
-cvar_t deathmatch = { "deathmatch", "0" }; // 0, 1, or 2
-cvar_t coop = { "coop", "0" };             // 0 or 1
+CConVar skill("skill", "1");           // 0 - 3
+CConVar deathmatch("deathmatch", "0"); // 0, 1, or 2
+CConVar coop("coop", "0");             // 0 or 1
 
-cvar_t pausable = { "pausable", "1" };
+CConVar pausable("pausable", "1");
 
 /*
 ================
@@ -220,23 +220,23 @@ void Host_InitLocal()
 {
 	Host_InitCommands();
 
-	Cvar_RegisterVariable(&host_framerate);
-	Cvar_RegisterVariable(&host_speeds);
-	Cvar_RegisterVariable(&host_profile);
+	Cvar_RegisterVariable(host_framerate.internal());
+	Cvar_RegisterVariable(host_speeds.internal());
+	Cvar_RegisterVariable(host_profile.internal());
 
-	Cvar_RegisterVariable(&sys_ticrate);
+	Cvar_RegisterVariable(sys_ticrate.internal());
 
-	Cvar_RegisterVariable(&fraglimit);
-	Cvar_RegisterVariable(&timelimit);
-	Cvar_RegisterVariable(&teamplay);
+	Cvar_RegisterVariable(fraglimit.internal());
+	Cvar_RegisterVariable(timelimit.internal());
+	Cvar_RegisterVariable(teamplay.internal());
 
-	Cvar_RegisterVariable(&developer);
+	Cvar_RegisterVariable(developer.internal());
 
-	Cvar_RegisterVariable(&skill);
-	Cvar_RegisterVariable(&deathmatch);
-	Cvar_RegisterVariable(&coop);
+	Cvar_RegisterVariable(skill.internal());
+	Cvar_RegisterVariable(deathmatch.internal());
+	Cvar_RegisterVariable(coop.internal());
 
-	Cvar_RegisterVariable(&pausable);
+	Cvar_RegisterVariable(pausable.internal());
 
 	Host_FindMaxClients();
 
@@ -485,8 +485,8 @@ qboolean Host_FilterTime(float time)
 	host_frametime = frametime;
 	oldrealtime = realtime;
 
-	if(host_framerate.value > 0)
-		host_frametime = host_framerate.value;
+	if(host_framerate.GetValue() > 0)
+		host_frametime = host_framerate.GetValue();
 	else
 	{
 		// don't allow really long or short frames
@@ -499,26 +499,6 @@ qboolean Host_FilterTime(float time)
 	};
 
 	return true;
-};
-
-/*
-===================
-Host_GetConsoleCommands
-
-Add them exactly as if they had been typed at the console
-===================
-*/
-void Host_GetConsoleCommands()
-{
-	char *cmd;
-
-	while(1)
-	{
-		cmd = Sys_ConsoleInput();
-		if(!cmd)
-			break;
-		Cbuf_AddText(cmd);
-	};
 };
 
 /*
@@ -547,9 +527,6 @@ void _Host_Frame(float time)
 	if(!Host_FilterTime(time))
 		return; // don't run too fast, or packets will flood out
 
-	// get new key events
-	Sys_SendKeyEvents();
-
 	// process console commands
 	Cbuf_Execute();
 
@@ -569,16 +546,22 @@ void _Host_Frame(float time)
 	//
 	//-------------------
 
-	// check for commands typed to the host
-	Host_GetConsoleCommands();
-
 	if(sv.active)
 		SV_Frame();
 
 	if(gpEngineClient)
-		gpEngineClient->Frame(/*time1, time2*/); // TODO
+		gpEngineClient->Frame(); // TODO
 
-	if(host_speeds.value)
+	// update video
+	if(host_speeds.GetValue())
+		time1 = Sys_FloatTime();
+
+	gpEngineClient->UpdateScreen(); // TODO: was SCR_UpdateScreen
+
+	if(host_speeds.GetValue())
+		time2 = Sys_FloatTime();
+	
+	if(host_speeds.GetValue())
 	{
 		pass1 = (time1 - time3) * 1000;
 		time3 = Sys_FloatTime();
@@ -598,7 +581,7 @@ void Host_Frame(float time)
 	static int timecount;
 	int i, c, m;
 
-	if(!host_profile.value)
+	if(!host_profile.GetValue())
 	{
 		_Host_Frame(time);
 		return;

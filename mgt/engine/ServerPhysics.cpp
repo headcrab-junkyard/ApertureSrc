@@ -47,11 +47,11 @@ solid_edge items only clip against bsp models.
 
 */
 
-cvar_t sv_friction = { "sv_friction", "4", false, true };
-cvar_t sv_stopspeed = { "sv_stopspeed", "100" };
-cvar_t sv_gravity = { "sv_gravity", "800", false, true };
-cvar_t sv_maxvelocity = { "sv_maxvelocity", "2000" };
-cvar_t sv_nostep = { "sv_nostep", "0" };
+CConVar sv_friction("sv_friction", "4", FCVAR_SERVER);
+CConVar sv_stopspeed("sv_stopspeed", "100");
+CConVar sv_gravity("sv_gravity", "800", FCVAR_SERVER);
+CConVar sv_maxvelocity("sv_maxvelocity", "2000");
+CConVar sv_nostep("sv_nostep", "0");
 
 #ifdef QUAKE2
 static vec3_t vec_origin = { 0.0, 0.0, 0.0 };
@@ -113,10 +113,10 @@ void SV_CheckVelocity(edict_t *ent)
 			Con_Printf("Got a NaN origin on %s\n", pr_strings + ent->v.classname);
 			ent->v.origin[i] = 0;
 		}
-		if(ent->v.velocity[i] > sv_maxvelocity.value)
-			ent->v.velocity[i] = sv_maxvelocity.value;
-		else if(ent->v.velocity[i] < -sv_maxvelocity.value)
-			ent->v.velocity[i] = -sv_maxvelocity.value;
+		if(ent->v.velocity[i] > sv_maxvelocity.GetValue())
+			ent->v.velocity[i] = sv_maxvelocity.GetValue();
+		else if(ent->v.velocity[i] < -sv_maxvelocity.GetValue())
+			ent->v.velocity[i] = -sv_maxvelocity.GetValue();
 	}
 }
 
@@ -363,7 +363,7 @@ void SV_AddGravity(edict_t *ent)
 	else
 		ent_gravity = 1.0;
 
-	ent->v.velocity[2] -= ent_gravity * sv_gravity.value * host_frametime;
+	ent->v.velocity[2] -= ent_gravity * sv_gravity.GetValue() * host_frametime;
 }
 
 /*
@@ -959,7 +959,7 @@ void SV_WalkMove(edict_t *ent)
 	if(ent->v.movetype != MOVETYPE_WALK)
 		return; // gibbed by a trigger
 
-	if(sv_nostep.value)
+	if(sv_nostep.GetValue())
 		return;
 
 	if((int)sv_player->v.flags & FL_WATERJUMP)
@@ -1360,7 +1360,7 @@ void SV_Physics_Step(edict_t *ent)
 		if(!((int)ent->v.flags & FL_FLY))
 			if(!(((int)ent->v.flags & FL_SWIM) && (ent->v.waterlevel > 0)))
 			{
-				if(ent->v.velocity[2] < sv_gravity.value * -0.1)
+				if(ent->v.velocity[2] < sv_gravity.GetValue() * -0.1)
 					hitsound = true;
 				if(!inwater)
 					SV_AddGravity(ent);
@@ -1378,9 +1378,9 @@ void SV_Physics_Step(edict_t *ent)
 				speed = sqrt(vel[0] * vel[0] + vel[1] * vel[1]);
 				if(speed)
 				{
-					friction = sv_friction.value;
+					friction = sv_friction.GetValue();
 
-					control = speed < sv_stopspeed.value ? sv_stopspeed.value : speed;
+					control = speed < sv_stopspeed.GetValue() ? sv_stopspeed.GetValue() : speed;
 					newspeed = speed - host_frametime * control * friction;
 
 					if(newspeed < 0)
@@ -1438,7 +1438,7 @@ void SV_Physics_Step(edict_t *ent)
 	// freefall if not onground
 	if(!((int)ent->v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM)))
 	{
-		if(ent->v.velocity[2] < sv_gravity.value * -0.1)
+		if(ent->v.velocity[2] < sv_gravity.GetValue() * -0.1)
 			hitsound = true;
 		else
 			hitsound = false;
