@@ -23,5 +23,47 @@
 #include "quakedef.h"
 #include "ivoicetweak.h"
 
+qboolean gbInVoiceTweakMode{ false };
+
+float gVoiceTweakControlMap[3]{ 0.0f }; // TODO
+
+static int Voice_StartVoiceTweakMode()
+{
+	// TODO
+	gbInVoiceTweakMode = true;
+	return 0;
+};
+
+static void Voice_EndVoiceTweakMode()
+{
+	// TODO
+	gbInVoiceTweakMode = false;
+};
+
+static void Voice_SetControlFloat(VoiceTweakControl aeControl, float afValue)
+{
+	// TODO
+	gVoiceTweakControlMap[aeControl] = afValue;
+};
+
+static float Voice_GetControlFloat(VoiceTweakControl aeControl)
+{
+	// TODO
+	return gVoiceTweakControlMap[aeControl];
+};
+
+static int Voice_GetSpeakingVolume()
+{
+	return 0; // TODO
+};
+
 IVoiceTweak gVoiceTweak =
-{};
+{
+  Voice_StartVoiceTweakMode,
+  Voice_EndVoiceTweakMode,
+
+  Voice_SetControlFloat,
+  Voice_GetControlFloat,
+
+  Voice_GetSpeakingVolume
+};
