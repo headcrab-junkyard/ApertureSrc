@@ -330,6 +330,8 @@ bool CNetwork::CompareAdr(netadr_t *a, netadr_t *b) const
 
 char *CNetwork::AdrToString(netadr_t *a) const
 {
+	// TODO: use reference or validate it
+	
 	static char s[64];
 	sprintf(s, "%i.%i.%i.%i:%i", a->ip[0], a->ip[1], a->ip[2], a->ip[3], ntohs(a->port));
 	return s;
