@@ -24,11 +24,12 @@
 
 #include "CommonTypes.hpp"
 
-constexpr auto MGT_SYSTEM_INTERFACE_VERSION{"MGTSystem001"};
+constexpr auto MGT_SYSTEM_INTERFACE_VERSION{"MGTSystem003Alpha"};
 
 interface ISystemEventListener;
 
-interface ISystem
+// IPlatform?
+interface ISystem : public IBaseInterface
 {
 	///
 	virtual void AddEventListener(ISystemEventListener *apListener) = 0;
