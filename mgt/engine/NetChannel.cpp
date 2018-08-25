@@ -19,7 +19,6 @@
 */
 
 /// @file
-/// @brief
 
 #include "quakedef.h"
 
@@ -143,7 +142,7 @@ Netchan_OutOfBandPrint
 Sends a text message in an out-of-band datagram
 ================
 */
-void Netchan_OutOfBandPrint(int net_socket, netadr_t adr, char *format, ...)
+void Netchan_OutOfBandPrint(int net_socket, netadr_t adr, const char *format, ...)
 {
 	va_list argptr;
 	static char string[8192]; // ??? why static?
@@ -268,7 +267,7 @@ void Netchan_Transmit(netchan_t *chan, int length, byte *data)
 
 	// send the qport if we are a client
 	//if (chan->sock == NS_CLIENT) // TODO
-	//MSG_WriteShort (&send, cls.qport);
+		//MSG_WriteShort (&send, cls.qport);
 
 	// copy the reliable message to the packet first
 	if(send_reliable)
@@ -286,16 +285,17 @@ void Netchan_Transmit(netchan_t *chan, int length, byte *data)
 	chan->outgoing_size[i] = send.cursize;
 	chan->outgoing_time[i] = realtime;
 
-	//#ifndef SERVERONLY // TODO
+//#ifndef SERVERONLY // TODO
 	//zoid, no input in demo playback mode
 	//if (!cls.demoplayback)
-	//#endif
+//#endif
 	NET_SendPacket(chan->sock, send.cursize, send.data, chan->remote_address);
 
 	if(chan->cleartime < realtime)
 		chan->cleartime = realtime + send.cursize * chan->rate;
 	else
 		chan->cleartime += send.cursize * chan->rate;
+
 #ifdef SERVERONLY // TODO
 	if(ServerPaused())
 		chan->cleartime = realtime;
@@ -323,9 +323,9 @@ qboolean Netchan_Process(netchan_t *chan)
 	int i;
 
 	if(
-	//#ifndef SERVERONLY // TODO
+//#ifndef SERVERONLY // TODO
 	// !cls.demoplayback &&
-	//#endif
+//#endif
 	!NET_CompareAdr(net_from, chan->remote_address))
 		return false;
 

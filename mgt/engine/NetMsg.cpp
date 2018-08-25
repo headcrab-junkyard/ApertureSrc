@@ -28,41 +28,41 @@ CNetMsg::~CNetMsg() = default;
 
 void CNetMsg::WriteByte(int nValue)
 {
-	SZ_WriteByte(mpBuf, nValue);
+	MSG_WriteByte(mpBuf, nValue);
 };
 
 void CNetMsg::WriteChar(int nValue)
 {
-	SZ_WriteChar(mpBuf, nValue);
+	MSG_WriteChar(mpBuf, nValue);
 };
 
 void CNetMsg::WriteShort(int nValue)
 {
-	SZ_WriteShort(mpBuf, nValue);
+	MSG_WriteShort(mpBuf, nValue);
 };
 
 void CNetMsg::WriteLong(int nValue)
 {
-	SZ_WriteLong(mpBuf, nValue);
+	MSG_WriteLong(mpBuf, nValue);
 };
 
 void CNetMsg::WriteAngle(float fValue)
 {
-	SZ_WriteAngle(mpBuf, fValue);
+	MSG_WriteAngle(mpBuf, fValue);
 };
 
 void CNetMsg::WriteCoord(float fValue)
 {
-	SZ_WriteCoord(mpBuf, fValue);
+	MSG_WriteCoord(mpBuf, fValue);
 };
 
 void CNetMsg::WriteString(const char *sValue)
 {
-	SZ_WriteString(mpBuf, sValue);
+	MSG_WriteString(mpBuf, sValue);
 };
 
 void CNetMsg::WriteEntity(int nValue)
 {
 	// TODO
-	//SZ_WriteEntity(mpBuf, nValue);
+	//MSG_WriteEntity(mpBuf, nValue);
 };
