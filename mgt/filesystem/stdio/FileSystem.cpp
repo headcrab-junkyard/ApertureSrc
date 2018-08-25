@@ -22,6 +22,10 @@
 #include <cstring>
 #include "FileSystem.hpp"
 
+// if a packfile directory differs from this, it is assumed to be hacked
+#define PAK0_COUNT 339
+#define PAK0_CRC 32981
+
 // TODO
 /*
 // .pak support
@@ -61,6 +65,83 @@ searchpath_t *com_searchpaths;
 // TODO: temp
 void Sys_Error(const char *msg, ...)
 {
+};
+
+/*
+=================
+COM_LoadPackFile
+
+Takes an explicit (not game tree related) path to a pak file.
+
+Loads the header and directory, adding the files at the beginning
+of the list so they override previous pack files.
+=================
+*/
+pack_t *COM_LoadPackFile(const char *packfile)
+{
+	dpackheader_t header;
+	int i;
+	packfile_t *newfiles;
+	int numpackfiles;
+	pack_t *pack;
+	int packhandle;
+	dpackfile_t info[MAX_FILES_IN_PACK];
+	unsigned short crc;
+
+	if(FS_FileOpenRead(packfile, &packhandle) == -1)
+	{
+		//Con_Printf("Couldn't open %s\n", packfile);
+		return nullptr;
+	};
+	
+	FS_FileRead(packhandle, (void *)&header, sizeof(header));
+	
+	if(header.id[0] != 'P' || header.id[1] != 'A' || header.id[2] != 'C' || header.id[3] != 'K')
+		Sys_Error("%s is not a packfile", packfile);
+	
+	header.dirofs = LittleLong(header.dirofs);
+	header.dirlen = LittleLong(header.dirlen);
+
+	numpackfiles = header.dirlen / sizeof(dpackfile_t);
+
+	if(numpackfiles > MAX_FILES_IN_PACK)
+		Sys_Error("%s has %i files", packfile, numpackfiles);
+
+	// TODO
+	//if(numpackfiles != PAK0_COUNT)
+		//com_modified = true; // not the original file
+
+	newfiles = (packfile_t*)Hunk_AllocName(numpackfiles * sizeof(packfile_t), "packfile");
+
+	FS_FileSeek(packhandle, header.dirofs);
+	FS_FileRead(packhandle, (void *)info, header.dirlen);
+
+	// crc the directory to check for modifications
+	CRC_Init(&crc);
+	
+	for(i = 0; i < header.dirlen; i++)
+		CRC_ProcessByte(&crc, ((byte *)info)[i]);
+	
+	// TODO
+	//if(crc != PAK0_CRC)
+		//com_modified = true;
+
+	// parse the directory
+	for(i = 0; i < numpackfiles; i++)
+	{
+		strcpy(newfiles[i].name, info[i].name);
+		newfiles[i].filepos = LittleLong(info[i].filepos);
+		newfiles[i].filelen = LittleLong(info[i].filelen);
+	};
+
+	pack = (pack_t*)Hunk_Alloc(sizeof(pack_t));
+	strcpy(pack->filename, packfile);
+	pack->handle = packhandle;
+	pack->numfiles = numpackfiles;
+	pack->files = newfiles;
+
+	Con_Printf("Added packfile %s (%i files)\n", packfile, numpackfiles);
+	return pack;
 };
 
 EXPOSE_SINGLE_INTERFACE(CFileSystem, IFileSystem, MGT_FILESYSTEM_INTERFACE_VERSION);
@@ -148,7 +229,10 @@ int CFileSystem::FileOpen(const char *path, const char *mode)
 	*/
 	//
 	
-	/*TODO
+	// TODO
+	/*
+	//int t{VID_ForceUnlockedAndReturnState()}; // TODO: non-dedicated win only
+	
 	FILE *f{fopen(path, "wb")};
 	
 	if(!f)
@@ -157,6 +241,8 @@ int CFileSystem::FileOpen(const char *path, const char *mode)
 	int i{findhandle()};
 	
 	sys_handles[i] = f;
+	
+	//VID_ForceLockState(t); // TODO: non-dedicated win only
 	
 	return i;
 };

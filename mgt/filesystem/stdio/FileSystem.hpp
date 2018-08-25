@@ -85,6 +85,8 @@ public:
 	
 	//void FileTimeToString(char *pStrip, int maxCharsIncludingTerminator, long fileTime) override;
 	
+	IFile *OpenPathID(const char *asPath, const char *asPathID) override;
+	
 	IFile *OpenFile(const char *asName/*, const char *asOptions, const char *pathID*/) override;
 	//IFile *OpenFromCacheForRead(const char *pFileName, const char *pOptions, const char *pathID) override;
 	
