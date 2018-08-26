@@ -1,5 +1,6 @@
 /*
  *	This file is part of Magenta Engine
+ *  Copyright (C) 1996-1997 Id Software, Inc.
  *	Copyright (C) 2018 BlackPhrase
  *
  *	This program is free software: you can redistribute it and/or modify
@@ -77,6 +78,8 @@ Loads the header and directory, adding the files at the beginning
 of the list so they override previous pack files.
 =================
 */
+// TODO
+/*
 pack_t *COM_LoadPackFile(const char *packfile)
 {
 	dpackheader_t header;
@@ -143,6 +146,7 @@ pack_t *COM_LoadPackFile(const char *packfile)
 	Con_Printf("Added packfile %s (%i files)\n", packfile, numpackfiles);
 	return pack;
 };
+*/
 
 EXPOSE_SINGLE_INTERFACE(CFileSystem, IFileSystem, MGT_FILESYSTEM_INTERFACE_VERSION);
 
