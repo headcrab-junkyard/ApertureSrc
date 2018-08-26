@@ -87,7 +87,7 @@ public:
 	
 	IFile *OpenPathID(const char *asPath, const char *asPathID) override;
 	
-	IFile *OpenFile(const char *asName/*, const char *asOptions, const char *pathID*/) override;
+	IFile *OpenFile(const char *asName, const char *asMode/*, const char *pathID*/) override;
 	//IFile *OpenFromCacheForRead(const char *pFileName, const char *pOptions, const char *pathID) override;
 	
 	void CloseFile(IFile *apFile) override;

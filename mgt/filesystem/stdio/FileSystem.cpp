@@ -48,8 +48,33 @@ typedef struct
 	int dirlen;
 } dpackheader_t;
 //
+*/
 
-typedef struct pack_s pack_t;
+#ifndef MAX_OSPATH
+const int MAX_OSPATH = 256;
+#endif
+
+#ifndef MAX_QPATH
+const int MAX_QPATH = 64;
+#endif
+
+//
+// in memory
+//
+
+typedef struct
+{
+	char name[MAX_QPATH];
+	int filepos, filelen;
+} packfile_t;
+
+typedef struct pack_s
+{
+	char filename[MAX_OSPATH];
+	IFile *handle; // FILE *handle; // TODO
+	int numfiles;
+	packfile_t *files;
+} pack_t;
 
 // search paths
 typedef struct searchpath_s
@@ -60,8 +85,10 @@ typedef struct searchpath_s
 } searchpath_t;
 
 searchpath_t *com_searchpaths;
-//
-*/
+
+int com_filesize;
+
+char com_cachedir[MAX_OSPATH];
 
 // TODO: temp
 void Sys_Error(const char *msg, ...)
@@ -177,15 +204,140 @@ IFile *CFileSystem::OpenPathID(const char *asFilePath, const char *asPathID)
 	return nullptr;
 };
 
-IFile *CFileSystem::OpenFile(const char *asName)
+/*
+===========
+COM_FindFile
+
+Finds the file in the search path.
+Sets com_filesize and one of handle or file
+===========
+*/
+// TODO
+/*
+int COM_FindFile(const char *filename, int *handle, IFile **file)
 {
-	IFile *pFile{nullptr}; //new CFile(asName);
+	searchpath_t *search;
+	char netpath[MAX_OSPATH];
+	char cachepath[MAX_OSPATH];
+	pack_t *pak;
+	int i;
+	int findtime, cachetime;
+
+	if(file && handle)
+		Sys_Error("COM_FindFile: both handle and file set");
+	if(!file && !handle)
+		Sys_Error("COM_FindFile: neither handle or file set");
+
+	//
+	// search through the path, one element at a time
+	//
+	search = com_searchpaths;
+
+	for(; search; search = search->next)
+	{
+		// is the element a pak file?
+		if(search->pack)
+		{
+			// look through all the pak file elements
+			pak = search->pack;
+			for(i = 0; i < pak->numfiles; i++)
+				if(!strcmp(pak->files[i].name, filename))
+				{ // found it!
+					Sys_Printf("PackFile: %s : %s\n", pak->filename, filename);
+					if(handle)
+					{
+						*handle = pak->handle;
+						FS_FileSeek(pak->handle, pak->files[i].filepos);
+					}
+					else
+					{ // open a new file on the pakfile
+						*file = fopen(pak->filename, "rb");
+						if(*file)
+							fseek(*file, pak->files[i].filepos, SEEK_SET);
+					}
+					com_filesize = pak->files[i].filelen;
+					return com_filesize;
+				}
+		}
+		else
+		{
+			// check a file in the directory tree
+
+			sprintf(netpath, "%s/%s", search->filename, filename);
+
+			findtime = FS_FileTime(netpath);
+			if(findtime == -1)
+				continue;
+
+			// see if the file needs to be updated in the cache
+			if(!com_cachedir[0])
+				strcpy(cachepath, netpath);
+			else
+			{
+#if defined(_WIN32)
+				if((strlen(netpath) < 2) || (netpath[1] != ':'))
+					sprintf(cachepath, "%s%s", com_cachedir, netpath);
+				else
+					sprintf(cachepath, "%s%s", com_cachedir, netpath + 2);
+#else
+				sprintf(cachepath, "%s%s", com_cachedir, netpath);
+#endif
+
+				cachetime = FS_FileTime(cachepath);
+
+				if(cachetime < findtime)
+					COM_CopyFile(netpath, cachepath);
+				strcpy(netpath, cachepath);
+			}
+
+			Sys_Printf("FindFile: %s\n", netpath);
+			com_filesize = FS_FileOpenRead(netpath, &i);
+			if(handle)
+				*handle = i;
+			else
+			{
+				FS_FileClose(i);
+				*file = fopen(netpath, "rb");
+			}
+			return com_filesize;
+		}
+	}
+
+	Sys_Printf("FindFile: can't find %s\n", filename);
+
+	if(handle)
+		*handle = -1;
+	else
+		*file = nullptr;
+	com_filesize = -1;
+	return -1;
+}
+*/
+
+/*
+===========
+COM_OpenFile
+
+filename never has a leading slash, but may contain directory walks
+returns a handle
+it may actually be inside a pak file
+===========
+*/
+IFile *CFileSystem::OpenFile(const char *asName, const char *asMode)
+{
+	IFile *pFile{nullptr}; //new CFile(asName, asMode);
 	//mlstOpenHandles.push_back(pFile);
+	//return COM_FindFile(asName, nullptr, nullptr); // TODO
 	return pFile;
 };
 
 void CFileSystem::CloseFile(IFile *apFile)
 {
+	// If it is a pak file handle, don't really close it
+	for(searchpath_t *s = com_searchpaths; s; s = s->next)
+		if(s->pack && s->pack->handle == apFile)
+			return;
+	
 	if(!apFile)
 		return;
 	
