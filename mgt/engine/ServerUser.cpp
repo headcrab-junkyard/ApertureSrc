@@ -25,9 +25,9 @@
 
 edict_t *sv_player;
 
-extern cvar_t sv_friction;
-cvar_t sv_edgefriction = { "edgefriction", "2" };
-extern cvar_t sv_stopspeed;
+extern CConVar sv_friction;
+CConVar sv_edgefriction("edgefriction", "2");
+extern CConVar sv_stopspeed;
 
 static vec3_t forward, right, up;
 
@@ -43,7 +43,260 @@ int onground; // TODO: was qboolean here but marked as int in decl...
 
 usercmd_t cmd;
 
-cvar_t sv_idealpitchscale = { "sv_idealpitchscale", "0.8" };
+CConVar sv_idealpitchscale("sv_idealpitchscale", "0.8");
+
+vec3_t pmove_mins, pmove_maxs;
+
+/*
+====================
+AddLinksToPmove
+
+====================
+*/
+void AddLinksToPmove ( areanode_t *node )
+{
+	link_t		*l, *next;
+	edict_t		*check;
+	int			pl;
+	int			i;
+	physent_t	*pe;
+
+	pl = EDICT_TO_PROG(sv_player);
+
+	// touch linked edicts
+	for (l = node->solid_edicts.next ; l != &node->solid_edicts ; l = next)
+	{
+		next = l->next;
+		check = EDICT_FROM_AREA(l);
+
+		if (check->v.owner == pl)
+			continue;		// player's own missile
+		if (check->v.solid == SOLID_BSP 
+			|| check->v.solid == SOLID_BBOX 
+			|| check->v.solid == SOLID_SLIDEBOX)
+		{
+			if (check == sv_player)
+				continue;
+
+			for (i=0 ; i<3 ; i++)
+				if (check->v.absmin[i] > pmove_maxs[i]
+				|| check->v.absmax[i] < pmove_mins[i])
+					break;
+			if (i != 3)
+				continue;
+			if (pmove->numphysent == MAX_PHYSENTS)
+				return;
+			pe = &pmove->physents[pmove->numphysent];
+			pmove->numphysent++;
+
+			VectorCopy (check->v.origin, pe->origin);
+			pe->info = NUM_FOR_EDICT(check);
+			if (check->v.solid == SOLID_BSP)
+				pe->model = sv.models[(int)(check->v.modelindex)];
+			else
+			{
+				pe->model = NULL;
+				VectorCopy (check->v.mins, pe->mins);
+				VectorCopy (check->v.maxs, pe->maxs);
+			};
+		};
+	};
+	
+// recurse down both sides
+	if (node->axis == -1)
+		return;
+
+	if ( pmove_maxs[node->axis] > node->dist )
+		AddLinksToPmove ( node->children[0] );
+	if ( pmove_mins[node->axis] < node->dist )
+		AddLinksToPmove ( node->children[1] );
+};
+
+/*
+===========
+SV_PreRunCmd
+===========
+Done before running a player command.  Clears the touch array
+*/
+byte playertouch[(MAX_EDICTS+7)/8];
+
+void SV_PreRunCmd()
+{
+	memset(playertouch, 0, sizeof(playertouch));
+	
+	//gEntityInterface.pfnCmdStart();
+}
+
+/*
+===========
+SV_RunCmd
+===========
+*/
+void SV_RunCmd (usercmd_t *ucmd)
+{
+	edict_t		*ent;
+	int			i, n;
+	int			oldmsec;
+
+	cmd = *ucmd;
+
+	// chop up very long commands
+	if (cmd.msec > 50)
+	{
+		oldmsec = ucmd->msec;
+		cmd.msec = oldmsec/2;
+		SV_RunCmd (&cmd);
+		cmd.msec = oldmsec/2;
+		cmd.impulse = 0;
+		SV_RunCmd (&cmd);
+		return;
+	}
+
+	if (!sv_player->v.fixangle)
+		VectorCopy (ucmd->viewangles, sv_player->v.v_angle);
+
+	sv_player->v.button0 = ucmd->buttons & 1;
+	sv_player->v.button2 = (ucmd->buttons & 2)>>1;
+	
+	if (ucmd->impulse)
+		sv_player->v.impulse = ucmd->impulse;
+
+//
+// angles
+// show 1/3 the pitch angle and all the roll angle	
+	if (sv_player->v.health > 0)
+	{
+		if (!sv_player->v.fixangle)
+		{
+			sv_player->v.angles[PITCH] = -sv_player->v.v_angle[PITCH]/3;
+			sv_player->v.angles[YAW] = sv_player->v.v_angle[YAW];
+		};
+		
+		sv_player->v.angles[ROLL] = 0; //V_CalcRoll (sv_player->v.angles, sv_player->v.velocity)*4; // TODO
+	}
+
+	host_frametime = ucmd->msec * 0.001;
+	if (host_frametime > 0.1)
+		host_frametime = 0.1;
+
+	//if (!host_client->spectator) // TODO
+	{
+		gGlobalVariables.frametime = host_frametime;
+
+		gGlobalVariables.time = sv.time;
+		//gEntityInterface.pfnPlayerPreThink(sv_player); // TODO
+
+		SV_RunThink (sv_player);
+	}
+
+	for (i=0 ; i<3 ; i++)
+		pmove->origin[i] = sv_player->v.origin[i] + (sv_player->v.mins[i] - player_mins[i]);
+	VectorCopy (sv_player->v.velocity, pmove->velocity);
+	VectorCopy (sv_player->v.v_angle, pmove->angles);
+
+	pmove->spectator = 0; //host_client->spectator; // TODO
+	pmove->waterjumptime = sv_player->v.teleport_time;
+	pmove->numphysent = 1;
+	pmove->physents[0].model = sv.worldmodel;
+	pmove->cmd = *ucmd;
+	pmove->dead = sv_player->v.health <= 0;
+	pmove->oldbuttons = 0; //host_client->oldbuttons; // TODO
+
+	movevars.entgravity = 0; //host_client->entgravity; // TODO
+	movevars.maxspeed = 0; //host_client->maxspeed; // TODO
+
+	for (i=0 ; i<3 ; i++)
+	{
+		pmove_mins[i] = pmove->origin[i] - 256;
+		pmove_maxs[i] = pmove->origin[i] + 256;
+	}
+#if 1
+	AddLinksToPmove ( sv_areanodes );
+#else
+	AddAllEntsToPmove ();
+#endif
+
+#if 0
+{
+	int before, after;
+
+before = PM_TestPlayerPosition (pmove->origin);
+	PlayerMove ();
+after = PM_TestPlayerPosition (pmove->origin);
+
+if (sv_player->v.health > 0 && before && !after )
+	Con_Printf ("player %s got stuck in playermove!!!!\n", host_client->name);
+}
+#else
+	PlayerMove ();
+#endif
+
+	//host_client->oldbuttons = pmove->oldbuttons; // TODO
+	sv_player->v.teleport_time = pmove->waterjumptime;
+	sv_player->v.waterlevel = waterlevel;
+	sv_player->v.watertype = watertype;
+	if (onground != -1)
+	{
+		sv_player->v.flags = (int)sv_player->v.flags | FL_ONGROUND;
+		sv_player->v.groundentity = EDICT_TO_PROG(EDICT_NUM(pmove->physents[onground].info));
+	}
+	else
+		sv_player->v.flags = (int)sv_player->v.flags & ~FL_ONGROUND;
+	for (i=0 ; i<3 ; i++)
+		sv_player->v.origin[i] = pmove->origin[i] - (sv_player->v.mins[i] - player_mins[i]);
+
+#if 0
+	// truncate velocity the same way the net protocol will
+	for (i=0 ; i<3 ; i++)
+		sv_player->v.velocity[i] = (int)pmove->velocity[i];
+#else
+	VectorCopy (pmove->velocity, sv_player->v.velocity);
+#endif
+
+	VectorCopy (pmove->angles, sv_player->v.v_angle);
+
+	//if (!host_client->spectator) // TODO
+	{
+		// link into place and touch triggers
+		SV_LinkEdict (sv_player, true);
+
+		// touch other objects
+		for (i=0 ; i<pmove->numtouch ; i++)
+		{
+			n = pmove->physents[pmove->touchindex[i]].info;
+			ent = EDICT_NUM(n);
+			if ((playertouch[n/8]&(1<<(n%8))))
+				continue;
+			gpEntityEventDispatcher->DispatchTouch(ent, sv_player);
+			playertouch[n/8] |= 1 << (n%8);
+		}
+	}
+}
+
+/*
+===========
+SV_PostRunCmd
+===========
+Done after running a player command.
+*/
+void SV_PostRunCmd()
+{
+	// run post-think
+
+	//if (!host_client->spectator) // TODO
+	{
+		gGlobalVariables.time = sv.time;
+		//gEntityInterface.pfnPlayerPostThink(sv_player); // TODO
+		//SV_RunNewmis (); // TODO: unused
+	}
+	/*
+	else if(SpectatorThink) // TODO: unused
+	{
+		gGlobalVariables.time = sv.time;
+		gEntityInterface.pfnSpectatorThink(sv_player);
+	}
+	*/
+}
 
 /*
 ===============
@@ -110,7 +363,7 @@ void SV_SetIdealPitch()
 
 	if(steps < 2)
 		return;
-	sv_player->v.idealpitch = -dir * sv_idealpitchscale.value;
+	sv_player->v.idealpitch = -dir * sv_idealpitchscale.GetValue();
 }
 
 /*
@@ -142,12 +395,12 @@ void SV_UserFriction()
 	trace = SV_Move(start, vec3_origin, vec3_origin, stop, true, sv_player);
 
 	if(trace.fraction == 1.0)
-		friction = sv_friction.value * sv_edgefriction.value;
+		friction = sv_friction.GetValue() * sv_edgefriction.GetValue();
 	else
-		friction = sv_friction.value;
+		friction = sv_friction.GetValue();
 
 	// apply friction
-	control = speed < sv_stopspeed.value ? sv_stopspeed.value : speed;
+	control = speed < sv_stopspeed.GetValue() ? sv_stopspeed.GetValue() : speed;
 	newspeed = speed - host_frametime * control * friction;
 
 	if(newspeed < 0)
@@ -164,8 +417,8 @@ void SV_UserFriction()
 SV_Accelerate
 ==============
 */
-cvar_t sv_maxspeed = { "sv_maxspeed", "320", false, true };
-cvar_t sv_accelerate = { "sv_accelerate", "10" };
+CConVar sv_maxspeed("sv_maxspeed", "320", FCVAR_SERVER);
+CConVar sv_accelerate("sv_accelerate", "10");
 #if 0
 void SV_Accelerate (vec3_t wishvel)
 {
@@ -179,7 +432,7 @@ void SV_Accelerate (vec3_t wishvel)
 	VectorSubtract (wishvel, velocity, pushvec);
 	addspeed = VectorNormalize (pushvec);
 
-	accelspeed = sv_accelerate.value*host_frametime*addspeed;
+	accelspeed = sv_accelerate.GetValue() * host_frametime * addspeed;
 	if (accelspeed > addspeed)
 		accelspeed = addspeed;
 	
@@ -196,7 +449,7 @@ void SV_Accelerate()
 	addspeed = wishspeed - currentspeed;
 	if(addspeed <= 0)
 		return;
-	accelspeed = sv_accelerate.value * host_frametime * wishspeed;
+	accelspeed = sv_accelerate.GetValue() * host_frametime * wishspeed;
 	if(accelspeed > addspeed)
 		accelspeed = addspeed;
 
@@ -216,8 +469,8 @@ void SV_AirAccelerate(vec3_t wishveloc)
 	addspeed = wishspd - currentspeed;
 	if(addspeed <= 0)
 		return;
-	//	accelspeed = sv_accelerate.value * host_frametime;
-	accelspeed = sv_accelerate.value * wishspeed * host_frametime;
+	//	accelspeed = sv_accelerate.GetValue() * host_frametime;
+	accelspeed = sv_accelerate.GetValue() * wishspeed * host_frametime;
 	if(accelspeed > addspeed)
 		accelspeed = addspeed;
 
@@ -263,10 +516,10 @@ void SV_WaterMove()
 		wishvel[2] += cmd.upmove;
 
 	wishspeed = Length(wishvel);
-	if(wishspeed > sv_maxspeed.value)
+	if(wishspeed > sv_maxspeed.GetValue())
 	{
-		VectorScale(wishvel, sv_maxspeed.value / wishspeed, wishvel);
-		wishspeed = sv_maxspeed.value;
+		VectorScale(wishvel, sv_maxspeed.GetValue() / wishspeed, wishvel);
+		wishspeed = sv_maxspeed.GetValue();
 	}
 	wishspeed *= 0.7;
 
@@ -276,7 +529,7 @@ void SV_WaterMove()
 	speed = Length(velocity);
 	if(speed)
 	{
-		newspeed = speed - host_frametime * speed * sv_friction.value;
+		newspeed = speed - host_frametime * speed * sv_friction.GetValue();
 		if(newspeed < 0)
 			newspeed = 0;
 		VectorScale(velocity, newspeed / speed, velocity);
@@ -295,7 +548,7 @@ void SV_WaterMove()
 		return;
 
 	VectorNormalize(wishvel);
-	accelspeed = sv_accelerate.value * wishspeed * host_frametime;
+	accelspeed = sv_accelerate.GetValue() * wishspeed * host_frametime;
 	if(accelspeed > addspeed)
 		accelspeed = addspeed;
 
@@ -345,10 +598,10 @@ void SV_AirMove()
 
 	VectorCopy(wishvel, wishdir);
 	wishspeed = VectorNormalize(wishdir);
-	if(wishspeed > sv_maxspeed.value)
+	if(wishspeed > sv_maxspeed.GetValue())
 	{
-		VectorScale(wishvel, sv_maxspeed.value / wishspeed, wishvel);
-		wishspeed = sv_maxspeed.value;
+		VectorScale(wishvel, sv_maxspeed.GetValue() / wishspeed, wishvel);
+		wishspeed = sv_maxspeed.GetValue();
 	}
 
 	if(sv_player->v.movetype == MOVETYPE_NOCLIP)
@@ -397,11 +650,11 @@ void SV_ClientThink()
 	//
 	// angles
 	// show 1/3 the pitch angle and all the roll angle
-	cmd = host_client->cmd;
+	//cmd = host_client->cmd; // TODO
 	angles = sv_player->v.angles;
 
 	VectorAdd(sv_player->v.v_angle, sv_player->v.punchangle, v_angle);
-	angles[ROLL] = V_CalcRoll(sv_player->v.angles, sv_player->v.velocity) * 4;
+	angles[ROLL] = 0; //V_CalcRoll(sv_player->v.angles, sv_player->v.velocity) * 4; // TODO
 	if(!sv_player->v.fixangle)
 	{
 		angles[PITCH] = -v_angle[PITCH] / 3;
@@ -473,6 +726,7 @@ SV_ReadClientMessage
 Returns false if the client should be killed
 ===================
 */
+/*
 qboolean SV_ReadClientMessage()
 {
 	int ret;
@@ -584,12 +838,14 @@ qboolean SV_ReadClientMessage()
 
 	return true;
 }
+*/
 
 /*
 ==================
 SV_RunClients
 ==================
 */
+/*
 void SV_RunClients()
 {
 	int i;
@@ -617,5 +873,160 @@ void SV_RunClients()
 		// always pause in single player if in console or menus
 		if(!sv.paused && (svs.maxclients > 1 || key_dest == key_game))
 			SV_ClientThink();
+	}
+}
+*/
+
+/*
+===================
+SV_ExecuteClientMessage
+
+The current net_message is parsed for the given client
+===================
+*/
+void SV_ExecuteClientMessage (client_t *cl)
+{
+	int		c;
+	char	*s;
+	usercmd_t	oldest, oldcmd, newcmd;
+	client_frame_t	*frame;
+	vec3_t o;
+	qboolean	move_issued = false; //only allow one move command
+	int		checksumIndex;
+	byte	checksum, calculatedChecksum;
+	int		seq_hash;
+
+	// calc ping time
+	frame = &cl->frames[cl->netchan.incoming_acknowledged & UPDATE_MASK];
+	frame->ping_time = realtime - frame->senttime;
+
+	// make sure the reply sequence number matches the incoming
+	// sequence number 
+	if (cl->netchan.incoming_sequence >= cl->netchan.outgoing_sequence)
+		cl->netchan.outgoing_sequence = cl->netchan.incoming_sequence;
+	else
+		cl->send_message = false;	// don't reply, sequences have slipped		
+
+	// save time for ping calculations
+	cl->frames[cl->netchan.outgoing_sequence & UPDATE_MASK].senttime = realtime;
+	cl->frames[cl->netchan.outgoing_sequence & UPDATE_MASK].ping_time = -1;
+
+	host_client = cl;
+	sv_player = host_client->edict;
+
+//	seq_hash = (cl->netchan.incoming_sequence & 0xffff) ; // ^ QW_CHECK_HASH;
+	seq_hash = cl->netchan.incoming_sequence;
+	
+	// mark time so clients will know how much to predict
+	// other players
+ 	cl->localtime = sv.time;
+	cl->delta_sequence = -1;	// no delta unless requested
+	while (1)
+	{
+		if (msg_badread)
+		{
+			Con_Printf ("SV_ReadClientMessage: badread\n");
+			SV_DropClient (cl, false, "Bad message read");
+			return;
+		}	
+
+		c = MSG_ReadByte ();
+		if (c == -1)
+			break;
+				
+		switch (c)
+		{
+		default:
+			Con_Printf ("SV_ReadClientMessage: unknown command char\n");
+			SV_DropClient (cl, false, "Unknown command char");
+			return;
+						
+		case clc_nop:
+			break;
+
+		case clc_delta:
+			cl->delta_sequence = MSG_ReadByte ();
+			break;
+
+		case clc_move:
+			if (move_issued)
+				return;		// someone is trying to cheat...
+
+			move_issued = true;
+
+			checksumIndex = MSG_GetReadCount();
+			checksum = (byte)MSG_ReadByte ();
+
+			// read loss percentage
+			//cl->lossage = MSG_ReadByte(); // TODO
+
+			MSG_ReadDeltaUsercmd (&nullcmd, &oldest);
+			MSG_ReadDeltaUsercmd (&oldest, &oldcmd);
+			MSG_ReadDeltaUsercmd (&oldcmd, &newcmd);
+
+			if ( !cl->spawned )
+				break;
+
+			// if the checksum fails, ignore the rest of the packet
+			// TODO
+			//calculatedChecksum = COM_BlockSequenceCRCByte(
+				//net_message.data + checksumIndex + 1,
+				//MSG_GetReadCount() - checksumIndex - 1,
+				//seq_hash);
+
+			if (calculatedChecksum != checksum)
+			{
+				Con_DPrintf ("Failed command checksum for %s(%d) (%d != %d)\n", 
+					cl->name, cl->netchan.incoming_sequence, checksum, calculatedChecksum);
+				return;
+			}
+
+			if (!sv.paused) {
+				SV_PreRunCmd();
+
+				if (net_drop < 20)
+				{
+					while (net_drop > 2)
+					{
+						SV_RunCmd (&cl->lastcmd);
+						net_drop--;
+					}
+					if (net_drop > 1)
+						SV_RunCmd (&oldest);
+					if (net_drop > 0)
+						SV_RunCmd (&oldcmd);
+				}
+				SV_RunCmd (&newcmd);
+
+				SV_PostRunCmd();
+			}
+
+			cl->lastcmd = newcmd;
+			cl->lastcmd.buttons = 0; // avoid multiple fires on lag
+			break;
+
+
+		case clc_stringcmd:	
+			s = MSG_ReadString ();
+			//SV_ExecuteUserCommand (s); // TODO
+			break;
+
+		case clc_tmove:
+			o[0] = MSG_ReadCoord();
+			o[1] = MSG_ReadCoord();
+			o[2] = MSG_ReadCoord();
+			// only allowed by spectators
+			//if (host_client->spectator) // TODO
+			{
+				VectorCopy(o, sv_player->v.origin);
+				SV_LinkEdict(sv_player, false);
+			}
+			break;
+
+		//case clc_upload: // TODO
+			//SV_NextUpload();
+			//break;
+
+		}
 	}
 }
