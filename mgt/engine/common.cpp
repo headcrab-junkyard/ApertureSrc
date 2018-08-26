@@ -31,8 +31,6 @@ static const char *argvdummy = " ";
 static const char *safeargvs[NUM_SAFE_ARGVS] =
 { "-stdvid", "-nolan", "-nosound", "-nocdaudio", "-nojoy", "-nomouse", "-dibonly" };
 
-cvar_t cmdline = { "cmdline", "0", false, true };
-
 bool msg_suppress_1 = false;
 
 void COM_InitFilesystem();
@@ -368,15 +366,6 @@ int COM_CheckParm(const char *parm)
 	return 0;
 }
 
-void COM_CheckRegistered()
-{
-	// Check CD-key...
-
-	Cvar_Set("cmdline", com_cmdline);
-}
-
-void COM_Path_f(const ICmdArgs &apArgs);
-
 /*
 ================
 COM_InitArgv
@@ -463,11 +452,9 @@ void COM_Init(const char *basedir)
 		LittleFloat = FloatSwap;
 	}
 
-	Cvar_RegisterVariable(&cmdline);
-	Cmd_AddCommand("path", COM_Path_f);
+	//Cmd_AddCommand("path", COM_Path_f); // TODO: unused?
 
 	COM_InitFilesystem();
-	COM_CheckRegistered();
 }
 
 /*
@@ -501,3 +488,181 @@ int memsearch(byte *start, int count, int search)
 			return i;
 	return -1;
 }
+
+/*
+=============================================================================
+
+ENGINE FILESYSTEM
+
+=============================================================================
+*/
+
+char com_gamedir[MAX_OSPATH];
+
+/*
+============
+COM_WriteFile
+
+The filename will be prefixed by the current game directory
+============
+*/
+void COM_WriteFile(const char *filename, void *data, int len)
+{
+	IFile *handle;
+	char name[MAX_OSPATH];
+
+	sprintf(name, "%s/%s", com_gamedir, filename);
+
+	handle = FS_FileOpenWrite(name);
+	if(!handle)
+	{
+		Sys_Printf("COM_WriteFile: failed on %s\n", name);
+		return;
+	};
+
+	Sys_Printf("COM_WriteFile: %s\n", name);
+	FS_FileWrite(handle, data, len);
+	FS_FileClose(handle);
+};
+
+/*
+============
+COM_CreatePath
+
+Only used for CopyFile
+============
+*/
+void COM_CreatePath(const char *path)
+{
+	for(char *ofs = (char *)path + 1; *ofs; ofs++)
+	{
+		if(*ofs == '/')
+		{
+			// create the directory
+			*ofs = 0;
+			FS_mkdir(path);
+			*ofs = '/';
+		};
+	};
+};
+
+/*
+===========
+COM_CopyFile
+
+Copies a file over from the net to the local cache, creating any directories
+needed.  This is for the convenience of developers using ISDN from home.
+===========
+*/
+void COM_CopyFile(const char *netpath, char *cachepath)
+{
+	IFile *in, *out;
+	int remaining, count;
+	char buf[4096];
+
+	in = FS_FileOpenRead(netpath);
+	remaining = in->GetSize();
+	COM_CreatePath(cachepath); // create directories up to the cache file
+	out = FS_FileOpenWrite(cachepath);
+
+	while(remaining)
+	{
+		if(remaining < sizeof(buf))
+			count = remaining;
+		else
+			count = sizeof(buf);
+		FS_FileRead(in, buf, count);
+		FS_FileWrite(out, buf, count);
+		remaining -= count;
+	};
+
+	FS_FileClose(in);
+	FS_FileClose(out);
+};
+
+/*
+============
+COM_LoadFile
+
+Filename are reletive to the quake directory.
+Allways appends a 0 byte.
+============
+*/
+cache_user_t *loadcache;
+byte *loadbuf;
+int loadsize;
+byte *COM_LoadFile(const char *path, int usehunk)
+{
+	IFile *h;
+	byte *buf;
+	char base[32];
+	int len;
+
+	buf = nullptr; // quiet compiler warning
+
+	// look for it in the filesystem or pack files
+	h = FS_FileOpen(path, "rb"); // TODO: same as FS_FileOpenRead
+	if(!h)
+		return nullptr;
+
+	// extract the filename base name for hunk tag
+	COM_FileBase(path, base);
+
+	if(usehunk == 1)
+		buf = (byte*)Hunk_AllocName(len + 1, base);
+	else if(usehunk == 2)
+		buf = (byte*)Hunk_TempAlloc(len + 1);
+	else if(usehunk == 0)
+		buf = (byte*)Z_Malloc(len + 1);
+	else if(usehunk == 3)
+		buf = (byte*)Cache_Alloc(loadcache, len + 1, base);
+	else if(usehunk == 4)
+	{
+		if(len + 1 > loadsize)
+			buf = (byte*)Hunk_TempAlloc(len + 1);
+		else
+			buf = loadbuf;
+	}
+	else
+		Sys_Error("COM_LoadFile: bad usehunk");
+
+	if(!buf)
+		Sys_Error("COM_LoadFile: not enough space for %s", path);
+
+	((byte *)buf)[len] = 0;
+
+	//Draw_BeginDisc(); // TODO
+	FS_FileRead(h, buf, len);
+	FS_FileClose(h);
+	//Draw_EndDisc(); // TODO
+
+	return buf;
+};
+
+byte *COM_LoadHunkFile(const char *path)
+{
+	return COM_LoadFile(path, 1);
+};
+
+byte *COM_LoadTempFile(const char *path)
+{
+	return COM_LoadFile(path, 2);
+};
+
+void COM_LoadCacheFile(const char *path, struct cache_user_s *cu)
+{
+	loadcache = cu;
+	COM_LoadFile(path, 3);
+};
+
+// uses temp hunk if larger than bufsize
+byte *COM_LoadStackFile(const char *path, void *buffer, int bufsize)
+{
+	byte *buf;
+
+	loadbuf = (byte *)buffer;
+	loadsize = bufsize;
+	buf = COM_LoadFile(path, 4);
+
+	return buf;
+};
