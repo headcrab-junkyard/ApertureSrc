@@ -135,6 +135,8 @@ Alias models are position independent, so the cache manager can move them.
 ==============================================================================
 */
 
+#define MAXALIASVERTS 2000 // TODO: tune this
+
 typedef struct
 {
 	aliasframetype_t type;
