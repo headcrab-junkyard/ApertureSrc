@@ -56,14 +56,19 @@ FILE IO
 ===============================================================================
 */
 
-IFile *FS_FileOpenRead(const char *path, int *hndl)
+IFile *FS_FileOpenRead(const char *path)
 {
-	return 0; // TODO
+	return gpFileSystem->OpenFile(path, "rb");
 };
 
 IFile *FS_FileOpenWrite(const char *path)
 {
-	return gpFileSystem->OpenFile(path/*, "wb"*/); // TODO: FileOpen
+	return gpFileSystem->OpenFile(path, "wb");
+};
+
+IFile *FS_FileOpen(const char *path, const char *mode)
+{
+	return gpFileSystem->OpenFile(path, mode);
 };
 
 void FS_FileClose(IFile *handle)
@@ -93,12 +98,17 @@ int FS_FileTime(const char *path)
 	return gpFileSystem->GetFileTime(path);
 };
 
+int FS_FileSize(const char *path)
+{
+	return gpFileSystem->GetFileSize(path);
+};
+
 void FS_mkdir(const char *path)
 {
-// TODO: if not dedicated?
+	// TODO: if not dedicated? nothing in windows dedicated server mode?
 
 #ifdef _WIN32
-//_mkdir(path); // TODO
+	//_mkdir(path); // TODO
 #else
 	mkdir(path, 0777);
 #endif

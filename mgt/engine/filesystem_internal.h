@@ -61,9 +61,11 @@ void FileSystem_Shutdown();
 /// returns the file size
 /// return -1 if file is not present
 /// the file should be in BINARY mode for stupid OSs that care
-IFile *FS_FileOpenRead(const char *path, int *hndl);
+IFile *FS_FileOpenRead(const char *path);
 
 IFile *FS_FileOpenWrite(const char *path);
+
+IFile *FS_FileOpen(const char *path, const char *mode);
 
 void FS_FileClose(IFile *handle);
 
@@ -73,6 +75,8 @@ int FS_FileRead(IFile *handle, void *dest, int count);
 int FS_FileWrite(IFile *handle, const void *data, int count);
 
 int FS_FileTime(const char *path);
+
+int FS_FileSize(const char *path);
 
 void FS_mkdir(const char *path);
 
