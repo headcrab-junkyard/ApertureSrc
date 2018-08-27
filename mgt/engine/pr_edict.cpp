@@ -2,7 +2,7 @@
 *	This file is part of Magenta Engine
 *
 *	Copyright (C) 1996-1997 Id Software, Inc.
-*	Copyright (C) 2018 BlackPhrase
+*	Copyright (C) 2017-2018 BlackPhrase
 *
 *	Magenta Engine is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -23,9 +23,12 @@
 
 #include "quakedef.h"
 #include "game/server/IGame.hpp"
+//#include "Progs.hpp"
 
 char *pr_strings;
 globalvars_t gGlobalVariables;
+
+//cvar_t nomonsters = {"nomonsters", "0"}; // TODO
 
 /*
 =================
@@ -682,7 +685,7 @@ void ED_LoadFromFile(char *data)
 		data = ED_ParseEdict(data, ent);
 
 		// remove things from different skill levels or deathmatch
-		if(deathmatch.value)
+		if(deathmatch.GetValue())
 		{
 			if(((int)ent->v.spawnflags & SPAWNFLAG_NOT_DEATHMATCH))
 			{
@@ -704,7 +707,7 @@ void ED_LoadFromFile(char *data)
 		if(!ent->v.classname)
 		{
 			Con_Printf("No classname for:\n");
-			ED_Print(ent);
+			//ED_Print(ent); // TODO: actually unused in gs, should i fix it?
 			ED_Free(ent);
 			continue;
 		}
@@ -715,7 +718,7 @@ void ED_LoadFromFile(char *data)
 		//if (!func)
 		{
 			Con_Printf("No spawn function for:\n");
-			ED_Print(ent);
+			//ED_Print(ent); // TODO: actually unused in gs, should i fix it?
 			ED_Free(ent);
 			continue;
 		}
@@ -768,12 +771,16 @@ void PR_LoadProgs() // our temporary LoadEntityDLLs
 PR_Init
 ===============
 */
+//void CProgs::Init() // TODO
 void PR_Init()
 {
-	//Cmd_AddCommand ("edict", ED_PrintEdict_f);
-	//Cmd_AddCommand ("edicts", ED_PrintEdicts);
-	//Cmd_AddCommand ("edictcount", ED_Count);
-}
+	//Cmd_AddCommand("edict", ED_PrintEdict_f);
+	//Cmd_AddCommand("edicts", ED_PrintEdicts);
+	//Cmd_AddCommand("edictcount", ED_Count);
+	//mpCmd->Add("profile", PR_Profile_f);
+	
+	//mpCvar->Register(&nomonsters);
+};
 
 edict_t *EDICT_NUM(int n)
 {
