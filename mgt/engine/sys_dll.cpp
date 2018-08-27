@@ -19,6 +19,7 @@
 */
 
 /// @file
+/// @brief system interface code
 
 /*
 ===============================================================================
@@ -45,13 +46,17 @@ volatile int sys_checksum;
 
 bool isDedicated{false};
 
-void MaskExceptions();
 void Sys_InitFloatTime();
-void Sys_PushFPCW_SetHigh();
-void Sys_PopFPCW();
 
-// TODO: NONINTEL
-#ifndef _M_IX86
+//extern "C"
+//{
+	void MaskExceptions();
+	void Sys_SetFPCW();
+	void Sys_PushFPCW_SetHigh();
+	void Sys_PopFPCW();
+//};
+
+//#ifndef _M_IX86 // TODO: check for non-Intel?
 
 void Sys_SetFPCW()
 {
@@ -69,7 +74,7 @@ void MaskExceptions()
 {
 };
 
-#endif
+//#endif
 
 void Sys_InitAuthentication(){
 	// TODO
@@ -175,7 +180,7 @@ void Sys_Shutdown(){
 	// TODO
 };
 
-void Sys_InitArgv(){
+void Sys_InitArgv(/*OrigCmd*/){
 	// TODO
 };
 
@@ -220,6 +225,8 @@ void Sys_Printf(const char *fmt, ...)
 		va_start(argptr, fmt);
 		vsprintf(text, fmt, argptr);
 		va_end(argptr);
+		
+		printf("%s", text); // TODO
 
 		//WriteFile(houtput, text, strlen (text), &dummy, nullptr); // TODO: IDedicatedExports->Printf
 	};
@@ -263,6 +270,20 @@ Sys_FloatTime
 double Sys_FloatTime()
 {
 #ifdef _WIN32
+
+#ifdef SWDS
+	double t;
+	struct _timeb tstruct;
+	static int starttime;
+
+	_ftime(&tstruct);
+
+	if(!starttime)
+		starttime = tstruct.time;
+	t = (tstruct.time - starttime) + tstruct.millitm * 0.001;
+
+	return t;
+#else
 	static int sametimecount;
 	static unsigned int oldtime;
 	static int first = 1;
@@ -316,6 +337,8 @@ double Sys_FloatTime()
 	Sys_PopFPCW();
 
 	return curtime;
+#endif // SWDS
+
 #else // if __linux__ or something else (that support POSIX API)
 	struct timeval tp;
 	struct timezone tzp;
@@ -336,6 +359,20 @@ double Sys_FloatTime()
 void Sys_Error(const char *error, ...)
 {
 #ifdef _WIN32
+
+#ifdef SWDS
+	va_list argptr;
+	char text[1024];
+
+	va_start(argptr, error);
+	vsprintf(text, error, argptr);
+	va_end(argptr);
+
+	//MessageBox(nullptr, text, "Error", 0 /* MB_OK */ );
+	printf("ERROR: %s\n", text);
+
+	exit(1);
+#else
 	va_list argptr;
 	char text[1024], text2[1024];
 	const char *text3 = "Press Enter to exit\n";
@@ -364,11 +401,11 @@ void Sys_Error(const char *error, ...)
 		va_end(argptr);
 
 		sprintf(text2, "ERROR: %s\n", text);
-		WriteFile(houtput, text5, strlen(text5), &dummy, nullptr);
-		WriteFile(houtput, text4, strlen(text4), &dummy, nullptr);
-		WriteFile(houtput, text2, strlen(text2), &dummy, nullptr);
-		WriteFile(houtput, text3, strlen(text3), &dummy, nullptr);
-		WriteFile(houtput, text4, strlen(text4), &dummy, nullptr);
+		//WriteFile(houtput, text5, strlen(text5), &dummy, nullptr); // TODO
+		//WriteFile(houtput, text4, strlen(text4), &dummy, nullptr); // TODO
+		//WriteFile(houtput, text2, strlen(text2), &dummy, nullptr); // TODO
+		//WriteFile(houtput, text3, strlen(text3), &dummy, nullptr); // TODO
+		//WriteFile(houtput, text4, strlen(text4), &dummy, nullptr); // TODO
 
 		starttime = Sys_FloatTime();
 		//sc_return_on_enter = true; // so Enter will get us out of here // TODO
@@ -398,6 +435,8 @@ void Sys_Error(const char *error, ...)
 	};
 
 	exit(1);
+#endif // SWDS
+
 #elif __linux__
 	va_list argptr;
 	char string[1024];
@@ -433,10 +472,14 @@ Sys_MakeCodeWriteable
 void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
 {
 #ifdef _WIN32
+
+#ifndef SWDS
 	DWORD flOldProtect;
 
 	if(!VirtualProtect((LPVOID)startaddr, length, PAGE_READWRITE, &flOldProtect))
 		Sys_Error("Protection change failed\n");
+#endif
+
 #elif __linux__ || __sun__
 	int r;
 	unsigned long addr;
@@ -457,12 +500,15 @@ void Sys_MakeCodeWriteable(unsigned long startaddr, unsigned long length)
 void Sys_Quit()
 {
 #ifdef _WIN32
+
+#ifndef SWDS
 	//VID_ForceUnlockedAndReturnState(); // TODO
 
 	Host_Shutdown();
 
 	//if(tevent) // TODO
 		//CloseHandle(tevent); // TODO
+#endif
 
 	exit(0);
 #elif __linux__
@@ -486,3 +532,15 @@ void Sys_Sleep()
 #elif __sun__ // TODO: or dedicated
 #endif
 };
+
+#if (defined(_WIN32) && defined(SWDS)) || !id386
+void Sys_HighFPPrecision()
+{
+	// Nothing
+};
+
+void Sys_LowFPPrecision()
+{
+	// Nothing
+};
+#endif

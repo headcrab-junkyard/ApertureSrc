@@ -56,7 +56,6 @@ void Sys_SendKeyEvents();
 
 void Sys_LowFPPrecision();
 void Sys_HighFPPrecision();
-void Sys_SetFPCW();
 
 //int Sys_FileTime (char *path); // TODO: FS_FileTime
 
