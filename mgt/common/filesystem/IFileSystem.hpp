@@ -51,7 +51,7 @@ struct IFileSystem : public IBaseInterface
 	virtual IFile *OpenPathID(const char *asPath, const char *asPathID) = 0;
 	
 	///
-	virtual IFile *OpenFile(const char *asName) = 0;
+	virtual IFile *OpenFile(const char *asName, const char *asMode) = 0;
 	
 	///
 	virtual void CloseFile(IFile *apFile) = 0;

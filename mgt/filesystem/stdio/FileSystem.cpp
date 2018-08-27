@@ -22,6 +22,7 @@
 
 #include <cstring>
 #include "FileSystem.hpp"
+#include "File.hpp"
 
 // if a packfile directory differs from this, it is assumed to be hacked
 #define PAK0_COUNT 339
@@ -247,7 +248,7 @@ int COM_FindFile(const char *filename, int *handle, IFile **file)
 					if(handle)
 					{
 						*handle = pak->handle;
-						FS_FileSeek(pak->handle, pak->files[i].filepos);
+						pak->handle->Seek(pak->files[i].filepos);
 					}
 					else
 					{ // open a new file on the pakfile
@@ -265,7 +266,7 @@ int COM_FindFile(const char *filename, int *handle, IFile **file)
 
 			sprintf(netpath, "%s/%s", search->filename, filename);
 
-			findtime = FS_FileTime(netpath);
+			findtime = GetFileTime(netpath);
 			if(findtime == -1)
 				continue;
 
@@ -283,7 +284,7 @@ int COM_FindFile(const char *filename, int *handle, IFile **file)
 				sprintf(cachepath, "%s%s", com_cachedir, netpath);
 #endif
 
-				cachetime = FS_FileTime(cachepath);
+				cachetime = GetFileTime(cachepath);
 
 				if(cachetime < findtime)
 					COM_CopyFile(netpath, cachepath);
@@ -325,12 +326,19 @@ it may actually be inside a pak file
 */
 IFile *CFileSystem::OpenFile(const char *asName, const char *asMode)
 {
-	IFile *pFile{nullptr}; //new CFile(asName, asMode);
+	IFile *pFile{new CFile(asName, asMode)};
 	//mlstOpenHandles.push_back(pFile);
 	//return COM_FindFile(asName, nullptr, nullptr); // TODO
 	return pFile;
 };
 
+/*
+============
+COM_CloseFile
+
+If it is a pak file handle, don't really close it
+============
+*/
 void CFileSystem::CloseFile(IFile *apFile)
 {
 	// If it is a pak file handle, don't really close it
@@ -341,7 +349,7 @@ void CFileSystem::CloseFile(IFile *apFile)
 	if(!apFile)
 		return;
 	
-	// TODO
+	// TODO: free the file
 	
 	//auto It{mlstOpenHandles.find(apFile)};
 	
