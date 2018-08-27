@@ -54,7 +54,12 @@ bool GameConsole_IsVisible()
 
 void GameConsole_Printf(const char *format, ...)
 {
-	// TODO
+	char msg[256]{};
+	va_list argptr;
+	
+	va_start(argptr, format);
+	vsprintf(msg, format, argptr);
+	va_end(argptr);
 	
 	if(gpGameConsole)
 		gpGameConsole->Printf(msg);
@@ -62,7 +67,12 @@ void GameConsole_Printf(const char *format, ...)
 
 void GameConsole_DPrintf(const char *format, ...)
 {
-	// TODO
+	char msg[256]{};
+	va_list argptr;
+	
+	va_start(argptr, format);
+	vsprintf(msg, format, argptr);
+	va_end(argptr);
 	
 	if(gpGameConsole)
 		gpGameConsole->DPrintf(msg);
