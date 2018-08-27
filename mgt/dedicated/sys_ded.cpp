@@ -24,6 +24,7 @@
 
 #ifdef _WIN32
 	#include <windows.h>
+	#include <conio.h>
 	#include "win/conproc.h"
 #endif
 
@@ -34,6 +35,7 @@ CreateInterfaceFn gfnFSFactory{nullptr};
 
 IBaseInterface *LauncherFactory(const char *name, int *retval)
 {
+	// Filesystem module factory
 	if(!strcmp(name, MGT_FILESYSTEM_INTERFACE_VERSION))
 		return gfnFSFactory(name, retval);
 	
@@ -83,14 +85,11 @@ HANDLE hinput, houtput;
 
 char *Sys_ConsoleInput()
 {
-#if 0 //#ifdef _WIN32 // TODO
+#ifdef _WIN32
 
-#ifdef SWDS
+//#ifdef SWDS
 	static char text[256];
 	static int len;
-	INPUT_RECORD recs[1024];
-	int count;
-	int i;
 	int c;
 
 	// read a line out
@@ -124,6 +123,8 @@ char *Sys_ConsoleInput()
 	};
 
 	return nullptr;
+// TODO
+/*
 #else // if not SWDS
 	static char text[256]{};
 	static int len;
@@ -196,6 +197,7 @@ char *Sys_ConsoleInput()
 
 	return nullptr;
 #endif // SWDS
+*/
 
 #elif __linux__
 	static char text[256];
@@ -203,24 +205,19 @@ char *Sys_ConsoleInput()
 	fd_set fdset;
 	struct timeval timeout;
 
-	if(cls.state == ca_dedicated)
-	{
-		FD_ZERO(&fdset);
-		FD_SET(0, &fdset); // stdin
-		timeout.tv_sec = 0;
-		timeout.tv_usec = 0;
-		if(select(1, &fdset, nullptr, nullptr, &timeout) == -1 || !FD_ISSET(0, &fdset))
-			return nullptr;
+	FD_ZERO(&fdset);
+	FD_SET(0, &fdset); // stdin
+	timeout.tv_sec = 0;
+	timeout.tv_usec = 0;
+	if(select(1, &fdset, nullptr, nullptr, &timeout) == -1 || !FD_ISSET(0, &fdset))
+		return nullptr;
 
-		len = read(0, text, sizeof(text));
-		if(len < 1)
-			return nullptr;
-		text[len - 1] = 0; // rip off the /n and terminate
+	len = read(0, text, sizeof(text));
+	if(len < 1)
+		return nullptr;
+	text[len - 1] = 0; // rip off the /n and terminate
 
-		return text;
-	};
-
-	return nullptr;
+	return text;
 #elif __sun_
 	static char text[256];
 	int len;
@@ -299,7 +296,7 @@ int RunServer()
 	
 	IEngine::SInitData InitParams{};
 	
-	InitParams.sGameDir = "."; // TODO: goldsrctest?
+	InitParams.sGameDir = "goldsrctest"; // TODO: "."?
 	InitParams.sCmdLine = "";
 	InitParams.fnLauncherFactory = LauncherFactory;
 	InitParams.bDedicated = true;
