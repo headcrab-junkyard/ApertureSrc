@@ -36,12 +36,10 @@
 //#include <sys/param.h>
 //#include <stddef.h>
 
-bool isDedicated;
+int nostdout{0};
 
-int nostdout = 0;
-
-const char *basedir = ".";
-const char *cachedir = "/tmp";
+const char *basedir{"."};
+const char *cachedir{"/tmp"};
 
 cvar_t sys_linerefresh = { "sys_linerefresh", "0" }; // set for entity display
 
@@ -321,27 +319,17 @@ static volatile int oktogo;
 void alarm_handler(int x)
 {
 	oktogo = 1;
-}
+};
 
 void Sys_LineRefresh()
 {
-}
+};
 
 void floating_point_exception_handler(int whatever)
 {
 	//	Sys_Warn("floating point exception\n");
 	signal(SIGFPE, floating_point_exception_handler);
-}
-
-#if !id386
-void Sys_HighFPPrecision()
-{
-}
-
-void Sys_LowFPPrecision()
-{
-}
-#endif
+};
 
 //=============================================================================
 
