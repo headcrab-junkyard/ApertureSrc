@@ -46,7 +46,7 @@ bool host_initialized; // true if into command execution
 //bool	nomaster;
 
 double host_frametime;
-//double		host_time; // TODO
+//double		host_time; // TODO: used only by client-side (actually unused in gs)
 
 double realtime;    // without any filtering or bounding
 double oldrealtime; // last frame run
@@ -67,11 +67,13 @@ byte *host_colormap;
 void *gpEngineClientLib{ nullptr };
 IEngineClient *gpEngineClient{ nullptr };
 
+CConVar hostname{"hostname", "Unnamed"}; // TODO
+
 CConVar host_framerate("host_framerate", "0"); // set for slow motion
 CConVar host_speeds("host_speeds", "0");       // set for running times
 CConVar host_profile("host_profile", "0");
 
-CConVar sys_ticrate("sys_ticrate", "0.05"); // TODO: 100
+CConVar sys_ticrate("sys_ticrate", "100");
 
 CConVar fraglimit("fraglimit", "0", FCVAR_SERVER);
 CConVar timelimit("timelimit", "0", FCVAR_SERVER);
@@ -220,6 +222,8 @@ void Host_InitLocal()
 {
 	Host_InitCommands();
 
+	Cvar_RegisterVariable(hostname.internal());
+	
 	Cvar_RegisterVariable(host_framerate.internal());
 	Cvar_RegisterVariable(host_speeds.internal());
 	Cvar_RegisterVariable(host_profile.internal());
@@ -240,7 +244,7 @@ void Host_InitLocal()
 
 	Host_FindMaxClients();
 
-	host_time = 1.0; // so a think at time 0 won't get called
+	//host_time = 1.0; // so a think at time 0 won't get called
 };
 
 /*
@@ -556,7 +560,8 @@ void _Host_Frame(float time)
 	if(host_speeds.GetValue())
 		time1 = Sys_FloatTime();
 
-	gpEngineClient->UpdateScreen(); // TODO: was SCR_UpdateScreen
+	if(gpEngineClient)
+		gpEngineClient->UpdateScreen(); // TODO: was SCR_UpdateScreen
 
 	if(host_speeds.GetValue())
 		time2 = Sys_FloatTime();
@@ -753,7 +758,7 @@ void Host_Init(quakeparms_t *parms)
 
 	Con_Printf("Protocol version %d\n", PROTOCOL_VERSION);
 	//Con_Printf ("Exe version %s/%s (%s)\n", TODO); // Exe version 1.1.2.2/Stdio (tfc)
-	//Con_Printf ("Exe build: " __TIME__ " " __DATE__ "(%d)\n", buildnum()); // TODO
+	//Con_Printf ("Exe build: " __TIME__ " " __DATE__ "(%d)\n", build_number()); // TODO
 	Con_Printf("%4.1f Mb heap\n", parms->memsize / (1024 * 1024.0));
 
 	//R_InitTextures(); // TODO: we need a blank texture instance for model loading code
