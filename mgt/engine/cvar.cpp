@@ -23,8 +23,29 @@
 
 #include "quakedef.h"
 
-cvar_t *cvar_vars;
-char *cvar_null_string = "";
+cvar_t *cvar_vars{nullptr};
+const char *cvar_null_string{""};
+
+CConVar::CConVar(const char *asName, const char *asValue, int anFlags, const char *asDesc)
+	: msDefValue(asValue), msDesc(asDesc)
+{
+	if(!mpData)
+		mpData = new cvar_t;
+	
+	mpData->name = (char*)asName; // TODO
+	mpData->string = (char*)msDefValue; // TODO
+	
+	mpData->flags = anFlags;
+};
+
+CConVar::~CConVar() //= default;
+{
+	if(mpData)
+	{
+		delete mpData;
+		mpData = nullptr;
+	};
+};
 
 /*
 ============
@@ -62,13 +83,13 @@ float Cvar_VariableValue(const char *var_name)
 Cvar_VariableString
 ============
 */
-char *Cvar_VariableString(const char *var_name)
+const char *Cvar_VariableString(const char *var_name)
 {
-	cvar_t *var;
-
-	var = Cvar_FindVar(var_name);
+	auto var{Cvar_FindVar(var_name)};
+	
 	if(!var)
 		return cvar_null_string;
+	
 	return var->string;
 }
 

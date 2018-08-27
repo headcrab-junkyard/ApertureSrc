@@ -60,14 +60,8 @@ interface from being ambiguous.
 class CConVar
 {
 public:
-	CConVar(const char *asName, const char *asValue, int anFlags = 0, const char *asDesc = "") : msDesc(asDesc)
-	{
-		mpData->name = (char*)asName; // TODO
-		mpData->string = (char*)asValue; // TODO
-		mpData->flags = anFlags;
-	};
-
-	~CConVar() = default;
+	CConVar(const char *asName, const char *asValue, int anFlags = 0, const char *asDesc = "");
+	~CConVar();
 	
 	const char *GetName() const {return mpData->name;}
 	const char *GetDesc() const {return msDesc;}
@@ -77,10 +71,13 @@ public:
 	void SetValue(float afValue){mpData->value = afValue;}
 	float GetValue() const {return mpData->value;}
 	
+	const char *GetString() const {return mpData->string;}
+	
 	cvar_t *internal() const {return mpData;} // TODO: temp
 private:
 	cvar_t *mpData{nullptr};
 	
+	const char *msDefValue{""};
 	const char *msDesc{""};
 };
 
