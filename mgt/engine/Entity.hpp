@@ -1,7 +1,7 @@
 /*
  * This file is part of Magenta Engine
  *
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2017-2018 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,6 +18,9 @@
 */
 
 /// @file
+/// @brief entity class
+
+#pragma once
 
 #include "engine/IEntity.hpp"
 
@@ -32,17 +35,22 @@ public:
 	void SetGameEntity(IGameEntity *apGameEntity) override {mpGameEntity = apGameEntity;}
 	IGameEntity *GetGameEntity() const override {return mpGameEntity;}
 	
-	void SetOrigin(float *org) override;
-	void SetSize(float *mins, float *maxs) override;
+	void SetOrigin(const float *org) override;
+	void SetSize(const float *mins, const float *maxs) override;
 	void SetModel(const char *asName) override;
 	
 	//void MoveToOrigin() override;
-	void WalkMove(float yaw, float dist) override;
+	int WalkMove(float yaw, float dist, int nMode) override;
 	
 	void ChangeYaw() override;
 	void ChangePitch() override;
+	
+	int IsOnFloor() const override;
+	int DropToFloor() override;
+	
+	float CheckBottom();
 private:
-	void SetMinMaxSize(float *min, float *max, qboolean rotate);
+	void SetMinMaxSize(const float *min, const float *max, bool rotate);
 	
 	edict_t *e{nullptr};
 	IGameEntity *mpGameEntity{nullptr};

@@ -27,16 +27,16 @@ int SV_ModelIndex(const char *name);
 
 CEntity::CEntity(edict_t *apEdict, IGameEntity *apGameEntity) : e(apEdict), mpGameEntity(apGameEntity)
 {
-	if(mpGameEntity)
-		mpGameEntity->OnSpawn();
+	//if(mpGameEntity)
+		//mpGameEntity->OnSpawn();
 };
 
 CEntity::~CEntity() = default;
 
 void CEntity::Think()
 {
-	if(mpGameEntity)
-		mpGameEntity->OnThink();
+	//if(mpGameEntity)
+		//mpGameEntity->OnThink();
 };
 
 /*
@@ -48,7 +48,7 @@ This is the only valid way to move an object without using the physics of the wo
 setorigin (entity, origin)
 =================
 */
-void CEntity::SetOrigin(float *org)
+void CEntity::SetOrigin(const float *org)
 {
 	VectorCopy(org, e->v.origin);
 	SV_LinkEdict(e, false);
@@ -63,9 +63,9 @@ the size box is rotated by the current angle
 setsize (entity, minvector, maxvector)
 =================
 */
-void CEntity::SetSize(float *min, float *max)
+void CEntity::SetSize(const float *min, const float *max)
 {
-	SetMinMaxSize(e, min, max, false);
+	SetMinMaxSize(min, max, false);
 };
 
 /*
@@ -95,9 +95,9 @@ void CEntity::SetModel(const char *m)
 	mod = sv.models[(int)e->v.modelindex]; // Mod_ForName (m, true);
 
 	if(mod)
-		SetMinMaxSize(e, mod->mins, mod->maxs, true);
+		SetMinMaxSize(mod->mins, mod->maxs, true);
 	else
-		SetMinMaxSize(e, vec3_origin, vec3_origin, true);
+		SetMinMaxSize(vec3_origin, vec3_origin, true);
 };
 
 /*
@@ -107,7 +107,7 @@ PF_walkmove
 float(float yaw, float dist) walkmove
 ===============
 */
-float CEntity::WalkMove(float yaw, float dist)
+int CEntity::WalkMove(float yaw, float dist, int nMode) // TODO: nMode support
 {
 	vec3_t move;
 
@@ -130,14 +130,14 @@ PF_changeyaw
 This was a major timewaster in progs, so it was converted to C
 ==============
 */
-void CEntity::ChangeYaw(edict_t *ent)
+// TODO: required by ServerMove code
+void PF_changeyaw(edict_t *e)
 {
 	float ideal, current, move, speed;
 
-	//ent = PROG_TO_EDICT(gGlobalVariables.self);
-	current = anglemod(ent->v.angles[1]);
-	ideal = ent->v.ideal_yaw;
-	speed = ent->v.yaw_speed;
+	current = anglemod(e->v.angles[1]);
+	ideal = e->v.ideal_yaw;
+	speed = e->v.yaw_speed;
 
 	if(current == ideal)
 		return;
@@ -166,7 +166,12 @@ void CEntity::ChangeYaw(edict_t *ent)
 			move = -speed;
 	};
 
-	ent->v.angles[1] = anglemod(current + move);
+	e->v.angles[1] = anglemod(current + move);
+};
+
+void CEntity::ChangeYaw()
+{
+	PF_changeyaw(e);
 };
 
 /*
@@ -180,7 +185,7 @@ void CEntity::ChangePitch()
 
 	current = anglemod(e->v.angles[0]);
 	ideal = e->v.idealpitch;
-	speed = e->v.pitch_speed;
+	speed = 0.0f; // TODO: e->v.pitch_speed;
 
 	if(current == ideal)
 		return;
@@ -212,7 +217,7 @@ void CEntity::ChangePitch()
 	e->v.angles[0] = anglemod(current + move);
 };
 
-void CEntity::SetMinMaxSize(float *min, float *max, qboolean rotate)
+void CEntity::SetMinMaxSize(const float *min, const float *max, bool rotate)
 {
 	float *angles;
 	vec3_t rmin, rmax;
@@ -286,6 +291,8 @@ void CEntity::SetMinMaxSize(float *min, float *max, qboolean rotate)
 	SV_LinkEdict(e, false);
 };
 
+// TODO
+/*
 void CEntity::MakeStatic(edict_t *ent)
 {
 	int i;
@@ -307,15 +314,21 @@ void CEntity::MakeStatic(edict_t *ent)
 	// throw the entity away now
 	ED_Free(ent);
 };
+*/
 
 /*
 =============
 PF_checkbottom
 =============
 */
-float CEntity::CheckBottom(edict_t *ent)
+float CEntity::CheckBottom()
 {
-	return SV_CheckBottom(ent);
+	return SV_CheckBottom(e);
+};
+
+int CEntity::IsOnFloor() const
+{
+	return 0; // TODO
 };
 
 /*
@@ -325,24 +338,24 @@ PF_droptofloor
 void() droptofloor
 ===============
 */
-int CEntity::DropToFloor(edict_t *ent)
+int CEntity::DropToFloor(/* edict_t *e */)
 {
 	vec3_t end;
 	trace_t trace;
 
-	VectorCopy(ent->v.origin, end);
+	VectorCopy(e->v.origin, end);
 	end[2] -= 256;
 
-	trace = SV_Move(ent->v.origin, ent->v.mins, ent->v.maxs, end, false, ent);
+	trace = SV_Move(e->v.origin, e->v.mins, e->v.maxs, end, false, e);
 
 	if(trace.fraction == 1 || trace.allsolid)
 		return 0;
 	else
 	{
-		VectorCopy(trace.endpos, ent->v.origin);
-		SV_LinkEdict(ent, false);
-		ent->v.flags = (int)ent->v.flags | FL_ONGROUND;
-		ent->v.groundentity = EDICT_TO_PROG(trace.ent);
+		VectorCopy(trace.endpos, e->v.origin);
+		SV_LinkEdict(e, false);
+		e->v.flags = (int)e->v.flags | FL_ONGROUND;
+		e->v.groundentity = EDICT_TO_PROG(trace.ent);
 		return 1;
 	};
 };
