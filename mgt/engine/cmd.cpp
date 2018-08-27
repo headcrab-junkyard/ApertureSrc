@@ -47,7 +47,7 @@ next frame.  This allows commands like:
 bind g "impulse 5 ; +attack ; wait ; -attack ; impulse 2"
 ============
 */
-void Cmd_Wait_f()
+void Cmd_Wait_f(const ICmdArgs &apArgs)
 {
 	cmd_wait = true;
 }
@@ -204,7 +204,7 @@ quake +prog jctest.qp +cmd amlev1
 quake -nosound +cmd amlev1
 ===============
 */
-void Cmd_StuffCmds_f()
+void Cmd_StuffCmds_f(const ICmdArgs &apArgs)
 {
 	int i, j;
 	int s;
@@ -273,7 +273,7 @@ void Cmd_StuffCmds_f()
 Cmd_Exec_f
 ===============
 */
-void Cmd_Exec_f()
+void Cmd_Exec_f(const ICmdArgs &apArgs)
 {
 	char *f;
 	int mark;
@@ -304,7 +304,7 @@ Cmd_Echo_f
 Just prints the rest of the line to the console
 ===============
 */
-void Cmd_Echo_f()
+void Cmd_Echo_f(const ICmdArgs &apArgs)
 {
 	int i;
 
@@ -321,16 +321,14 @@ Creates a new command that executes a command string (possibly ; seperated)
 ===============
 */
 
-char *CopyString(char *in)
+char *CopyString(const char *in)
 {
-	char *out;
-
-	out = (char *)Z_Malloc(strlen(in) + 1);
-	strcpy(out, in);
+	char *out = (char *)Z_Malloc(Q_strlen(in) + 1);
+	Q_strcpy(out, in);
 	return out;
 }
 
-void Cmd_Alias_f()
+void Cmd_Alias_f(const ICmdArgs &apArgs)
 {
 	cmdalias_t *a;
 	char cmd[1024];
@@ -395,7 +393,7 @@ void Cmd_Alias_f()
 typedef struct cmd_function_s
 {
 	struct cmd_function_s *next;
-	char *name;
+	const char *name;
 	xcommand_t function;
 } cmd_function_t;
 
@@ -403,7 +401,7 @@ typedef struct cmd_function_s
 
 static int cmd_argc;
 static char *cmd_argv[MAX_ARGS];
-static char *cmd_null_string = "";
+static const char *cmd_null_string = "";
 static const char *cmd_args = nullptr;
 
 cmd_source_t cmd_source;
@@ -515,7 +513,7 @@ void Cmd_TokenizeString(const char *text)
 Cmd_AddCommand
 ============
 */
-void Cmd_AddCommand(/*const*/ char *cmd_name, xcommand_t function)
+void Cmd_AddCommand(const char *cmd_name, xcommand_t function)
 {
 	cmd_function_t *cmd;
 
@@ -567,7 +565,7 @@ qboolean Cmd_Exists(const char *cmd_name)
 Cmd_CompleteCommand
 ============
 */
-char *Cmd_CompleteCommand(const char *partial)
+const char *Cmd_CompleteCommand(const char *partial)
 {
 	cmd_function_t *cmd;
 
@@ -601,15 +599,17 @@ void Cmd_ExecuteString(const char *text, cmd_source_t src)
 	Cmd_TokenizeString(text);
 
 	// execute the command line
+	
+	// no tokens
 	if(!Cmd_Argc())
-		return; // no tokens
+		return;
 
 	// check functions
 	for(cmd = cmd_functions; cmd; cmd = cmd->next)
 	{
 		if(!Q_strcasecmp(cmd_argv[0], cmd->name))
 		{
-			cmd->function();
+			//cmd->function(); // TODO:
 			return;
 		}
 	}
