@@ -1,13 +1,13 @@
-cmake_minimum_required(VERSION 3.8)
+] cmake_minimum_required(VERSION 3.8)
 project(MagentaEngine)
 
 # Version
 set(MGT_VERSION_MAJOR 0)
-set(MGT_VERSION_MINOR 5)
-set(MGT_VERSION_PATCH 2)
+set(MGT_VERSION_MINOR 7)
+set(MGT_VERSION_PATCH 0)
 
 # Build number
-set(MGT_VERSION_BUILD 70)
+set(MGT_VERSION_BUILD 90)
 
 #configure_file(
 #	${CMAKE_CURRENT_SOURCE_DIR}/VersionInfo.hpp.in
@@ -27,7 +27,7 @@ set(MGT_HLSDK_PATH
 
 # Define available options
 option(MGT_DEDICATED "Build only dedicated server" OFF)
-option(MGT_NDK_BUILD_SAMPLES "Build engine samples" OFF)
+option(MGT_NDK_BUILD_EXAMPLES "Build engine examples" OFF)
 
 # Set C++ language standard
 set(CMAKE_CXX_STANDARD 17)
@@ -76,6 +76,6 @@ endif()
 add_subdirectory(mgt)
 add_subdirectory(tests)
 
-if(MGT_NDK_BUILD_SAMPLES)
-	add_subdirectory(samples)
+if(MGT_NDK_BUILD_EXAMPLES)
+	add_subdirectory(examples)
 endif()
