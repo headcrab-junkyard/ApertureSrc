@@ -588,16 +588,16 @@ SV_Init
 void SV_Init()
 {
 	int i;
-	extern cvar_t sv_maxvelocity;
-	extern cvar_t sv_gravity;
-	extern cvar_t sv_nostep;
-	extern cvar_t sv_friction;
-	extern cvar_t sv_edgefriction;
-	extern cvar_t sv_stopspeed;
-	extern cvar_t sv_maxspeed;
-	extern cvar_t sv_accelerate;
-	extern cvar_t sv_idealpitchscale;
-	extern cvar_t sv_aim;
+	extern CConVar sv_maxvelocity;
+	extern CConVar sv_gravity;
+	extern CConVar sv_nostep;
+	extern CConVar sv_friction;
+	extern CConVar sv_edgefriction;
+	extern CConVar sv_stopspeed;
+	extern CConVar sv_maxspeed;
+	extern CConVar sv_accelerate;
+	extern CConVar sv_idealpitchscale;
+	extern CConVar sv_aim;
 
 	// TODO: SV_InitOperatorCommands()?
 	Cmd_AddCommand("spawn", SV_Spawn_f);
@@ -616,16 +616,16 @@ void SV_Init()
 	
 	Cvar_RegisterVariable(sv_timeout.internal());
 
-	Cvar_RegisterVariable(&sv_maxvelocity);
-	Cvar_RegisterVariable(&sv_gravity);
-	Cvar_RegisterVariable(&sv_friction);
-	Cvar_RegisterVariable(&sv_edgefriction);
-	Cvar_RegisterVariable(&sv_stopspeed);
-	Cvar_RegisterVariable(&sv_maxspeed);
-	Cvar_RegisterVariable(&sv_accelerate);
-	Cvar_RegisterVariable(&sv_idealpitchscale);
-	Cvar_RegisterVariable(&sv_aim);
-	Cvar_RegisterVariable(&sv_nostep);
+	Cvar_RegisterVariable(sv_maxvelocity.internal());
+	Cvar_RegisterVariable(sv_gravity.internal());
+	Cvar_RegisterVariable(sv_friction.internal());
+	Cvar_RegisterVariable(sv_edgefriction.internal());
+	Cvar_RegisterVariable(sv_stopspeed.internal());
+	Cvar_RegisterVariable(sv_maxspeed.internal());
+	Cvar_RegisterVariable(sv_accelerate.internal());
+	Cvar_RegisterVariable(sv_idealpitchscale.internal());
+	Cvar_RegisterVariable(sv_aim.internal());
+	Cvar_RegisterVariable(sv_nostep.internal());
 
 	for(i = 0; i < MAX_MODELS; i++)
 		sprintf(localmodels[i], "*%i", i);
@@ -2650,9 +2650,9 @@ void SV_SpawnServer(const char *server, const char *startspot)
 	int i;
 
 	// let's not have any servers with no name
-	if(hostname.string[0] == 0)
+	if(hostname.GetString() == 0)
 		Cvar_Set("hostname", "UNNAMED");
-	scr_centertime_off = 0;
+	//scr_centertime_off = 0; // TODO
 
 	Con_DPrintf("SpawnServer: %s\n", server);
 	svs.changelevel_issued = false; // now safe to issue another

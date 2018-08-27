@@ -39,7 +39,8 @@ float *angles;
 float *origin;
 float *velocity;
 
-int onground; // TODO: was qboolean here but marked as int in decl...
+// TODO: already defined in pmove...
+//int onground; // TODO: was qboolean here but marked as int in decl...
 
 usercmd_t cmd;
 
