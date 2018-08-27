@@ -46,12 +46,12 @@ public:
 	void QueryCvarValue(const char *asCvarName) override;
 	void QueryCvarValueEx(const char *asCvarName, int anRequestID) override;
 	
-	void SetViewEntity(const IEntity *apViewEnt) override; //{mpViewEnt = apViewEnt;} // TODO: const-correctness
+	void SetViewEntity(const IEntity *apViewEnt) override {mpViewEnt = apViewEnt;}
 	
 	IEntity *GetEntity() const override {return mpEntity;}
 private:
 	IEntity *mpEntity{nullptr};
-	IEntity *mpViewEnt{nullptr};
+	const IEntity *mpViewEnt{nullptr};
 	
 	client_t *mpData{nullptr}; // TODO: temp?
 };
