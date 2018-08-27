@@ -33,8 +33,6 @@ static const char *safeargvs[NUM_SAFE_ARGVS] =
 
 bool msg_suppress_1 = false;
 
-void COM_InitFilesystem();
-
 char com_token[1024];
 int com_argc;
 char **com_argv;
@@ -171,15 +169,15 @@ COM_SkipPath
 */
 const char *COM_SkipPath(const char *pathname)
 {
-	const char *last;
-
-	last = pathname;
+	const char *last{pathname};
+	
 	while(*pathname)
 	{
 		if(*pathname == '/')
 			last = pathname + 1;
 		pathname++;
-	}
+	};
+	
 	return last;
 }
 
@@ -454,7 +452,7 @@ void COM_Init(const char *basedir)
 
 	//Cmd_AddCommand("path", COM_Path_f); // TODO: unused?
 
-	COM_InitFilesystem();
+	//COM_InitFilesystem(); // TODO: replaced by FileSystem_Init called at start
 }
 
 /*
@@ -607,6 +605,8 @@ byte *COM_LoadFile(const char *path, int usehunk)
 
 	// extract the filename base name for hunk tag
 	COM_FileBase(path, base);
+	
+	len = h->GetSize(); // TODO: check that every legacy fs code that set length still sets the length!!!
 
 	if(usehunk == 1)
 		buf = (byte*)Hunk_AllocName(len + 1, base);
