@@ -21,7 +21,8 @@
 #include <cassert>
 #include "File.hpp"
 
-CFile::CFile(const char *asName) : msName(asName), mpHandle(fopen(asName, "w+"))
+CFile::CFile(const char *asName, const char *asMode)
+	: msName(asName), mpHandle(fopen(asName, asMode))
 {
 	assert(mpHandle);
 	
@@ -71,7 +72,6 @@ void CFile::Flush()
 {
 };
 
-/*
 int CFile::Seek(int position) const
 {
 	if(mpHandle)
@@ -79,7 +79,6 @@ int CFile::Seek(int position) const
 
 	return 0;
 };
-*/
 
 int CFile::Tell() const
 {

@@ -28,7 +28,7 @@
 class CFile final : public IFile
 {
 public:
-	CFile(const char *asName);
+	CFile(const char *asName, const char *asMode);
 	~CFile();
 	
 	/*int*/ void Write(const void *data, int count) override;
@@ -41,7 +41,8 @@ public:
 	void Flush() override;
 	
 	/*void*/ //int Seek(int position, FileSystemSeek_t seekType) const; //override; // TODO
-
+	int Seek(int position) const override;
+	
 	/*unsigned*/ int Tell() const override;
 
 	//int SetVBuf(char *buffer, int mode, long size) override;
