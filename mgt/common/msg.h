@@ -22,6 +22,8 @@
 
 #pragma once
 
+extern struct usercmd_s nullcmd; // TODO: qw
+
 void MSG_WriteChar (sizebuf_t *sb, int c);
 void MSG_WriteByte (sizebuf_t *sb, int c);
 void MSG_WriteShort (sizebuf_t *sb, int c);
@@ -35,6 +37,7 @@ extern	int			msg_readcount;
 extern	qboolean	msg_badread;		// set if a read goes beyond end of message
 
 void MSG_BeginReading ();
+int MSG_GetReadCount(); // TODO: used by ServerUser
 int MSG_ReadChar ();
 int MSG_ReadByte ();
 int MSG_ReadShort ();
@@ -44,3 +47,4 @@ char *MSG_ReadString ();
 
 float MSG_ReadCoord ();
 float MSG_ReadAngle ();
+void MSG_ReadDeltaUsercmd(struct usercmd_s *from, struct usercmd_s *cmd); // TODO: used by ServerUser

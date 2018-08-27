@@ -31,6 +31,8 @@ Handles byte ordering and avoids alignment errors
 ==============================================================================
 */
 
+usercmd_t nullcmd{}; // guaranteed to be zero
+
 //
 // writing functions
 //
@@ -128,6 +130,11 @@ void MSG_BeginReading()
 {
 	msg_readcount = 0;
 	msg_badread = false;
+}
+
+int MSG_GetReadCount()
+{
+	return msg_readcount;
 }
 
 // returns -1 and sets msg_badread if no more characters are available
@@ -245,4 +252,42 @@ float MSG_ReadCoord()
 float MSG_ReadAngle()
 {
 	return MSG_ReadChar() * (360.0 / 256);
+}
+
+void MSG_ReadDeltaUsercmd(usercmd_t *from, usercmd_t *move)
+{
+// TODO
+/*
+	int bits;
+
+	memcpy (move, from, sizeof(*move));
+
+	bits = MSG_ReadByte ();
+		
+// read current angles
+	if (bits & CM_ANGLE1)
+		move->angles[0] = MSG_ReadAngle16 ();
+	if (bits & CM_ANGLE2)
+		move->angles[1] = MSG_ReadAngle16 ();
+	if (bits & CM_ANGLE3)
+		move->angles[2] = MSG_ReadAngle16 ();
+		
+// read movement
+	if (bits & CM_FORWARD)
+		move->forwardmove = MSG_ReadShort ();
+	if (bits & CM_SIDE)
+		move->sidemove = MSG_ReadShort ();
+	if (bits & CM_UP)
+		move->upmove = MSG_ReadShort ();
+	
+// read buttons
+	if (bits & CM_BUTTONS)
+		move->buttons = MSG_ReadByte ();
+
+	if (bits & CM_IMPULSE)
+		move->impulse = MSG_ReadByte ();
+
+// read time to run command
+	move->msec = MSG_ReadByte ();
+*/
 }
