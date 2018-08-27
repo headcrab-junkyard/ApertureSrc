@@ -22,6 +22,7 @@
 /// @brief script command processing module
 
 #include "quakedef.h"
+#include "CmdArgs.hpp"
 
 #define MAX_ALIAS_NAME 32
 
@@ -210,7 +211,7 @@ void Cmd_StuffCmds_f(const ICmdArgs &apArgs)
 	int s;
 	char *text, *build, c;
 
-	if(Cmd_Argc() != 1)
+	if(apArgs.GetCount() != 1)
 	{
 		Con_Printf("stuffcmds : execute command line parameters\n");
 		return;
@@ -278,20 +279,20 @@ void Cmd_Exec_f(const ICmdArgs &apArgs)
 	char *f;
 	int mark;
 
-	if(Cmd_Argc() != 2)
+	if(apArgs.GetCount() != 2)
 	{
 		Con_Printf("exec <filename> : execute a script file\n");
 		return;
 	}
 
 	mark = Hunk_LowMark();
-	f = (char *)COM_LoadHunkFile(Cmd_Argv(1));
+	f = (char *)COM_LoadHunkFile(apArgs.GetByIndex(1));
 	if(!f)
 	{
-		Con_Printf("couldn't exec %s\n", Cmd_Argv(1));
+		Con_Printf("couldn't exec %s\n", apArgs.GetByIndex(1));
 		return;
 	}
-	Con_Printf("execing %s\n", Cmd_Argv(1));
+	Con_Printf("execing %s\n", apArgs.GetByIndex(1));
 
 	Cbuf_InsertText(f);
 	Hunk_FreeToLowMark(mark);
@@ -308,8 +309,8 @@ void Cmd_Echo_f(const ICmdArgs &apArgs)
 {
 	int i;
 
-	for(i = 1; i < Cmd_Argc(); i++)
-		Con_Printf("%s ", Cmd_Argv(i));
+	for(i = 1; i < apArgs.GetCount(); i++)
+		Con_Printf("%s ", apArgs.GetByIndex(i));
 	Con_Printf("\n");
 }
 
@@ -335,7 +336,7 @@ void Cmd_Alias_f(const ICmdArgs &apArgs)
 	int i, c;
 	const char *s;
 
-	if(Cmd_Argc() == 1)
+	if(apArgs.GetCount() == 1)
 	{
 		Con_Printf("Current alias commands:\n");
 		for(a = cmd_alias; a; a = a->next)
@@ -344,7 +345,7 @@ void Cmd_Alias_f(const ICmdArgs &apArgs)
 	}
 
 	s = Cmd_Argv(1);
-	if(strlen(s) >= MAX_ALIAS_NAME)
+	if(Q_strlen(s) >= MAX_ALIAS_NAME)
 	{
 		Con_Printf("Alias name is too long\n");
 		return;
@@ -370,10 +371,10 @@ void Cmd_Alias_f(const ICmdArgs &apArgs)
 
 	// copy the rest of the command line
 	cmd[0] = 0; // start out with a null string
-	c = Cmd_Argc();
+	c = apArgs.GetCount();
 	for(i = 2; i < c; i++)
 	{
-		strcat(cmd, Cmd_Argv(i));
+		strcat(cmd, apArgs.GetByIndex(i));
 		if(i != c)
 			strcat(cmd, " ");
 	}
@@ -596,20 +597,22 @@ void Cmd_ExecuteString(const char *text, cmd_source_t src)
 	cmdalias_t *a;
 
 	cmd_source = src;
-	Cmd_TokenizeString(text);
+	
+	CCmdArgs Args(text);
+	//Cmd_TokenizeString(text);
 
 	// execute the command line
 	
 	// no tokens
-	if(!Cmd_Argc())
+	if(!Args.GetCount())
 		return;
 
 	// check functions
 	for(cmd = cmd_functions; cmd; cmd = cmd->next)
 	{
-		if(!Q_strcasecmp(cmd_argv[0], cmd->name))
+		if(!Q_strcasecmp(Args.GetByIndex(0), cmd->name))
 		{
-			//cmd->function(); // TODO:
+			cmd->function(Args);
 			return;
 		}
 	}
@@ -617,7 +620,7 @@ void Cmd_ExecuteString(const char *text, cmd_source_t src)
 	// check alias
 	for(a = cmd_alias; a; a = a->next)
 	{
-		if(!Q_strcasecmp(cmd_argv[0], a->name))
+		if(!Q_strcasecmp(Args.GetByIndex(0), a->name))
 		{
 			Cbuf_InsertText(a->value);
 			return;
@@ -626,7 +629,7 @@ void Cmd_ExecuteString(const char *text, cmd_source_t src)
 
 	// check cvars
 	if(!Cvar_Command())
-		Con_Printf("Unknown command \"%s\"\n", Cmd_Argv(0));
+		Con_Printf("Unknown command \"%s\"\n", Args.GetByIndex(0));
 }
 
 /*
