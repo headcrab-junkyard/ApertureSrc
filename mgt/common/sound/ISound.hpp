@@ -41,7 +41,7 @@ interface ISound : public IBaseInterface
 	//virtual void Startup() = 0;
 	
 	///
-	virtual void Update(float, float, float, float) = 0;
+	virtual void Update(float*, float*, float*, float*) = 0;
 	//virtual void Update(float afTimeStep) = 0;
 	
 	///
