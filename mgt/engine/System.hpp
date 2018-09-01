@@ -41,6 +41,8 @@ public:
 	void Printf(const char *asMsg, ...) override;
 	
 	void Error(const char *asMsg, ...) override;
+	
+	void Quit() override;
 
 	double GetFloatTime() const override;
 private:

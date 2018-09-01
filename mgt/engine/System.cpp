@@ -72,6 +72,11 @@ void CSystem::Error(const char *fmt, ...)
 	Sys_Error(text);
 };
 
+void CSystem::Quit()
+{
+	Sys_Quit();
+};
+
 double CSystem::GetFloatTime() const
 {
 	return Sys_FloatTime();
