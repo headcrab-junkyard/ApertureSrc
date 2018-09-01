@@ -19,10 +19,14 @@
 */
 
 /// @file
-/// @brief
+/// @brief player movement
 
 #pragma once
 
+#include "pm_defs.h"
+#include "pm_movevars.h"
+
+/*
 typedef struct
 {
 	vec3_t normal;
@@ -40,7 +44,6 @@ typedef struct
 	int ent;         // entity the surface is on
 } pmtrace_t;
 
-#define MAX_PHYSENTS 32
 typedef struct
 {
 	vec3_t origin;
@@ -87,15 +90,20 @@ typedef struct
 	float waterfriction;
 	float entgravity;
 } movevars_t;
+*/
 
-extern movevars_t movevars;
-extern playermove_t pmove;
+extern playermove_t *pmove;
+
 extern int onground;
 extern int waterlevel;
 extern int watertype;
 
-void PlayerMove(void);
-void Pmove_Init(void);
+extern vec3_t player_mins;
+extern vec3_t player_maxs;
+
+void PlayerMove();
+
+void Pmove_Init(playermove_t *ppmove);
 
 int PM_HullPointContents(hull_t *hull, int num, vec3_t p);
 
