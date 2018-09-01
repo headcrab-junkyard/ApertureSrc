@@ -73,12 +73,6 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 	if (!GetCurrentDirectory (sizeof(cwd), cwd))
 		Sys_Error ("Couldn't determine current directory");
 
-	if (cwd[Q_strlen(cwd)-1] == '/')
-		cwd[Q_strlen(cwd)-1] = 0;
-
-	parms.basedir = cwd;
-	parms.cachedir = nullptr;
-
 	parms.argc = 1;
 	argv[0] = empty_string;
 
@@ -149,11 +143,5 @@ int WINAPI WinMain (HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLin
 
 	if (!tevent)
 		Sys_Error ("Couldn't create event");
-
-	oldtime = Sys_FloatTime ();
-
-    // main window message loop
-	while (true)
-		Host_Frame(0.1);
 }
 */
