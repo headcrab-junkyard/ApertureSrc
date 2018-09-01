@@ -40,7 +40,8 @@
 #define NOT_FOCUS_SLEEP 20 ///< sleep time when not focus (in ms)
 
 ISystem *gpSystem{nullptr};
-IConsole *gpConsole{nullptr};
+IFileSystem *gpFileSystem{nullptr};
+IMemory *gpMemory{nullptr};
 
 extern void Con_Init();
 extern void Con_Print(const char *msg);
@@ -103,8 +104,9 @@ bool CEngineClient::Init(CreateInterfaceFn afnEngineFactory /*, tWinHandle ahWin
 		return false;
 
 	// TODO: temp to support legacy code
-	gpConsole = mpConsole;
 	gpSystem = mpSystem;
+	gpFileSystem = mpFileSystem;
+	gpConsole = mpConsole;
 	
 	cls.state = ca_disconnected;
 
@@ -223,15 +225,19 @@ void CEngineClient::Frame()
 	// client operations
 	//
 	//-------------------
-
+	
+	// get new key events
+	SendKeyEvents();
+	
 	// allow mice or other external controllers to add commands
 	IN_Commands();
 
 	// process console commands again for client-side
-	//Cbuf_Execute();
+	Cbuf_Execute();
 
 	// fetch results from server
-	//CL_ReadPackets(); // TODO: instead of NET_Poll
+	//if(cls.state == ca_connected) // TODO
+		CL_ReadPackets();
 
 	if(cls.state == ca_disconnected)
 		CL_CheckForResend();
@@ -241,8 +247,8 @@ void CEngineClient::Frame()
 	//host_time += host_frametime; // TODO
 
 	// fetch results from server
-	if(cls.state == ca_connected)
-		CL_ReadPackets();
+	//if(cls.state == ca_connected) // TODO
+		//CL_ReadPackets(); // TODO
 
 	// Set up prediction for other players
 	CL_SetUpPlayerPrediction(false);
@@ -298,6 +304,20 @@ void CEngineClient::HostServerShutdown()
 		CL_Disconnect();
 };
 
+// TODO
+/*
+void CEngineClient::Disconnect(bool abForce)
+{
+	if(!abForce)
+	{
+		if(cls.state != ca_connected)
+			return;
+	};
+
+	CL_Disconnect();
+};
+*/
+
 void CEngineClient::ConInit()
 {
 	Con_Init();
@@ -307,6 +327,78 @@ void CEngineClient::ConPrint(const char *msg)
 {
 	Con_Print(msg);
 };
+
+extern void M_Menu_Quit_f(const ICmdArgs &apArgs);
+
+bool CEngineClient::OnQuit() // TODO: CanQuit?
+{
+	if(key_dest != key_console && cls.state != ca_dedicated)
+	{
+		//M_Menu_Quit_f(apArgs); // TODO
+		return false;
+	};
+	
+	//CL_Disconnect(); // TODO: will be handled by Host_ServerShutdown which will call the HostServerShutdown method
+	return true;
+};
+
+void CEngineClient::OnMap(const ICmdArgs &apArgs)
+{
+	cls.demonum = -1; // stop demo loop in case this fails
+	
+	//CL_Disconnect(); // TODO: will be handled by Host_ServerShutdown which will call the HostServerShutdown method
+	
+	key_dest = key_game; // remove console or menu
+	SCR_BeginLoadingPlaque();
+	
+	cls.mapstring[0] = 0;
+	
+	for(int i = 0; i < apArgs.GetCount(); i++)
+	{
+		strcat(cls.mapstring, apArgs.GetByIndex(i));
+		strcat(cls.mapstring, " ");
+	};
+	
+	strcat(cls.mapstring, "\n");
+};
+
+void CEngineClient::ConnectToLocalServer(const ICmdArgs &apArgs)
+{
+	strcpy(cls.spawnparms, "");
+
+	for(int i = 2; i < apArgs.GetCount(); i++)
+	{
+		strcat(cls.spawnparms, apArgs.GetByIndex(i));
+		strcat(cls.spawnparms, " ");
+	};
+
+	Cmd_ExecuteString("connect local", src_command);
+};
+
+bool CEngineClient::IsDemoPlayback()
+{
+	if(cls.demoplayback)
+		return true;
+	
+	return false;
+};
+
+bool CEngineClient::CanSaveGame()
+{
+	if(cl.intermission)
+	{
+		Con_Printf("Can't save in intermission.\n");
+		return false;
+	};
+	
+	return true;
+};
+
+/*
+void CEngineClient::OnReconnect()
+{
+};
+*/
 
 void CEngineClient::LocalInit()
 {
@@ -349,4 +441,23 @@ void CEngineClient::UpdateScreen()
 	SCR_UpdateScreen();
 
 	// TODO: something else?
+};
+
+void CEngineClient::SendKeyEvents()
+{
+#ifdef _WIN32
+	static MSG Msg{};
+
+	while(PeekMessage(&Msg, nullptr, 0, 0, PM_NOREMOVE))
+	{
+		// we always update if there are any event, even if we're paused
+		scr_skipupdate = 0;
+
+		if(!GetMessage(&Msg, nullptr, 0, 0))
+			gpSystem->Quit();
+
+		TranslateMessage(&Msg);
+		DispatchMessage(&Msg);
+	};
+#endif
 };

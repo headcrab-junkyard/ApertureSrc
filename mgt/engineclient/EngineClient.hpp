@@ -80,6 +80,15 @@ public:
 	
 	void ConInit() override;
 	void ConPrint(const char *msg) override;
+	
+	bool OnQuit() override;
+	
+	void OnMap(const ICmdArgs &apArgs) override;
+	
+	void ConnectToLocalServer(const ICmdArgs &apArgs) override;
+	
+	bool IsDemoPlayback() override;
+	bool CanSaveGame() override;
 private:
 	void LocalInit();
 
@@ -90,6 +99,8 @@ private:
 
 	void CheckStartupVids();
 	//void CreateStartupVids();
+	
+	void SendKeyEvents();
 
 	ISound *LoadSoundModule();
 	IInput *LoadInputModule();
