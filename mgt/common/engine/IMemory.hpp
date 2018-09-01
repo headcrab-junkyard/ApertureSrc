@@ -52,4 +52,13 @@ interface IMemory : public IBaseInterface
 	
 	///
 	virtual void *Hunk_TempAlloc(int size) = 0;
+	
+	///
+	virtual void Hunk_Check() = 0;
+	
+	///
+	virtual void *Cache_Alloc(cache_user_t *c, int size, const char *name) = 0;
+	
+	///
+	virtual void *Cache_Check(cache_user_t *c) = 0;
 };
