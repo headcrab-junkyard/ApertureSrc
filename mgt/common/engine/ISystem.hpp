@@ -47,7 +47,7 @@ interface ISystem : public IBaseInterface
 	virtual void Error(const char *asMsg, ...) = 0;
 	
 	///
-	//virtual void Quit() = 0;
+	virtual void Quit() = 0;
 	
 	///
 	virtual double GetFloatTime() const = 0;
