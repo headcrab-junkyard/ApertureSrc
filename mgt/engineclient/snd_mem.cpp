@@ -23,7 +23,7 @@
 
 #include "quakedef.h"
 
-int cache_full_cycle;
+int cache_full_cycle{0};
 
 byte *S_Alloc(int size);
 
@@ -41,7 +41,7 @@ void ResampleSfx(sfx_t *sfx, int inrate, int inwidth, byte *data)
 	int sample, samplefrac, fracstep;
 	sfxcache_t *sc;
 
-	sc = Cache_Check(&sfx->cache);
+	sc = (sfxcache_t*)gpMemory->Cache_Check(&sfx->cache);
 	if(!sc)
 		return;
 
@@ -106,7 +106,7 @@ sfxcache_t *S_LoadSound(sfx_t *s)
 	byte stackbuf[1 * 1024]; // avoid dirtying the cache heap
 
 	// see if still in memory
-	sc = Cache_Check(&s->cache);
+	sc = (sfxcache_t*)gpMemory->Cache_Check(&s->cache);
 	if(sc)
 		return sc;
 
@@ -119,6 +119,8 @@ sfxcache_t *S_LoadSound(sfx_t *s)
 
 	data = COM_LoadStackFile(namebuffer, stackbuf, sizeof(stackbuf));
 
+	int com_filesize{gpFileSystem->GetFileSize(namebuffer)};
+	
 	if(!data)
 	{
 		Con_Printf("Couldn't load %s\n", namebuffer);
@@ -137,7 +139,7 @@ sfxcache_t *S_LoadSound(sfx_t *s)
 
 	len = len * info.width * info.channels;
 
-	sc = Cache_Alloc(&s->cache, len + sizeof(sfxcache_t), s->name);
+	sc = (sfxcache_t*)gpMemory->Cache_Alloc(&s->cache, len + sizeof(sfxcache_t), s->name);
 	if(!sc)
 		return nullptr;
 
@@ -186,7 +188,7 @@ int GetLittleLong(void)
 	return val;
 }
 
-void FindNextChunk(char *name)
+void FindNextChunk(const char *name)
 {
 	while(1)
 	{
@@ -206,15 +208,15 @@ void FindNextChunk(char *name)
 			return;
 		}
 		//		if (iff_chunk_len > 1024*1024)
-		//			Sys_Error ("FindNextChunk: %i length is past the 1 meg sanity limit", iff_chunk_len);
+		//			gpSystem->Error ("FindNextChunk: %i length is past the 1 meg sanity limit", iff_chunk_len);
 		data_p -= 8;
 		last_chunk = data_p + 8 + ((iff_chunk_len + 1) & ~1);
-		if(!Q_strncmp(data_p, name, 4))
+		if(!Q_strncmp((char*)data_p, name, 4))
 			return;
 	}
 }
 
-void FindChunk(char *name)
+void FindChunk(const char *name)
 {
 	last_chunk = iff_data;
 	FindNextChunk(name);
@@ -260,7 +262,7 @@ wavinfo_t GetWavinfo(const char *name, byte *wav, int wavlength)
 
 	// find "RIFF" chunk
 	FindChunk("RIFF");
-	if(!(data_p && !Q_strncmp(data_p + 8, "WAVE", 4)))
+	if(!(data_p && !Q_strncmp((char*)(data_p + 8), "WAVE", 4)))
 	{
 		Con_Printf("Missing RIFF/WAVE chunks\n");
 		return info;
@@ -301,7 +303,7 @@ wavinfo_t GetWavinfo(const char *name, byte *wav, int wavlength)
 		FindNextChunk("LIST");
 		if(data_p)
 		{
-			if(!strncmp(data_p + 28, "mark", 4))
+			if(!strncmp((char*)(data_p + 28), "mark", 4))
 			{ // this is not a proper parse, but it works with cooledit...
 				data_p += 24;
 				i = GetLittleLong(); // samples in loop
@@ -327,7 +329,7 @@ wavinfo_t GetWavinfo(const char *name, byte *wav, int wavlength)
 	if(info.samples)
 	{
 		if(samples < info.samples)
-			Sys_Error("Sound %s has a bad loop length", name);
+			gpSystem->Error("Sound %s has a bad loop length", name);
 	}
 	else
 		info.samples = samples;

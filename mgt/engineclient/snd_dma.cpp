@@ -27,12 +27,16 @@
 #include "winquake.h"
 #endif
 
-void S_Play();
-void S_PlayVol();
-void S_SoundList();
+#include "vox.h"
+
+#include "sound/ISound.hpp"
+
+void S_Play(const ICmdArgs &apArgs);
+void S_PlayVol(const ICmdArgs &apArgs);
+void S_SoundList(const ICmdArgs &apArgs);
 void S_Update_();
 void S_StopAllSounds(qboolean clear);
-void S_StopAllSoundsC();
+void S_StopAllSoundsC(const ICmdArgs &apArgs);
 
 // =======================================================================
 // Internal sound data & structures
@@ -98,6 +102,46 @@ cvar_t _snd_mixahead = { "_snd_mixahead", "0.1", true };
 qboolean fakedma = false;
 int fakedma_updates = 15;
 
+bool InitSound()
+{
+	gpSoundLib = Sys_LoadModule("sound");
+
+	if(!gpSoundLib)
+		return false;
+
+	auto pfnSoundFactory{ Sys_GetFactory(gpSoundLib) };
+
+	if(!pfnSoundFactory)
+		return false;
+
+	gpSound = (ISound *)pfnSoundFactory(MGT_SOUND_INTERFACE_VERSION, nullptr);
+
+	if(!gpSound)
+		return false;
+
+	if(gpSound)
+		if(!gpSound->Init())
+			return false;
+
+	return true;
+};
+
+void ShutdownSound()
+{
+	if(gpSound)
+		gpSound->Shutdown();
+
+	if(gpSoundLib)
+	{
+		Sys_UnloadModule(gpSoundLib);
+		gpSoundLib = nullptr;
+	}
+	//else
+	//delete gpSound;
+
+	gpSound = nullptr;
+};
+
 void S_AmbientOff()
 {
 	snd_ambient = false;
@@ -108,7 +152,7 @@ void S_AmbientOn()
 	snd_ambient = true;
 }
 
-void S_SoundInfo_f()
+void S_SoundInfo_f(const ICmdArgs &apArgs)
 {
 	if(!sound_started || !shm)
 	{
@@ -196,11 +240,14 @@ void S_Init()
 	Cvar_RegisterVariable(&snd_show);
 	Cvar_RegisterVariable(&_snd_mixahead);
 
+	// TODO
+	/*
 	if(host_parms.memsize < 0x800000)
 	{
 		Cvar_Set("loadas8bit", "1");
 		Con_Printf("loading all sounds as 8bit\n");
 	}
+	*/
 
 	snd_initialized = true;
 
@@ -208,14 +255,14 @@ void S_Init()
 
 	SND_InitScaletable();
 
-	known_sfx = Hunk_AllocName(MAX_SFX * sizeof(sfx_t), "sfx_t");
+	known_sfx = (sfx_t*)gpMemory->Hunk_AllocName(MAX_SFX * sizeof(sfx_t), "sfx_t");
 	num_sfx = 0;
 
 	// create a piece of DMA memory
 
 	if(fakedma)
 	{
-		shm = (void *)Hunk_AllocName(sizeof(*shm), "shm");
+		shm = (volatile dma_t *)gpMemory->Hunk_AllocName(sizeof(*shm), "shm");
 		shm->splitbuffer = 0;
 		shm->samplebits = 16;
 		shm->speed = 22050;
@@ -225,7 +272,7 @@ void S_Init()
 		shm->soundalive = true;
 		shm->gamealive = true;
 		shm->submission_chunk = 1;
-		shm->buffer = Hunk_AllocName(1 << 16, "shmbuf");
+		shm->buffer = (unsigned char*)gpMemory->Hunk_AllocName(1 << 16, "shmbuf");
 	}
 
 	Con_Printf("Sound sampling rate: %i\n", shm->speed);
@@ -280,10 +327,10 @@ sfx_t *S_FindName(const char *name)
 	sfx_t *sfx;
 
 	if(!name)
-		Sys_Error("S_FindName: NULL\n");
+		gpSystem->Error("S_FindName: NULL\n");
 
 	if(Q_strlen(name) >= MAX_QPATH)
-		Sys_Error("Sound name too long: %s", name);
+		gpSystem->Error("Sound name too long: %s", name);
 
 	// see if already loaded
 	for(i = 0; i < num_sfx; i++)
@@ -293,7 +340,7 @@ sfx_t *S_FindName(const char *name)
 		}
 
 	if(num_sfx == MAX_SFX)
-		Sys_Error("S_FindName: out of sfx_t");
+		gpSystem->Error("S_FindName: out of sfx_t");
 
 	sfx = &known_sfx[i];
 	strcpy(sfx->name, name);
@@ -317,7 +364,7 @@ void S_TouchSound(const char *name)
 		return;
 
 	sfx = S_FindName(name);
-	Cache_Check(&sfx->cache);
+	gpMemory->Cache_Check(&sfx->cache);
 }
 
 /*
@@ -545,7 +592,7 @@ void S_StopAllSounds(qboolean clear)
 		S_ClearBuffer();
 }
 
-void S_StopAllSoundsC()
+void S_StopAllSoundsC(const ICmdArgs &apArgs)
 {
 	S_StopAllSounds(true);
 }
@@ -576,7 +623,7 @@ void S_ClearBuffer()
 
 		reps = 0;
 
-		while((hresult = pDSBuf->lpVtbl->Lock(pDSBuf, 0, gSndBufSize, (void **)&pData, &dwSize, nullptr, nullptr, 0)) != DS_OK)
+		while((hresult = pDSBuf->Lock(0, gSndBufSize, (void **)&pData, &dwSize, nullptr, nullptr, 0)) != DS_OK)
 		{
 			if(hresult != DSERR_BUFFERLOST)
 			{
@@ -595,7 +642,7 @@ void S_ClearBuffer()
 
 		Q_memset(pData, clear, shm->samples * shm->samplebits / 8);
 
-		pDSBuf->lpVtbl->Unlock(pDSBuf, pData, dwSize, nullptr, 0);
+		pDSBuf->Unlock(pData, dwSize, nullptr, 0);
 	}
 	else
 #endif
@@ -833,7 +880,7 @@ void GetSoundtime()
 void S_ExtraUpdate()
 {
 #ifdef _WIN32
-	IN_Accumulate();
+	//IN_Accumulate(); // TODO
 #endif
 
 	if(snd_noextraupdate.value)
@@ -872,14 +919,14 @@ void S_Update_()
 
 		if(pDSBuf)
 		{
-			if(pDSBuf->lpVtbl->GetStatus(pDSBuf, &dwStatus) != DD_OK)
+			if(pDSBuf->GetStatus(&dwStatus) != DD_OK)
 				Con_Printf("Couldn't get sound buffer status\n");
 
 			if(dwStatus & DSBSTATUS_BUFFERLOST)
-				pDSBuf->lpVtbl->Restore(pDSBuf);
+				pDSBuf->Restore();
 
 			if(!(dwStatus & DSBSTATUS_PLAYING))
-				pDSBuf->lpVtbl->Play(pDSBuf, 0, 0, DSBPLAY_LOOPING);
+				pDSBuf->Play(0, 0, DSBPLAY_LOOPING);
 		}
 	}
 #endif
@@ -897,7 +944,7 @@ console functions
 ===============================================================================
 */
 
-void S_Play()
+void S_Play(const ICmdArgs &apArgs)
 {
 	static int hash = 345;
 	int i;
@@ -920,7 +967,7 @@ void S_Play()
 	}
 }
 
-void S_PlayVol()
+void S_PlayVol(const ICmdArgs &apArgs)
 {
 	static int hash = 543;
 	int i;
@@ -945,7 +992,7 @@ void S_PlayVol()
 	}
 }
 
-void S_SoundList()
+void S_SoundList(const ICmdArgs &apArgs)
 {
 	int i;
 	sfx_t *sfx;
@@ -955,7 +1002,7 @@ void S_SoundList()
 	total = 0;
 	for(sfx = known_sfx, i = 0; i < num_sfx; i++, sfx++)
 	{
-		sc = Cache_Check(&sfx->cache);
+		sc = (sfxcache_t*)gpMemory->Cache_Check(&sfx->cache);
 		if(!sc)
 			continue;
 		size = sc->length * sc->width * (sc->stereo + 1);
@@ -998,43 +1045,3 @@ void S_BeginPrecaching()
 void S_EndPrecaching()
 {
 }
-
-bool InitSound()
-{
-	gpSoundLib{ Sys_LoadModule("sound") };
-
-	if(!gpSoundLib)
-		return false;
-
-	auto pfnSoundFactory{ Sys_GetFactory(gpSoundLib) };
-
-	if(!pfnSoundFactory)
-		return false;
-
-	gpSound = (IEngineClient *)pfnSoundFactory(MGT_SOUND_INTERFACE_VERSION, nullptr);
-
-	if(!gpSound)
-		return false;
-
-	if(gpSound)
-		if(!gpSound->Init())
-			return false;
-
-	return true;
-};
-
-void ShutdownSound()
-{
-	if(gpSound)
-		gpSound->Shutdown();
-
-	if(gpSoundLib)
-	{
-		Sys_UnloadModule(gpSoundLib);
-		gpSoundLib = nullptr;
-	}
-	//else
-	//delete gpSound;
-
-	gpSound = nullptr;
-};
