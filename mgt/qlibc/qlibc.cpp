@@ -20,7 +20,7 @@
 
 /// @file
 
-#include "quakedef.h"
+#include "const.h"
 
 /*
 ============================================================================
@@ -93,9 +93,8 @@ void Q_strncpy(char *dest, const char *src, int count)
 
 int Q_strlen(const char *str)
 {
-	int count;
-
-	count = 0;
+	int count{0};
+	
 	while(str[count])
 		count++;
 
