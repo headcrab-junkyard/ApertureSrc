@@ -16,4 +16,4 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 # Link with external libraries
-target_link_libraries(${PROJECT_NAME} ogs-interface)
+target_link_libraries(${PROJECT_NAME} ogs-interface mgt-qlibc mgt-mathlib)
