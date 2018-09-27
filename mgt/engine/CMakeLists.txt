@@ -14,7 +14,7 @@ file(GLOB PROJECT_SOURCES
 
 add_library(${PROJECT_NAME} MODULE ${PROJECT_SOURCES})
 
-target_link_libraries(${PROJECT_NAME} ogs-interface)
+target_link_libraries(${PROJECT_NAME} ogs-interface mgt-qlibc mgt-mathlib)
 
 if(WIN32)
 	target_link_libraries(${PROJECT_NAME} winmm) # timeGetTime
