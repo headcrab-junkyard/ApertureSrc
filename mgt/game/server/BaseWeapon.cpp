@@ -1,6 +1,6 @@
 /// @file
 
-#include "Weapon.hpp"
+#include "BaseWeapon.hpp"
 
 /*
 ============
@@ -9,16 +9,237 @@ W_Attack
 An attack impulse can be triggered now
 ============
 */
-void  player_axe1();
-void  player_axeb1();
-void  player_axec1();
-void  player_axed1();
+
 void  player_shot1();
 void  player_nail1();
 void  player_light1();
 void  player_rocket1();
 
-void CPlayer::Attack()
+CBaseWeapon::CBaseWeapon() = default;
+CBaseWeapon::~CBaseWeapon() = default;
+
+void CBaseWeapon::Spawn()
+{
+};
+
+/*
+================
+idWeapon::SetOwner
+
+Only called at player spawn time, not each weapon switch
+================
+*/
+void CBaseWeapon::SetOwner( CBasePlayer *_owner )
+{
+	assert( !owner );
+	owner = _owner;
+	SetName( va( "%s_weapon", owner->name.c_str() ) );
+
+	if ( worldModel.GetEntity() )
+		worldModel.GetEntity()->SetName( va( "%s_weapon_worldmodel", owner->name.c_str() ) );
+};
+
+/*
+================
+idWeapon::Raise
+================
+*/
+void CBaseWeapon::Raise()
+{
+	if ( isLinked )
+		WEAPON_RAISEWEAPON = true;
+};
+
+/*
+================
+idWeapon::PutAway
+================
+*/
+void CBaseWeapon::PutAway()
+{
+	hasBloodSplat = false;
+	if ( isLinked )
+		WEAPON_LOWERWEAPON = true;
+};
+
+/*
+================
+idWeapon::Reload
+NOTE: this is only for impulse-triggered reload, auto reload is scripted
+================
+*/
+void CBaseWeapon::Reload()
+{
+	if ( isLinked )
+		WEAPON_RELOAD = true;
+};
+
+/*
+================
+idWeapon::LowerWeapon
+================
+*/
+void CBaseWeapon::LowerWeapon()
+{
+	if ( !hide )
+	{
+		hideStart	= 0.0f;
+		hideEnd		= hideDistance;
+		
+		if ( gameLocal.time - hideStartTime < hideTime )
+			hideStartTime = gameLocal.time - ( hideTime - ( gameLocal.time - hideStartTime ) );
+		else
+			hideStartTime = gameLocal.time;
+		
+		hide = true;
+	};
+};
+
+/*
+================
+idWeapon::RaiseWeapon
+================
+*/
+void CBaseWeapon::RaiseWeapon()
+{
+	Show();
+
+	if ( hide )
+	{
+		hideStart	= hideDistance;
+		hideEnd		= 0.0f;
+		
+		if ( gameLocal.time - hideStartTime < hideTime )
+			hideStartTime = gameLocal.time - ( hideTime - ( gameLocal.time - hideStartTime ) );
+		else
+			hideStartTime = gameLocal.time;
+		
+		hide = false;
+	};
+};
+
+/*
+================
+idWeapon::HideWeapon
+================
+*/
+void CBaseWeapon::HideWeapon()
+{
+	Hide();
+	
+	if ( worldModel.GetEntity() )
+		worldModel.GetEntity()->Hide();
+	
+	muzzleFlashEnd = 0;
+};
+
+/*
+================
+idWeapon::ShowWeapon
+================
+*/
+void CBaseWeapon::ShowWeapon()
+{
+	Show();
+	
+	if ( worldModel.GetEntity() )
+		worldModel.GetEntity()->Show();
+	
+	if ( lightOn )
+		MuzzleFlashLight();
+};
+
+/*
+================
+idWeapon::BeginAttack
+================
+*/
+void CBaseWeapon::BeginAttack()
+{
+	if ( status != WP_OUTOFAMMO )
+		lastAttack = gameLocal.time;
+
+	if ( !isLinked )
+		return;
+
+	if ( !WEAPON_ATTACK )
+	{
+		if ( sndHum && grabberState == -1 )	// _D3XP :: don't stop grabber hum
+			StopSound( SND_CHANNEL_BODY, false );
+	};
+	
+	WEAPON_ATTACK = true;
+};
+
+/*
+================
+idWeapon::EndAttack
+================
+*/
+void CBaseWeapon::EndAttack()
+{
+	if ( !WEAPON_ATTACK.IsLinked() )
+		return;
+
+	if ( WEAPON_ATTACK )
+	{
+		WEAPON_ATTACK = false;
+		if ( sndHum && grabberState == -1 )	// _D3XP :: don't stop grabber hum
+			StartSoundShader( sndHum, SND_CHANNEL_BODY, 0, false, NULL );
+	};
+};
+
+/*
+================
+idWeapon::IsReloading
+================
+*/
+bool CBaseWeapon::IsReloading() const
+{
+	return status == WP_RELOAD;
+};
+
+/*
+================
+idWeapon::IsHolstered
+================
+*/
+bool CBaseWeapon::IsHolstered() const
+{
+	return status == WP_HOLSTERED;
+};
+
+/*
+================
+idWeapon::GetAmmoType
+================
+*/
+ammo_t CBaseWeapon::GetAmmoType() const
+{
+	return ammoType;
+};
+
+/*
+================
+idWeapon::ClipSize
+================
+*/
+int	CBaseWeapon::ClipSize() const
+{
+	return clipSize;
+};
+
+/*
+================
+idWeapon::AmmoInClip
+================
+*/
+int CBaseWeapon::AmmoInClip() const
+{
+	return ammoClip.Get();
+};
+
+void CBasePlayer::Attack()
 {
 	if(!W_CheckNoAmmo())
 		return;
@@ -27,26 +248,6 @@ void CPlayer::Attack()
 	self.show_hostile = time + 1.0f; // wake monsters up
 
 	mpCurrentWeapon->OnAttack();
-};
-
-void CWeaponAxe::OnAttack()
-{
-	if(self.weapon == IT_AXE)
-	{
-		self.attack_finished = time + 0.5f;
-		gpEngine->pfnEmitSound (self, CHAN_WEAPON, "weapons/ax1.wav", 1, ATTN_NORM);
-		
-		float r = random();
-		
-		if (r < 0.25f)
-			player_axe1 ();
-		else if (r < 0.5f)
-			player_axeb1 ();
-		else if (r < 0.75f)
-			player_axec1 ();
-		else
-			player_axed1 ();
-	};
 };
 
 void CWeaponShotgun::OnAttack()

@@ -271,6 +271,1580 @@ void() player_rocket5   =[$rockatt5, player_rocket6  ] {self.weaponframe=5;};
 void() player_rocket6   =[$rockatt6, player_run  ] {self.weaponframe=6;};
 void DeathBubbles(float num_bubbles);
 
+CBasePlayer::CBasePlayer() = default;
+CBasePlayer::~CBasePlayer() = default;
+
+/*
+==============
+idPlayer::Spawn
+
+Prepare any resources used by the player.
+==============
+*/
+void CBasePlayer::Spawn()
+{
+	idStr		temp;
+	idBounds	bounds;
+
+	if ( entityNumber >= MAX_CLIENTS ) {
+		gameLocal.Error( "entityNum > MAX_CLIENTS for player.  Player may only be spawned with a client." );
+	}
+
+	// allow thinking during cinematics
+	cinematic = true;
+
+	if ( common->IsMultiplayer() ) {
+		// always start in spectating state waiting to be spawned in
+		// do this before SetClipModel to get the right bounding box
+		spectating = true;
+	}
+
+	// set our collision model
+	physicsObj.SetSelf( this );
+	SetClipModel();
+	physicsObj.SetMass( spawnArgs.GetFloat( "mass", "100" ) );
+	physicsObj.SetContents( CONTENTS_BODY );
+	physicsObj.SetClipMask( MASK_PLAYERSOLID );
+	SetPhysics( &physicsObj );
+	InitAASLocation();
+
+	skin = renderEntity.customSkin;
+
+	// only the local player needs guis
+	if ( !common->IsMultiplayer() || IsLocallyControlled() ) {
+
+		// load HUD
+		if ( hudManager != NULL ) {
+			hudManager->Initialize( "hud", common->SW() );
+			hudManager->ActivateMenu( true );
+			hud = hudManager->GetHud();
+		}
+
+		// load cursor
+		if ( spawnArgs.GetString( "cursor", "", temp ) ) {
+			cursor = uiManager->FindGui( temp, true, common->IsMultiplayer(), common->IsMultiplayer() );
+		}
+		if ( cursor ) {
+			cursor->Activate( true, gameLocal.time );
+		}
+
+		if ( pdaMenu != NULL ) {
+			pdaMenu->Initialize( "pda", common->SW() );
+		}
+		objectiveSystemOpen = false;
+	} 
+
+	if ( common->IsMultiplayer() && mpMessages == NULL ) {
+		mpMessages = new idSWF( "mp_messages", common->SW() );
+		mpMessages->Activate( true );
+	}
+
+	SetLastHitTime( 0 );
+
+	// load the armor sound feedback
+	declManager->FindSound( "player_sounds_hitArmor" );
+
+	// set up conditions for animation
+	LinkScriptVariables();
+
+	animator.RemoveOriginOffset( true );
+
+	// create combat collision hull for exact collision detection
+	SetCombatModel();
+
+	// init the damage effects
+	playerView.SetPlayerEntity( this );
+
+	// supress model in non-player views, but allow it in mirrors and remote views
+	renderEntity.suppressSurfaceInViewID = entityNumber+1;
+
+	// don't project shadow on self or weapon
+	renderEntity.noSelfShadow = true;
+
+	idAFAttachment *headEnt = head.GetEntity();
+	if ( headEnt ) {
+		headEnt->GetRenderEntity()->suppressSurfaceInViewID = entityNumber+1;
+		headEnt->GetRenderEntity()->noSelfShadow = true;
+	}
+
+	if ( common->IsMultiplayer() ) {
+		Init();
+		Hide();	// properly hidden if starting as a spectator
+		if ( !common->IsClient() ) {
+			// set yourself ready to spawn. idMultiplayerGame will decide when/if appropriate and call SpawnFromSpawnSpot
+			SetupWeaponEntity();
+			SpawnFromSpawnSpot();
+			forceRespawn = true;
+			wantSpectate = true;
+			assert( spectating );
+		}
+	} else {
+		SetupWeaponEntity();
+		SpawnFromSpawnSpot();
+	}
+
+	// trigger playtesting item gives, if we didn't get here from a previous level
+	// the devmap key will be set on the first devmap, but cleared on any level
+	// transitions
+	if ( !common->IsMultiplayer() && gameLocal.serverInfo.FindKey( "devmap" ) ) {
+		// fire a trigger with the name "devmap"
+		idEntity *ent = gameLocal.FindEntity( "devmap" );
+		if ( ent ) {
+			ent->ActivateTargets( this );
+		}
+	}
+
+	if ( hud ) {
+		if ( weapon_soulcube > 0 && ( inventory.weapons & ( 1 << weapon_soulcube ) ) ) {
+			int max_souls = inventory.MaxAmmoForAmmoClass( this, "ammo_souls" );
+			if ( inventory.GetInventoryAmmoForType( idWeapon::GetAmmoNumForName( "ammo_souls" ) ) >= max_souls ) {
+				hud->SetShowSoulCubeOnLoad( true );
+			}
+		}		
+	}
+
+	if ( GetPDA() ) {
+		// Add any emails from the inventory
+		for ( int i = 0; i < inventory.emails.Num(); i++ ) {
+			GetPDA()->AddEmail( inventory.emails[i] );
+		}
+		GetPDA()->SetSecurity( idLocalization::GetString( "#str_00066" ) );
+	}
+
+	if ( gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) ) {
+		hiddenWeapon = true;
+		if ( weapon.GetEntity() ) {
+			weapon.GetEntity()->LowerWeapon();
+		}
+		idealWeapon = weapon_fists;
+	} else {
+		hiddenWeapon = false;
+	}
+	
+	UpdateHudWeapon();
+
+	tipUp = false;
+	objectiveUp = false;
+
+	if ( inventory.levelTriggers.Num() ) {
+		PostEventMS( &EV_Player_LevelTrigger, 0 );
+	}
+
+	inventory.pdaOpened = false;
+	inventory.selPDA = 0;
+
+	if ( !common->IsMultiplayer() ) {
+		int startingHealth = gameLocal.world->spawnArgs.GetInt( "startingHealth", health );
+		if ( health > startingHealth ) {
+			health = startingHealth;
+		}
+		if ( g_skill.GetInteger() < 2 ) {
+			if ( health < 25 ) {
+				health = 25;
+			}
+			if ( g_useDynamicProtection.GetBool() ) {
+				new_g_damageScale = 1.0f;
+			}
+		} else {
+			new_g_damageScale = 1.0f;
+			g_armorProtection.SetFloat( ( g_skill.GetInteger() < 2 ) ? 0.4f : 0.2f );
+			if ( g_skill.GetInteger() == 3 ) {
+				nextHealthTake = gameLocal.time + g_healthTakeTime.GetInteger() * 1000;
+			}
+		}
+	}
+
+	//Setup the weapon toggle lists
+	const idKeyValue *kv;
+	kv = spawnArgs.MatchPrefix( "weapontoggle", NULL );
+	while( kv ) {
+		WeaponToggle_t newToggle;
+		strcpy(newToggle.name, kv->GetKey().c_str());
+
+		idStr toggleData = kv->GetValue();
+
+		idLexer src;
+		idToken token;
+		src.LoadMemory(toggleData, toggleData.Length(), "toggleData");
+		while(1) {
+			if(!src.ReadToken(&token)) {
+				break;
+			}
+			int index = atoi(token.c_str());
+			newToggle.toggleList.Append(index);
+
+			//Skip the ,
+			src.ReadToken(&token);
+		}
+		newToggle.lastUsed = 0;
+		weaponToggles.Set(newToggle.name, newToggle);
+
+		kv = spawnArgs.MatchPrefix( "weapontoggle", kv );
+	}
+
+	if( g_skill.GetInteger() >= 3 || cvarSystem->GetCVarBool( "fs_buildresources" ) ) {
+		if(!WeaponAvailable("weapon_bloodstone_passive")) {
+			GiveInventoryItem("weapon_bloodstone_passive");
+		}
+		if(!WeaponAvailable("weapon_bloodstone_active1")) {
+			GiveInventoryItem("weapon_bloodstone_active1");
+		}
+		if(!WeaponAvailable("weapon_bloodstone_active2")) {
+			GiveInventoryItem("weapon_bloodstone_active2");
+		}
+		if(!WeaponAvailable("weapon_bloodstone_active3")) {
+			GiveInventoryItem("weapon_bloodstone_active3");
+		}
+	}
+
+	bloomEnabled			= false;
+	bloomSpeed				= 1;
+	bloomIntensity			= -0.01f;
+
+	if ( g_demoMode.GetBool() && weapon.GetEntity() && weapon.GetEntity()->AmmoInClip() == 0 ) {
+		weapon.GetEntity()->ForceAmmoInClip();
+	}
+
+}
+
+void CBasePlayer::Think()
+{
+};
+
+/*
+==================
+idPlayer::Killed
+==================
+*/
+void CBasePlayer::Killed( CBaseEntity *inflictor, CBaseEntity *attacker, int damage, const idVec3 &dir, int location )
+{
+	float delay;
+
+	assert( !common->IsClient() );
+
+	// stop taking knockback once dead
+	fl.noknockback = true;
+	
+	if ( health < -999 )
+		health = -999;
+
+	if ( AI_DEAD )
+	{
+		AI_PAIN = true;
+		return;
+	};
+
+	heartInfo.Init( 0, 0, 0, BASE_HEARTRATE );
+	AdjustHeartRate( DEAD_HEARTRATE, 10.0f, 0.0f, true );
+
+	if ( !g_testDeath.GetBool() && !common->IsMultiplayer() )
+		playerView.Fade( colorBlack, 3000 );
+
+	AI_DEAD = true;
+	SetAnimState( ANIMCHANNEL_LEGS, "Legs_Death", 4 );
+	SetAnimState( ANIMCHANNEL_TORSO, "Torso_Death", 4 );
+	SetWaitState( "" );
+
+	animator.ClearAllJoints();
+
+	if ( StartRagdoll() ) {
+		pm_modelView.SetInteger( 0 );
+		minRespawnTime = gameLocal.time + RAGDOLL_DEATH_TIME;
+		maxRespawnTime = minRespawnTime + MAX_RESPAWN_TIME;
+	}
+	else
+	{
+		// don't allow respawn until the death anim is done
+		// g_forcerespawn may force spawning at some later time
+		delay = spawnArgs.GetFloat( "respawn_delay" );
+		minRespawnTime = gameLocal.time + SEC2MS( delay );
+		maxRespawnTime = minRespawnTime + MAX_RESPAWN_TIME;
+	};
+
+	physicsObj.SetMovementType( PM_DEAD );
+	StartSound( "snd_death", SND_CHANNEL_VOICE, 0, false, NULL );
+	StopSound( SND_CHANNEL_BODY2, false );
+
+	fl.takedamage = true;		// can still be gibbed
+
+	// get rid of weapon
+	weapon.GetEntity()->OwnerDied();
+	
+	// In multiplayer, get rid of the flashlight, or other players
+	// will see it floating after the player is dead.
+	if ( common->IsMultiplayer() )
+	{
+		FlashlightOff();
+		if ( flashlight.GetEntity() )
+			flashlight.GetEntity()->OwnerDied();
+	};
+
+	// drop the weapon as an item
+	DropWeapon( true );
+
+	// drop the flag if player was carrying it
+	if ( common->IsMultiplayer() && gameLocal.mpGame.IsGametypeFlagBased() && carryingFlag )
+		DropFlag();
+
+	if ( !g_testDeath.GetBool() )
+		LookAtKiller( inflictor, attacker );
+
+	if ( common->IsMultiplayer() || g_testDeath.GetBool() )
+	{
+		idPlayer *killer = NULL;
+		// no gibbing in MP. Event_Gib will early out in MP
+		if ( attacker->IsType( idPlayer::Type ) ) {
+			killer = static_cast<idPlayer*>(attacker);
+			if ( health < -20 || killer->PowerUpActive( BERSERK ) )
+			{
+				gibDeath = true;
+				gibsDir = dir;
+				gibsLaunched = false;
+			};
+		};
+		gameLocal.mpGame.PlayerDeath( this, killer, isTelefragged );
+	}
+	else
+		physicsObj.SetContents( CONTENTS_CORPSE | CONTENTS_MONSTERCLIP );
+
+	ClearPowerUps();
+
+	UpdateVisuals();
+};
+
+/*
+============
+Damage
+
+this		entity that is being damaged
+inflictor	entity that is causing the damage
+attacker	entity that caused the inflictor to damage targ
+	example: this=monster, inflictor=rocket, attacker=player
+
+dir			direction of the attack for knockback in global space
+
+damageDef	an idDict with all the options for damage effects
+
+inflictor, attacker, dir, and point can be NULL for environmental effects
+============
+*/
+void idPlayer::TakeDamage( CBaseEntity *inflictor, CBaseEntity *attacker, const idVec3 &dir, const char *damageDefName, const float damageScale, const int location )
+{
+	idVec3		kick;
+	int			damage;
+	int			armorSave;
+
+	SetTimeState ts( timeGroup );
+	
+	if ( !fl.takedamage || noclip || spectating || gameLocal.inCinematic )
+		return;
+
+	if ( !inflictor )
+		inflictor = gameLocal.world;
+
+	if ( !attacker )
+		attacker = gameLocal.world;
+
+	if ( attacker->IsType( idAI::Type ) )
+	{
+		if ( PowerUpActive( BERSERK ) )
+			return;
+
+		// don't take damage from monsters during influences
+		if ( influenceActive != 0 )
+			return;
+	}
+
+	const idDeclEntityDef *damageDef = gameLocal.FindEntityDef( damageDefName, false );
+	if ( !damageDef )
+	{
+		gameLocal.Warning( "Unknown damageDef '%s'", damageDefName );
+		return;
+	}
+
+	if ( damageDef->dict.GetBool( "ignore_player" ) )
+		return;
+
+	// determine knockback
+	int knockback = 0;
+	damageDef->dict.GetInt( "knockback", "20", knockback );
+
+	if ( knockback != 0 && !fl.noknockback )
+	{
+		float attackerPushScale = 0.0f;
+
+		if ( attacker == this )
+			damageDef->dict.GetFloat( "attackerPushScale", "0", attackerPushScale );
+		else
+			attackerPushScale = 1.0f;
+
+		idVec3 kick = dir;
+		kick.Normalize();
+		kick *= g_knockback.GetFloat() * knockback * attackerPushScale / 200.0f;
+		physicsObj.SetLinearVelocity( physicsObj.GetLinearVelocity() + kick );
+
+		// set the timer so that the player can't cancel out the movement immediately
+		physicsObj.SetKnockBack( idMath::ClampInt( 50, 200, knockback * 2 ) );	
+
+		if ( common->IsServer() )
+		{
+			idBitMsg	msg;
+			byte		msgBuf[MAX_EVENT_PARAM_SIZE];
+
+			msg.InitWrite( msgBuf, sizeof( msgBuf ) );
+			msg.WriteFloat( physicsObj.GetLinearVelocity()[0] );
+			msg.WriteFloat( physicsObj.GetLinearVelocity()[1] );
+			msg.WriteFloat( physicsObj.GetLinearVelocity()[2] );
+			msg.WriteByte( idMath::ClampInt( 50, 200, knockback * 2 ) );
+			ServerSendEvent( idPlayer::EVENT_KNOCKBACK, &msg, false );
+		}
+	}
+
+	// If this is a locally controlled MP client, don't apply damage effects predictively here.
+	// Local clients will see the damage feedback (view kick, etc) when their health changes
+	// in a snapshot. This ensures that any feedback the local player sees is in sync with
+	// his actual health reported by the server.
+	if( common->IsMultiplayer() && common->IsClient() && IsLocallyControlled() )
+		return;
+	
+	CalcDamagePoints( inflictor, attacker, &damageDef->dict, damageScale, location, &damage, &armorSave );
+
+	// give feedback on the player view and audibly when armor is helping
+	if ( armorSave )
+	{
+		inventory.armor -= armorSave;
+
+		if ( gameLocal.time > lastArmorPulse + 200 )
+			StartSound( "snd_hitArmor", SND_CHANNEL_ITEM, 0, false, NULL );
+
+		lastArmorPulse = gameLocal.time;
+	};
+	
+	if ( damageDef->dict.GetBool( "burn" ) )
+		StartSound( "snd_burn", SND_CHANNEL_BODY3, 0, false, NULL );
+	else if ( damageDef->dict.GetBool( "no_air" ) )
+	{
+		if ( !armorSave && health > 0 )
+			StartSound( "snd_airGasp", SND_CHANNEL_ITEM, 0, false, NULL );
+	};
+
+	if ( g_debugDamage.GetInteger() )
+		gameLocal.Printf( "client:%02d\tdamage type:%s\t\thealth:%03d\tdamage:%03d\tarmor:%03d\n", entityNumber, damageDef->GetName(), health, damage, armorSave );
+
+	if ( common->IsMultiplayer() && IsLocallyControlled() )
+		ControllerShakeFromDamage( damage );
+
+	// The client needs to know the final damage amount for predictive pain animations.
+	const int finalDamage = AdjustDamageAmount( damage );
+
+	if ( health > 0 )
+	{
+		// force a blink
+		blink_time = 0;
+
+		// let the anim script know we took damage
+		AI_PAIN = Pain( inflictor, attacker, damage, dir, location );
+	}
+
+	// Only actually deal the damage here in singleplayer and for locally controlled servers.
+	if ( !common->IsMultiplayer() || common->IsServer() )
+	{
+		// Server will deal his damage normally
+		ServerDealDamage( finalDamage, *inflictor, *attacker, dir, damageDefName, location );
+	}
+	else if ( attacker->GetEntityNumber() == gameLocal.GetLocalClientNum() )
+	{
+		// Clients send a reliable message to the server with the parameters of the hit. The
+		// server should make sure the client still has line-of-sight to its target before
+		// actually applying the damage.
+
+		byte msgBuffer[MAX_GAME_MESSAGE_SIZE]; 
+		idBitMsg msg;
+
+		msg.InitWrite( msgBuffer, sizeof( msgBuffer ) );
+		msg.BeginWriting();
+
+		msg.WriteShort( attacker->GetEntityNumber() );
+		msg.WriteShort( GetEntityNumber() );		// victim
+		msg.WriteVectorFloat( dir );
+		msg.WriteLong( damageDef->Index() );
+		msg.WriteFloat( damageScale );
+		msg.WriteLong( location );
+
+		idLobbyBase & lobby = session->GetActingGameStateLobbyBase();
+		lobby.SendReliableToHost( GAME_RELIABLE_MESSAGE_CLIENT_HITSCAN_HIT, msg );
+	};
+
+	lastDamageDef = damageDef->Index();
+	lastDamageDir = dir;
+	lastDamageDir.Normalize();
+	lastDamageLocation = location;
+};
+
+/*
+=================
+idPlayer::StartHealthRecharge
+=================
+*/
+void CBasePlayer::StartHealthRecharge(int speed)
+{
+	lastHealthRechargeTime = gameLocal.time;
+	healthRecharge = true;
+	rechargeSpeed = speed;
+};
+
+/*
+=================
+idPlayer::StopHealthRecharge
+=================
+*/
+void CBasePlayer::StopHealthRecharge()
+{
+	healthRecharge = false;
+};
+
+/*
+================
+idPlayer::Hide
+================
+*/
+void CBasePlayer::Hide()
+{
+	idActor::Hide();
+	
+	CBaseWeapon *weap = weapon.GetEntity();
+	if ( weap )
+		weap->HideWorldModel();
+
+	CBaseWeapon *flash = flashlight.GetEntity();
+	if( flash )
+		flash->HideWorldModel();
+};
+
+/*
+================
+idPlayer::Show
+================
+*/
+void CBasePlayer::Show()
+{
+	idActor::Show();
+	
+	CBaseWeapon *weap = weapon.GetEntity();
+	if ( weap )
+		weap->ShowWorldModel();
+	
+	CBaseWeapon * flash = flashlight.GetEntity();
+	if( flash )
+		flash->ShowWorldModel();
+};
+
+/*
+==================
+idPlayer::LookAtKiller
+==================
+*/
+void CBasePlayer::LookAtKiller( CBaseEntity *inflictor, CBaseEntity *attacker )
+{
+	idVec3 dir;
+	
+	if ( attacker && attacker != this )
+		dir = attacker->GetPhysics()->GetOrigin() - GetPhysics()->GetOrigin();
+	else if ( inflictor && inflictor != this )
+		dir = inflictor->GetPhysics()->GetOrigin() - GetPhysics()->GetOrigin();
+	else
+		dir = viewAxis[ 0 ];
+
+	idAngles ang( 0, dir.ToYaw(), 0 );
+	SetViewAngles( ang );
+};
+
+/*
+==============
+idPlayer::TogglePDA
+==============
+*/
+void CBasePlayer::TogglePDA()
+{
+	if ( inventory.pdas.Num() == 0 ) {
+		ShowTip( spawnArgs.GetString( "text_infoTitle" ), spawnArgs.GetString( "text_noPDA" ), true );
+		return;
+	}
+
+	if ( pdaMenu != NULL ) {
+		objectiveSystemOpen = !objectiveSystemOpen;
+		pdaMenu->ActivateMenu( objectiveSystemOpen );
+		
+		if ( objectiveSystemOpen ) {
+			if ( hud ) {
+				hud->ClearNewPDAInfo();
+			}
+		}		
+	}
+};
+
+/*
+==============
+idPlayer::PlayAudioLog
+==============
+*/
+void CBasePlayer::PlayAudioLog( const idSoundShader * shader )
+{
+	EndVideoDisk();
+	if ( name.Length() > 0 )
+	{
+		int ms;
+		StartSoundShader( shader, SND_CHANNEL_PDA_AUDIO, 0, false, &ms );
+		CancelEvents( &EV_Player_StopAudioLog );
+		PostEventMS( &EV_Player_StopAudioLog, ms + 150 );
+	};
+};
+
+/*
+==============
+idPlayer::EndAudioLog
+==============
+*/
+void CBasePlayer::EndAudioLog()
+{
+	StopSound( SND_CHANNEL_PDA_AUDIO, false );
+};
+
+/*
+===============
+idPlayer::UpdateWeapon
+===============
+*/
+void CBasePlayer::UpdateWeapon()
+{
+	if ( health <= 0 ) {
+		return;
+	}
+
+	assert( !spectating );
+
+	if ( common->IsClient() ) {
+		// clients need to wait till the weapon and it's world model entity
+		// are present and synchronized ( weapon.worldModel idEntityPtr to idAnimatedEntity )
+		if ( !weapon.GetEntity()->IsWorldModelReady() ) {
+			return;
+		}
+	}
+
+	// always make sure the weapon is correctly setup before accessing it
+	if ( !weapon.GetEntity()->IsLinked() ) {
+		if ( idealWeapon != -1 ) {
+			animPrefix = spawnArgs.GetString( va( "def_weapon%d", idealWeapon.Get() ) );
+			int ammoInClip = inventory.GetClipAmmoForWeapon( idealWeapon.Get() );
+			if ( common->IsMultiplayer() && respawning ) {
+				// Do not load ammo into the clip here on MP respawn, as it will be done
+				// elsewhere. If we take ammo out here then the player will end up losing
+				// a clip of ammo for their initial weapon upon respawn.
+				ammoInClip = 0;
+			}
+			weapon.GetEntity()->GetWeaponDef( animPrefix, ammoInClip );
+			assert( weapon.GetEntity()->IsLinked() );
+		} else {
+			return;
+		}
+	}
+
+	if ( hiddenWeapon && tipUp && usercmd.buttons & BUTTON_ATTACK ) {
+		HideTip();
+	}
+	
+	if ( g_dragEntity.GetBool() ) {
+		StopFiring();
+		weapon.GetEntity()->LowerWeapon();
+		dragEntity.Update( this );
+	} else if ( ActiveGui() ) {
+		// gui handling overrides weapon use
+		Weapon_GUI();
+	} else 	if ( focusCharacter && ( focusCharacter->health > 0 ) ) {
+		Weapon_NPC();
+	} else {
+		Weapon_Combat();
+	}
+	
+	if ( hiddenWeapon ) {
+		weapon.GetEntity()->LowerWeapon();
+	}
+
+	// update weapon state, particles, dlights, etc
+	weapon.GetEntity()->PresentWeapon( CanShowWeaponViewmodel() );
+}
+
+/*
+===============
+idPlayer::UpdateFlashLight
+===============
+*/
+void CBasePlayer::UpdateFlashlight()
+{
+	if ( idealWeapon == weapon_flashlight ) {
+		// force classic flashlight to go away
+		NextWeapon();
+	}
+
+	if ( !flashlight.IsValid() ) {
+		return;
+	}
+
+	if ( !flashlight.GetEntity()->GetOwner() ) {
+		return;
+	}
+
+	// Don't update the flashlight if dead in MP.
+	// Otherwise you can see a floating flashlight worldmodel near player's skeletons.
+	if ( common->IsMultiplayer() ) {
+		if ( health < 0 ) {
+			return;
+		}
+	}
+
+	// Flashlight has an infinite battery in multiplayer.
+	if ( !common->IsMultiplayer() ) {
+		if ( flashlight.GetEntity()->lightOn ) {
+			if ( flashlight_batteryDrainTimeMS.GetInteger() > 0 ) {
+				flashlightBattery -= ( gameLocal.time - gameLocal.previousTime );
+				if ( flashlightBattery < 0 ) {
+					FlashlightOff();
+					flashlightBattery = 0;
+				}
+			}
+		} else {
+			if ( flashlightBattery < flashlight_batteryDrainTimeMS.GetInteger() ) {
+				flashlightBattery += ( gameLocal.time - gameLocal.previousTime ) * Max( 1, ( flashlight_batteryDrainTimeMS.GetInteger() / flashlight_batteryChargeTimeMS.GetInteger() ) );
+				if ( flashlightBattery > flashlight_batteryDrainTimeMS.GetInteger() ) {
+					flashlightBattery = flashlight_batteryDrainTimeMS.GetInteger();
+				}
+			}
+		}
+	}
+
+	if ( hud ) {
+		hud->UpdateFlashlight( this );
+	}
+
+	if ( common->IsClient() ) {
+		// clients need to wait till the weapon and it's world model entity
+		// are present and synchronized ( weapon.worldModel idEntityPtr to idAnimatedEntity )
+		if ( !flashlight.GetEntity()->IsWorldModelReady() ) {
+			return;
+		}
+	}
+
+	// always make sure the weapon is correctly setup before accessing it
+	if ( !flashlight.GetEntity()->IsLinked() ) {
+		flashlight.GetEntity()->GetWeaponDef( "weapon_flashlight_new", 0 );
+		flashlight.GetEntity()->SetIsPlayerFlashlight( true );
+
+		// adjust position / orientation of flashlight
+		idAnimatedEntity *worldModel = flashlight.GetEntity()->GetWorldModel();
+		worldModel->BindToJoint( this, "Chest", true );
+		// Don't interpolate the flashlight world model in mp, let it bind like normal.
+		worldModel->SetUseClientInterpolation( false );
+
+		assert( flashlight.GetEntity()->IsLinked() );
+	}
+
+	// this positions the third person flashlight model! (as seen in the mirror)
+	idAnimatedEntity *worldModel = flashlight.GetEntity()->GetWorldModel();
+	static const idVec3 fl_pos = idVec3( 3.0f, 9.0f, 2.0f );
+	worldModel->GetPhysics()->SetOrigin( fl_pos );
+	static float fl_pitch = 0.0f;
+	static float fl_yaw = 0.0f;
+	static float fl_roll = 0.0f;
+	static idAngles ang = ang_zero;
+	ang.Set( fl_pitch, fl_yaw, fl_roll );
+	worldModel->GetPhysics()->SetAxis( ang.ToMat3() );
+
+	if ( flashlight.GetEntity()->lightOn ) {
+		if ( ( flashlightBattery < flashlight_batteryChargeTimeMS.GetInteger() / 2 ) && ( gameLocal.random.RandomFloat() < flashlight_batteryFlickerPercent.GetFloat() ) ) {
+			flashlight.GetEntity()->RemoveMuzzleFlashlight();
+		} else {
+			flashlight.GetEntity()->MuzzleFlashLight();
+		}
+	}
+
+	flashlight.GetEntity()->PresentWeapon( true );
+
+	if ( gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) || gameLocal.inCinematic || spectating || fl.hidden ) {
+		worldModel->Hide();
+	} else {
+		worldModel->Show();
+	}
+}
+
+/*
+=================
+idPlayer::DropWeapon
+=================
+*/
+void CBasePlayer::DropWeapon( bool died )
+{
+	idVec3 forward, up;
+	int inclip, ammoavailable;
+
+	if( died == false  ){ 
+		return;
+	}
+
+	assert( !common->IsClient() );
+	
+	if ( spectating || weaponGone || weapon.GetEntity() == NULL ) {
+		return;
+	}
+	
+	if ( ( !died && !weapon.GetEntity()->IsReady() ) || weapon.GetEntity()->IsReloading() ) {
+		return;
+	}
+	// ammoavailable is how many shots we can fire
+	// inclip is which amount is in clip right now
+	ammoavailable = weapon.GetEntity()->AmmoAvailable();
+	inclip = weapon.GetEntity()->AmmoInClip();
+	
+	// don't drop a grenade if we have none left
+	if ( !idStr::Icmp( idWeapon::GetAmmoNameForNum( weapon.GetEntity()->GetAmmoType() ), "ammo_grenades" ) && ( ammoavailable - inclip <= 0 ) ) {
+		return;
+	}
+
+	ammoavailable += inclip;
+
+	// expect an ammo setup that makes sense before doing any dropping
+	// ammoavailable is -1 for infinite ammo, and weapons like chainsaw
+	// a bad ammo config usually indicates a bad weapon state, so we should not drop
+	// used to be an assertion check, but it still happens in edge cases
+
+	if ( ( ammoavailable != -1 ) && ( ammoavailable < 0 ) ) {
+		common->DPrintf( "idPlayer::DropWeapon: bad ammo setup\n" );
+		return;
+	}
+	idEntity *item = NULL;
+	if ( died ) {
+		// ain't gonna throw you no weapon if I'm dead
+		item = weapon.GetEntity()->DropItem( vec3_origin, 0, WEAPON_DROP_TIME, died );
+	} else {
+		viewAngles.ToVectors( &forward, NULL, &up );
+		item = weapon.GetEntity()->DropItem( 250.0f * forward + 150.0f * up, 500, WEAPON_DROP_TIME, died );
+	}
+	if ( !item ) {
+		return;
+	}
+	// set the appropriate ammo in the dropped object
+	const idKeyValue * keyval = item->spawnArgs.MatchPrefix( "inv_ammo_" );
+	if ( keyval ) {
+		item->spawnArgs.SetInt( keyval->GetKey(), ammoavailable );
+		idStr inclipKey = keyval->GetKey();
+		inclipKey.Insert( "inclip_", 4 );
+		inclipKey.Insert( va("%.2d", currentWeapon), 11);
+		item->spawnArgs.SetInt( inclipKey, inclip );
+	}
+	if ( !died ) {
+		// remove from our local inventory completely
+		inventory.Drop( spawnArgs, item->spawnArgs.GetString( "inv_weapon" ), -1 );
+		weapon.GetEntity()->ResetAmmoClip();
+		NextWeapon();
+		weapon.GetEntity()->WeaponStolen();
+		weaponGone = true;
+	}
+}
+
+/*
+===============
+idPlayer::NextWeapon
+===============
+*/
+void CBasePlayer::NextWeapon()
+{
+
+	if ( !weaponEnabled || spectating || hiddenWeapon || gameLocal.inCinematic || gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) || health < 0 ) {
+		return;
+	}
+
+	// check if we have any weapons
+	if ( !inventory.weapons ) {
+		return;
+	}
+	
+	int w = idealWeapon.Get();
+	while( 1 ) {
+		w++;
+		if ( w >= MAX_WEAPONS ) {
+			w = 0;
+		}
+		if ( w == idealWeapon ) {
+			w = weapon_fists;
+			break;
+		}
+		if ( ( inventory.weapons & ( 1 << w ) ) == 0 ) {
+			continue;
+		}
+		const char * weap = spawnArgs.GetString( va( "def_weapon%d", w ) );
+		if ( !spawnArgs.GetBool( va( "weapon%d_cycle", w ) ) ) {
+			continue;
+		}
+		if ( !weap[ 0 ] ) {
+			continue;
+		}
+
+		if ( inventory.HasAmmo( weap, true, this ) || w == weapon_bloodstone ) {
+			break;
+		}
+	}
+
+	if ( ( w != currentWeapon ) && ( w != idealWeapon ) ) {
+		idealWeapon = w;
+		weaponSwitchTime = gameLocal.time + WEAPON_SWITCH_DELAY;
+		UpdateHudWeapon();
+	}
+}
+
+/*
+===============
+idPlayer::PrevWeapon
+===============
+*/
+void CBasePlayer::PrevWeapon()
+{
+
+	if ( !weaponEnabled || spectating || hiddenWeapon || gameLocal.inCinematic || gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) || health < 0 ) {
+		return;
+	}
+
+	// check if we have any weapons
+	if ( !inventory.weapons ) {
+		return;
+	}
+
+	int w = idealWeapon.Get();
+	while( 1 ) {
+		w--;
+		if ( w < 0 ) {
+			w = MAX_WEAPONS - 1;
+		}
+		if ( w == idealWeapon ) {
+			w = weapon_fists;
+			break;
+		}
+		if ( ( inventory.weapons & ( 1 << w ) ) == 0 ) {
+			continue;
+		}
+		const char * weap = spawnArgs.GetString( va( "def_weapon%d", w ) );
+		if ( !spawnArgs.GetBool( va( "weapon%d_cycle", w ) ) ) {
+			continue;
+		}
+		if ( !weap[ 0 ] ) {
+			continue;
+		}
+		if ( inventory.HasAmmo( weap, true, this ) || w == weapon_bloodstone ) {
+			break;
+		}
+	}
+
+	if ( ( w != currentWeapon ) && ( w != idealWeapon ) ) {
+		idealWeapon = w;
+		weaponSwitchTime = gameLocal.time + WEAPON_SWITCH_DELAY;
+		UpdateHudWeapon();
+	}
+}
+
+/*
+===============
+idPlayer::SelectWeapon
+===============
+*/
+void CBasePlayer::SelectWeapon( int num, bool force )
+{
+	const char *weap;
+
+	if ( !weaponEnabled || spectating || gameLocal.inCinematic || health < 0 ) {
+		return;
+	}
+
+	if ( ( num < 0 ) || ( num >= MAX_WEAPONS ) ) {
+		return;
+	}
+
+	if ( num == weapon_flashlight ) {
+		return;
+	}
+
+	if ( ( num != weapon_pda ) && gameLocal.world->spawnArgs.GetBool( "no_Weapons" ) ) {
+		num = weapon_fists;
+		hiddenWeapon ^= 1;
+		if ( hiddenWeapon && weapon.GetEntity() ) {
+			weapon.GetEntity()->LowerWeapon();
+		} else {
+			weapon.GetEntity()->RaiseWeapon();
+		}
+	}	
+
+	//Is the weapon a toggle weapon
+	WeaponToggle_t* weaponToggle;
+	if(weaponToggles.Get(va("weapontoggle%d", num), &weaponToggle)) {
+
+		int weaponToggleIndex = 0;
+
+		//Find the current Weapon in the list
+		int currentIndex = -1;
+		for(int i = 0; i < weaponToggle->toggleList.Num(); i++) {
+			if(weaponToggle->toggleList[i] == idealWeapon) {
+				currentIndex = i;
+				break;
+			}
+		}
+		if ( currentIndex == -1 ) {
+			//Didn't find the current weapon so select the first item
+			weaponToggleIndex = weaponToggle->lastUsed;
+		} else {
+			//Roll to the next available item in the list
+			weaponToggleIndex = currentIndex;
+			weaponToggleIndex++;
+			if(weaponToggleIndex >= weaponToggle->toggleList.Num()) {
+				weaponToggleIndex = 0;
+			}
+		}
+
+		for(int i = 0; i < weaponToggle->toggleList.Num(); i++) {
+			int weapNum = weaponToggle->toggleList[weaponToggleIndex];
+			//Is it available
+			if(inventory.weapons & ( 1 << weapNum)) {
+				//Do we have ammo for it
+				if ( inventory.HasAmmo( spawnArgs.GetString( va( "def_weapon%d", weapNum ) ), true, this ) || spawnArgs.GetBool( va( "weapon%d_allowempty", weapNum ) ) ) {
+					break;
+				}
+			}
+
+			weaponToggleIndex++;
+			if(weaponToggleIndex >= weaponToggle->toggleList.Num()) {
+				weaponToggleIndex = 0;
+			}
+		}
+		weaponToggle->lastUsed = weaponToggleIndex;
+		num = weaponToggle->toggleList[weaponToggleIndex];
+	}
+
+	weap = spawnArgs.GetString( va( "def_weapon%d", num ) );
+	if ( !weap[ 0 ] ) {
+		gameLocal.Printf( "Invalid weapon\n" );
+		return;
+	}
+
+	if ( force || ( inventory.weapons & ( 1 << num ) ) ) {
+		if ( !inventory.HasAmmo( weap, true, this ) && !spawnArgs.GetBool( va( "weapon%d_allowempty", num ) ) ) {
+			return;
+		}
+		if ( ( previousWeapon >= 0 ) && ( idealWeapon == num ) && ( spawnArgs.GetBool( va( "weapon%d_toggle", num ) ) ) ) {
+			weap = spawnArgs.GetString( va( "def_weapon%d", previousWeapon ) );
+			if ( !inventory.HasAmmo( weap, true, this ) && !spawnArgs.GetBool( va( "weapon%d_allowempty", previousWeapon ) ) ) {
+				return;
+			}
+			idealWeapon = previousWeapon;
+		} else if ( ( weapon_pda >= 0 ) && ( num == weapon_pda ) && ( inventory.pdas.Num() == 0 ) ) {
+			ShowTip( spawnArgs.GetString( "text_infoTitle" ), spawnArgs.GetString( "text_noPDA" ), true );
+			return;
+		} else {
+			idealWeapon = num;
+		}
+		UpdateHudWeapon();
+	}
+}
+
+/*
+===============
+idPlayer::GiveObjective
+===============
+*/
+void CBasePlayer::GiveObjective( const char * title, const char * text, const idMaterial * screenshot )
+{
+	idObjectiveInfo & info = inventory.objectiveNames.Alloc();
+	info.title = title;
+	info.text = text;
+	info.screenshot = screenshot;
+
+	StartSound( "snd_objectiveup", SND_CHANNEL_ANY, 0, false, NULL );
+
+	if ( hud ) {
+		hud->SetupObjective( title, text, screenshot );
+		hud->ShowObjective( false );
+		objectiveUp = true;
+	}
+}
+
+/*
+===============
+idPlayer::CompleteObjective
+===============
+*/
+void CBasePlayer::CompleteObjective( const char *title )
+{
+	int c = inventory.objectiveNames.Num();
+	for ( int i = 0;  i < c; i++ ) {
+		if ( idStr::Icmp(inventory.objectiveNames[i].title, title) == 0 ) {
+			inventory.objectiveNames.RemoveIndex( i );
+			break;
+		}
+	}
+
+	StartSound( "snd_objectiveup", SND_CHANNEL_ANY, 0, false, NULL );
+	
+	if ( hud ) {
+		hud->SetupObjectiveComplete( title );
+		hud->ShowObjective( true );
+	}	
+}
+
+/*
+===============
+idPlayer::GiveItem
+
+Returns false if the item shouldn't be picked up
+===============
+*/
+bool CBasePlayer::GiveItem( idItem *item, unsigned int giveFlags )
+{
+	int					i;
+	const idKeyValue	*arg;
+	idDict				attr;
+	bool				gave;
+	int					numPickup;
+
+	if ( common->IsMultiplayer() && spectating ) {
+		return false;
+	}
+
+	if ( idStr::FindText( item->GetName(), "weapon_flashlight_new" ) > -1 ) {
+		return false;
+	}
+
+	if ( idStr::FindText( item->GetName(), "weapon_flashlight" ) > -1 ) {
+		// don't allow flashlight weapon unless classic mode is enabled
+		return false;
+	}
+
+	item->GetAttributes( attr );
+	
+	gave = false;
+	numPickup = inventory.pickupItemNames.Num();
+	for( i = 0; i < attr.GetNumKeyVals(); i++ ) {
+		arg = attr.GetKeyVal( i );
+		if ( Give( arg->GetKey(), arg->GetValue(), giveFlags ) ) {
+			gave = true;
+		}
+	}
+
+	if ( giveFlags & ITEM_GIVE_FEEDBACK ) {
+		arg = item->spawnArgs.MatchPrefix( "inv_weapon", NULL );
+		if ( arg ) {
+			// We need to update the weapon hud manually, but not
+			// the armor/ammo/health because they are updated every
+			// frame no matter what
+			UpdateHudWeapon( false );
+		}
+
+		// display the pickup feedback on the hud
+		if ( gave && ( numPickup == inventory.pickupItemNames.Num() ) ) {
+			inventory.AddPickupName( item->spawnArgs.GetString( "inv_name" ), this ); //_D3XP
+		}
+	}
+
+	return gave;
+}
+
+/*
+===============
+idPlayer::FireWeapon
+===============
+*/
+idCVar g_infiniteAmmo( "g_infiniteAmmo", "0", CVAR_GAME | CVAR_BOOL, "infinite ammo" );
+extern idCVar ui_autoSwitch;
+void CBasePlayer::FireWeapon()
+{
+	idMat3 axis;
+	idVec3 muzzle;
+
+	if ( privateCameraView ) {
+		return;
+	}
+
+	if ( g_editEntityMode.GetInteger() ) {
+		GetViewPos( muzzle, axis );
+		if ( gameLocal.editEntities->SelectEntity( muzzle, axis[0], this ) ) {
+			return;
+		}
+	}
+
+	if ( !hiddenWeapon && myCurrentWeapon.GetEntity()->IsReady() ) {
+		if ( g_infiniteAmmo.GetBool() || myCurrentWeapon.GetEntity()->AmmoInClip() || myCurrentWeapon.GetEntity()->AmmoAvailable() ) {
+			AI_ATTACK_HELD = true;
+			myCurrentWeapon.GetEntity()->BeginAttack();
+			if ( ( weapon_soulcube >= 0 ) && ( currentWeapon == weapon_soulcube ) ) {
+				if ( hud ) {
+					hud->UpdateSoulCube( false );
+				}
+				SelectWeapon( previousWeapon, false );
+			}
+			if( (weapon_bloodstone >= 0) && (currentWeapon == weapon_bloodstone) && inventory.weapons & ( 1 << weapon_bloodstone_active1 ) && myCurrentWeapon.GetEntity()->GetStatus() == WP_READY) {
+				// tell it to switch to the previous weapon. Only do this once to prevent
+				// weapon toggling messing up the previous weapon
+				if(idealWeapon == weapon_bloodstone) {
+					if(previousWeapon == weapon_bloodstone || previousWeapon == -1) {
+						NextBestWeapon();
+					} else {
+						//Since this is a toggle weapon just select itself and it will toggle to the last weapon
+						SelectWeapon( weapon_bloodstone, false );
+					}
+				}
+			}
+		} else {
+
+			idLobbyBase & lobby = session->GetActingGameStateLobbyBase();
+			lobbyUserID_t & lobbyUserID = gameLocal.lobbyUserIDs[ entityNumber ];
+			bool autoSwitch = lobby.GetLobbyUserWeaponAutoSwitch( lobbyUserID );
+			if ( !autoSwitch ) {
+				return;
+			}
+
+			// update our ammo clip in our inventory
+			if ( ( currentWeapon >= 0 ) && ( currentWeapon < MAX_WEAPONS ) ) {
+				inventory.SetClipAmmoForWeapon( currentWeapon, weapon.GetEntity()->AmmoInClip() );
+			}
+
+			NextBestWeapon();
+		}
+	}
+
+	
+	if ( tipUp ) {
+		HideTip();
+	}
+	
+	if ( objectiveUp ) {
+		HideObjective();
+	}
+}
+
+/*
+===============
+idPlayer::StopFiring
+===============
+*/
+void CBasePlayer::StopFiring()
+{
+	AI_ATTACK_HELD	= false;
+	AI_WEAPON_FIRED = false;
+	AI_RELOAD		= false;
+	if ( weapon.GetEntity() ) {
+		weapon.GetEntity()->EndAttack();
+	}
+}
+
+/*
+===========
+idPlayer::SelectInitialSpawnPoint
+
+Try to find a spawn point marked 'initial', otherwise
+use normal spawn selection.
+============
+*/
+void CBasePlayer::SelectInitialSpawnPoint( idVec3 &origin, idAngles &angles )
+{
+	CBaseEntity *spot;
+	idStr skin;
+
+	spot = gameLocal.SelectInitialSpawnPoint( this );
+
+	// set the player skin from the spawn location
+	if ( spot->spawnArgs.GetString( "skin", NULL, skin ) ) {
+		spawnArgs.Set( "spawn_skin", skin );
+	}
+
+	// activate the spawn locations targets
+	spot->PostEventMS( &EV_ActivateTargets, 0, this );
+
+	origin = spot->GetPhysics()->GetOrigin();
+	origin[2] += 4.0f + CM_BOX_EPSILON;		// move up to make sure the player is at least an epsilon above the floor
+	angles = spot->GetPhysics()->GetAxis().ToAngles();
+}
+
+/*
+===========
+idPlayer::SpawnFromSpawnSpot
+
+Chooses a spawn location and spawns the player
+============
+*/
+void CBasePlayer::SpawnFromSpawnSpot()
+{
+	idVec3		spawn_origin;
+	idAngles	spawn_angles;
+	
+	SelectInitialSpawnPoint( spawn_origin, spawn_angles );
+	SpawnToPoint( spawn_origin, spawn_angles );
+}
+
+/*
+===========
+idPlayer::SpawnToPoint
+
+Called every time a client is placed fresh in the world:
+after the first ClientBegin, and after each respawn
+Initializes all non-persistant parts of playerState
+
+when called here with spectating set to true, just place yourself and init
+============
+*/
+void CBasePlayer::SpawnToPoint( const idVec3 &spawn_origin, const idAngles &spawn_angles )
+{
+	idVec3 spec_origin;
+
+	respawning = true;
+
+	Init();
+
+	fl.noknockback = false;
+
+	// stop any ragdolls being used
+	StopRagdoll();
+
+	// set back the player physics
+	SetPhysics( &physicsObj );
+
+	physicsObj.SetClipModelAxis();
+	physicsObj.EnableClip();
+
+	if ( !spectating ) {
+		SetCombatContents( true );
+	}
+
+	physicsObj.SetLinearVelocity( vec3_origin );
+
+	// setup our initial view
+	if ( !spectating ) {
+		SetOrigin( spawn_origin );
+	} else {
+		spec_origin = spawn_origin;
+		spec_origin[ 2 ] += pm_normalheight.GetFloat();
+		spec_origin[ 2 ] += SPECTATE_RAISE;
+		SetOrigin( spec_origin );
+	}
+
+	// if this is the first spawn of the map, we don't have a usercmd yet,
+	// so the delta angles won't be correct.  This will be fixed on the first think.
+	viewAngles = ang_zero;
+	SetDeltaViewAngles( ang_zero );
+	SetViewAngles( spawn_angles );
+	spawnAngles = spawn_angles;
+	spawnAnglesSet = false;
+
+	legsForward = true;
+	legsYaw = 0.0f;
+	idealLegsYaw = 0.0f;
+	oldViewYaw = viewAngles.yaw;
+
+	if ( spectating ) {
+		Hide();
+	} else {
+		Show();
+	}
+
+	if ( common->IsMultiplayer() ) {
+		if ( !spectating ) {
+			// we may be called twice in a row in some situations. avoid a double fx and 'fly to the roof'
+			if ( lastTeleFX < gameLocal.time - 1000 ) {
+				idEntityFx::StartFx( spawnArgs.GetString( "fx_spawn" ), &spawn_origin, NULL, this, true );
+				lastTeleFX = gameLocal.time;
+			}
+		}
+		AI_TELEPORT = true;
+	} else {
+		AI_TELEPORT = false;
+	}
+
+	// kill anything at the new position
+	if ( !spectating ) {
+		physicsObj.SetClipMask( MASK_PLAYERSOLID ); // the clip mask is usually maintained in Move(), but KillBox requires it
+		gameLocal.KillBox( this );
+	}
+
+	// don't allow full run speed for a bit
+	physicsObj.SetKnockBack( 100 );
+
+	// set our respawn time and buttons so that if we're killed we don't respawn immediately
+	minRespawnTime = gameLocal.time;
+	maxRespawnTime = gameLocal.time;
+	if ( !spectating ) {
+		forceRespawn = false;
+	}
+
+	Respawn_Shared();
+
+	privateCameraView = NULL;
+
+	BecomeActive( TH_THINK );
+
+	// run a client frame to drop exactly to the floor,
+	// initialize animations and other things
+	Think();
+
+	respawning			= false;
+	lastManOver			= false;
+	lastManPlayAgain	= false;
+	isTelefragged		= false;
+}
+
+/*
+===============
+idPlayer::ServerSpectate
+================
+*/
+void CBasePlayer::ServerSpectate( bool spectate )
+{
+	if ( spectating != spectate )
+	{
+		Spectate( spectate );
+		if ( !spectate ) {
+			// When coming out of spectate, join the team with the least number of players
+			if ( gameLocal.mpGame.IsGametypeTeamBased() ) {
+				int teamCounts[2] = { 0, 0 };
+				gameLocal.mpGame.NumActualClients( false, teamCounts );
+				teamCounts[team]--;
+				if ( teamCounts[0] < teamCounts[1] ) {
+					team = 0;
+				} else if ( teamCounts[1] < teamCounts[0] ) {
+					team = 1;
+				}
+				gameLocal.mpGame.SwitchToTeam( entityNumber, -1, team );
+			}
+			if ( gameLocal.gameType == GAME_DM ) {
+				// make sure the scores are reset so you can't exploit by spectating and entering the game back
+				// other game types don't matter, as you either can't join back, or it's team scores
+				gameLocal.mpGame.ClearFrags( entityNumber );
+			}
+		}
+	}
+	if ( !spectate ) {
+		SpawnFromSpawnSpot();
+	}
+
+	// drop the flag if player was carrying it
+	if ( spectate && common->IsMultiplayer() && gameLocal.mpGame.IsGametypeFlagBased() && 
+		 carryingFlag )
+	{
+		DropFlag();
+	}
+}
+
+/*
+===============
+idPlayer::ShowTip
+===============
+*/
+void CBasePlayer::ShowTip( const char *title, const char *tip, bool autoHide )
+{
+	if ( tipUp ) {
+		return;
+	}
+
+	if ( hudManager ) {
+		hudManager->ShowTip( title, tip, autoHide );		
+	}
+	tipUp = true;
+}
+
+/*
+===============
+idPlayer::HideTip
+===============
+*/
+void CBasePlayer::HideTip()
+{
+	if ( hudManager ) {
+		hudManager->HideTip();		
+	}
+	tipUp = false;
+}
+
+/*
+============
+ServerDealDamage
+
+Only called on the server and in singleplayer. This is where
+the player's health is actually modified, but the visual and
+sound effects happen elsewhere so that clients can get instant
+feedback and hide lag.
+============
+*/
+void CBasePlayer::ServerDealDamage( int damage, idEntity & inflictor, idEntity & attacker, const idVec3 & dir, const char * damageDefName, const int location  )
+{
+	const idDeclEntityDef *damageDef = gameLocal.FindEntityDef( damageDefName, false );
+	if ( !damageDef ) {
+		gameLocal.Warning( "Unknown damageDef '%s'", damageDefName );
+		return;
+	}
+
+	// move the world direction vector to local coordinates
+	idVec3		damage_from;
+	idVec3		localDamageVector;	
+
+	damage_from = dir;
+	damage_from.Normalize();
+	
+	viewAxis.ProjectVector( damage_from, localDamageVector );
+
+	// add to the damage inflicted on a player this frame
+	// the total will be turned into screen blends and view angle kicks
+	// at the end of the frame
+	if ( health > 0 ) {
+		playerView.DamageImpulse( localDamageVector, &damageDef->dict );
+	}
+
+	// do the damage
+	if ( damage > 0 ) {
+		GetAchievementManager().SetPlayerTookDamage( true );
+
+		int oldHealth = health;
+		health -= damage;
+
+		if ( health <= 0 ) {
+
+			if ( health < -999 ) {
+				health = -999;
+			}
+
+			// HACK - A - LICIOUS - Check to see if we are being damaged by the frag chamber.
+			if ( oldHealth > 0 && strcmp( gameLocal.GetMapName(), "maps/game/mp/d3dm3.map" ) == 0 && strcmp( damageDefName, "damage_triggerhurt_1000_chamber" ) == 0 ) {
+				idPlayer * fragChamberActivator = gameLocal.playerActivateFragChamber;
+				if ( fragChamberActivator != NULL ) {
+					fragChamberActivator->GetAchievementManager().EventCompletesAchievement( ACHIEVEMENT_MP_CATCH_ENEMY_IN_ROFC );
+				}
+				gameLocal.playerActivateFragChamber = NULL;
+			}
+
+			isTelefragged = damageDef->dict.GetBool( "telefrag" );
+
+			lastDmgTime = gameLocal.time;
+			Killed( &inflictor, &attacker, damage, dir, location );
+		} else {
+			if ( !g_testDeath.GetBool() ) {
+				lastDmgTime = gameLocal.time;
+			}
+		}
+	} else {
+		// don't accumulate impulses
+		if ( af.IsLoaded() ) {
+			// clear impacts
+			af.Rest();
+
+			// physics is turned off by calling af.Rest()
+			BecomeActive( TH_PHYSICS );
+		}
+	}
+}
+
+// idtech4 imports end
+
 void CBasePlayer::PainSound()
 {
 	float rs;
@@ -414,16 +1988,16 @@ void DeathBubblesSpawn()
 		remove(self);
 };
 
-void DeathBubbles(float num_bubbles)
+void CBasePlayer::DeathBubbles(float num_bubbles)
 {
 	entity    bubble_spawner;
 	
 	bubble_spawner = spawn();
-	setorigin (bubble_spawner, self.origin);
+	gpEngine->pfnSetOrigin (bubble_spawner, self.origin);
 	bubble_spawner.movetype = MOVETYPE_NONE;
 	bubble_spawner.solid = SOLID_NOT;
 	bubble_spawner.nextthink = time + 0.1;
-	bubble_spawner.think = DeathBubblesSpawn;
+	bubble_spawner.SetThinkCallback(DeathBubblesSpawn);
 	bubble_spawner.air_finished = 0;
 	bubble_spawner.owner = self;
 	bubble_spawner.bubble_count = num_bubbles;
@@ -457,7 +2031,7 @@ void CBasePlayer::DeathSound()
 	return;
 };
 
-void PlayerDead()
+void CBasePlayer::PlayerDead()
 {
 	self.nextthink = -1;
 // allow respawn after a certain time
@@ -703,10 +2277,10 @@ void CBasePlayer::DropBackpack()
 	item.movetype = MOVETYPE_TOSS;
 	gpEngine->pfnSetModel (item, "models/backpack.mdl");
 	gpEngine->pfnSetSize (item, '-16 -16 0', '16 16 56');
-	item.touch = BackpackTouch;
+	item.SetTouchCallback(BackpackTouch);
 	
 	item.nextthink = time + 120;    // remove after 2 minutes
-	item.think = SUB_Remove;
+	item.SetThinkCallback(SUB_Remove);
 };
 
 float CBasePlayer::GetBestWeapon()
@@ -832,7 +2406,7 @@ void()  player_die_ax7  =       [       $axdeth7,       player_die_ax8  ] {};
 void()  player_die_ax8  =       [       $axdeth8,       player_die_ax9  ] {};
 void()  player_die_ax9  =       [       $axdeth9,       player_die_ax9  ] {PlayerDead();};
 
-bool CBasePlayer::Pickup_Weapon(edict_t *ent, edict_t *other)
+bool CBasePlayer::Pickup_Weapon(edict_t *ent)
 {
 	int			index;
 	gitem_t		*ammo;
@@ -840,22 +2414,22 @@ bool CBasePlayer::Pickup_Weapon(edict_t *ent, edict_t *other)
 	index = ITEM_INDEX(ent->item);
 
 	if ( ( ((int)(dmflags->value) & DF_WEAPONS_STAY) || coop->value) 
-		&& other->client->pers.inventory[index])
+		&& this->client->pers.inventory[index])
 	{
 		if (!(ent->spawnflags & (DROPPED_ITEM | DROPPED_PLAYER_ITEM) ) )
 			return false;	// leave the weapon for others to pickup
 	}
 
-	other->client->pers.inventory[index]++;
+	this->client->pers.inventory[index]++;
 
 	if (!(ent->spawnflags & DROPPED_ITEM) )
 	{
 		// give them some ammo with it
 		ammo = FindItem (ent->item->ammo);
 		if ( (int)dmflags->value & DF_INFINITE_AMMO )
-			Add_Ammo (other, ammo, 1000);
+			this->Add_Ammo (ammo, 1000);
 		else
-			Add_Ammo (other, ammo, ammo->quantity);
+			this->Add_Ammo (ammo, ammo->quantity);
 
 		if (! (ent->spawnflags & DROPPED_PLAYER_ITEM) )
 		{
@@ -871,10 +2445,10 @@ bool CBasePlayer::Pickup_Weapon(edict_t *ent, edict_t *other)
 		}
 	}
 
-	if (other->client->pers.weapon != ent->item && 
-		(other->client->pers.inventory[index] == 1) &&
-		( !deathmatch->value || other->client->pers.weapon == FindItem("blaster") ) )
-		other->client->newweapon = ent->item;
+	if (this->client->pers.weapon != ent->item && 
+		(this->client->pers.inventory[index] == 1) &&
+		( !deathmatch->value || this->client->pers.weapon == FindItem("blaster") ) )
+		this->client->newweapon = ent->item;
 
 	return true;
 }
@@ -895,7 +2469,7 @@ void CBasePlayer::ChangeWeapon (edict_t *ent)
 	{
 		this->grenade_time = level.time;
 		this->weapon_sound = 0;
-		weapon_grenade_fire (ent, false);
+		weapon_grenade_fire (this, false);
 		this->grenade_time = 0;
 	};
 
@@ -949,42 +2523,42 @@ NoAmmoWeaponChange
 void CBasePlayer::NoAmmoWeaponChange(edict_t *ent)
 {
 	if ( this->pers.inventory[ITEM_INDEX(FindItem("slugs"))]
-		&&  ent->client->pers.inventory[ITEM_INDEX(FindItem("railgun"))] )
+		&&  this->pers.inventory[ITEM_INDEX(FindItem("railgun"))] )
 	{
-		ent->client->newweapon = FindItem ("railgun");
+		this->newweapon = FindItem ("railgun");
 		return;
 	}
-	if ( ent->client->pers.inventory[ITEM_INDEX(FindItem("cells"))]
-		&&  ent->client->pers.inventory[ITEM_INDEX(FindItem("hyperblaster"))] )
+	if ( this->pers.inventory[ITEM_INDEX(FindItem("cells"))]
+		&&  this->pers.inventory[ITEM_INDEX(FindItem("hyperblaster"))] )
 	{
-		ent->client->newweapon = FindItem ("hyperblaster");
+		this->newweapon = FindItem ("hyperblaster");
 		return;
 	}
-	if ( ent->client->pers.inventory[ITEM_INDEX(FindItem("bullets"))]
-		&&  ent->client->pers.inventory[ITEM_INDEX(FindItem("chaingun"))] )
+	if ( this->pers.inventory[ITEM_INDEX(FindItem("bullets"))]
+		&&  this->pers.inventory[ITEM_INDEX(FindItem("chaingun"))] )
 	{
-		ent->client->newweapon = FindItem ("chaingun");
+		this->newweapon = FindItem ("chaingun");
 		return;
 	}
-	if ( ent->client->pers.inventory[ITEM_INDEX(FindItem("bullets"))]
-		&&  ent->client->pers.inventory[ITEM_INDEX(FindItem("machinegun"))] )
+	if ( this->pers.inventory[ITEM_INDEX(FindItem("bullets"))]
+		&&  this->pers.inventory[ITEM_INDEX(FindItem("machinegun"))] )
 	{
-		ent->client->newweapon = FindItem ("machinegun");
+		this->newweapon = FindItem ("machinegun");
 		return;
 	}
-	if ( ent->client->pers.inventory[ITEM_INDEX(FindItem("shells"))] > 1
-		&&  ent->client->pers.inventory[ITEM_INDEX(FindItem("super shotgun"))] )
+	if ( this->pers.inventory[ITEM_INDEX(FindItem("shells"))] > 1
+		&&  this->pers.inventory[ITEM_INDEX(FindItem("super shotgun"))] )
 	{
-		ent->client->newweapon = FindItem ("super shotgun");
+		this->newweapon = FindItem ("super shotgun");
 		return;
 	}
-	if ( ent->client->pers.inventory[ITEM_INDEX(FindItem("shells"))]
-		&&  ent->client->pers.inventory[ITEM_INDEX(FindItem("shotgun"))] )
+	if ( this->pers.inventory[ITEM_INDEX(FindItem("shells"))]
+		&&  this->pers.inventory[ITEM_INDEX(FindItem("shotgun"))] )
 	{
-		ent->client->newweapon = FindItem ("shotgun");
+		this->newweapon = FindItem ("shotgun");
 		return;
 	}
-	ent->client->newweapon = FindItem ("blaster");
+	this->newweapon = FindItem ("blaster");
 }
 
 /*
@@ -997,10 +2571,10 @@ Called by ClientBeginServerFrame and ClientThink
 void CBasePlayer::Think_Weapon (edict_t *ent)
 {
 	// if just died, put the weapon away
-	if (ent->health < 1)
+	if (this->health < 1)
 	{
 		this->newweapon = nullptr;
-		ChangeWeapon (ent);
+		this->ChangeWeapon ();
 	}
 
 	// call active weapon think routine
@@ -1028,7 +2602,7 @@ void CBasePlayer::Use_Weapon (gitem_t *item)
 	gitem_t		*ammo_item;
 
 	// see if we're already using it
-	if (item == this->pers.weapon)
+	if (item == this->GetCurrentWeapon())
 		return;
 
 	if (item->ammo && !g_select_empty->value && !(item->flags & IT_AMMO))
@@ -1066,12 +2640,335 @@ void CBasePlayer::Drop_Weapon(gitem_t *item)
 	int index = ITEM_INDEX(item);
 	
 	// see if we're already using it
-	if ( ((item == this->pers.weapon) || (item == this->newweapon)) && (this->pers.inventory[index] == 1) )
+	if ( ((item == this->GetCurrentWeapon()) || (item == this->newweapon)) && (this->pers.inventory[index] == 1) )
 	{
-		gi.cprintf (ent, PRINT_HIGH, "Can't drop current weapon\n");
+		gi.cprintf (this, PRINT_HIGH, "Can't drop current weapon\n");
 		return;
-	}
+	};
 
 	Drop_Item (this, item);
 	this->pers.inventory[index]--;
 }
+
+/*
+===============
+idPlayer::Reload
+===============
+*/
+// from idtech4
+void CBasePlayer::Reload()
+{
+	if ( spectating || gameLocal.inCinematic || influenceActive )
+		return;
+
+	if ( common->IsClient() && !IsLocallyControlled() )
+		return;
+
+	if ( myCurrentWeapon.GetEntity() && myCurrentWeapon.GetEntity()->IsLinked() )
+		myCurrentWeapon.GetEntity()->Reload();
+};
+
+/*
+===============
+idPlayer::RaiseWeapon
+===============
+*/
+void CBasePlayer::RaiseWeapon()
+{
+	if ( myCurrentWeapon.GetEntity() && myCurrentWeapon.GetEntity()->IsHidden() )
+		myCurrentWeapon.GetEntity()->RaiseWeapon();
+};
+
+/*
+===============
+idPlayer::LowerWeapon
+===============
+*/
+void CBasePlayer::LowerWeapon()
+{
+	if ( myCurrentWeapon.GetEntity() && !myCurrentWeapon.GetEntity()->IsHidden() )
+		myCurrentWeapon.GetEntity()->LowerWeapon();
+};
+
+/*
+===============
+idPlayer::FlashlightOn
+===============
+*/
+void CBasePlayer::FlashlightOn()
+{
+	if ( !flashlight.IsValid() )
+		return;
+
+	if ( flashlightBattery < idMath::Ftoi( flashlight_minActivatePercent.GetFloat() * flashlight_batteryDrainTimeMS.GetFloat() ) )
+		return;
+
+	if ( gameLocal.inCinematic )
+		return;
+
+	if ( flashlight.GetEntity()->lightOn )
+		return;
+
+	if ( health <= 0 )
+		return;
+
+	if ( spectating )
+		return;
+
+	flashlight->FlashlightOn();
+};
+
+/*
+===============
+idPlayer::FlashlightOff
+===============
+*/
+void CBasePlayer::FlashlightOff()
+{
+	if ( !flashlight.IsValid() )
+		return;
+	
+	if ( !flashlight.GetEntity()->lightOn )
+		return;
+	
+	flashlight->FlashlightOff();
+};
+
+/*
+===============
+FireWeapon
+===============
+*/
+// from Q3
+void CBasePlayer::FireWeapon( gentity_t *ent )
+{
+	if (this->ps.powerups[PW_QUAD] )
+		s_quadFactor = g_quadfactor.value;
+	else
+		s_quadFactor = 1;
+	
+#ifdef MISSIONPACK
+	if( this->persistantPowerup && this->persistantPowerup->item && this->persistantPowerup->item->giTag == PW_DOUBLER )
+		s_quadFactor *= 2;
+#endif
+
+	// track shots taken for accuracy tracking.  Grapple is not a weapon and gauntet is just not tracked
+	if( ent->s.weapon != WP_GRAPPLING_HOOK && ent->s.weapon != WP_GAUNTLET ) {
+#ifdef MISSIONPACK
+		if( ent->s.weapon == WP_NAILGUN ) {
+			this->accuracy_shots += NUM_NAILSHOTS;
+		} else {
+			this->accuracy_shots++;
+		}
+#else
+		this->accuracy_shots++;
+#endif
+	};
+
+	// set aiming directions
+	AngleVectors (this->ps.viewangles, forward, right, up);
+
+	CalcMuzzlePointOrigin ( ent, this->oldOrigin, forward, right, up, muzzle );
+
+	// fire the specific weapon
+	switch( ent->s.weapon ) // this->GetCurrentWeapon()
+	//this->GetCurrentWeapon()->Fire();
+	{
+	case WP_GAUNTLET:
+		Weapon_Gauntlet( ent );
+		break;
+	case WP_LIGHTNING:
+		Weapon_LightningFire( ent );
+		break;
+	case WP_SHOTGUN:
+		weapon_supershotgun_fire( ent );
+		break;
+	case WP_MACHINEGUN:
+		if ( g_gametype.integer != GT_TEAM )
+			Bullet_Fire( ent, MACHINEGUN_SPREAD, MACHINEGUN_DAMAGE );
+		else
+			Bullet_Fire( ent, MACHINEGUN_SPREAD, MACHINEGUN_TEAM_DAMAGE );
+		break;
+	case WP_GRENADE_LAUNCHER:
+		weapon_grenadelauncher_fire( ent );
+		break;
+	case WP_ROCKET_LAUNCHER:
+		Weapon_RocketLauncher_Fire( ent );
+		break;
+	case WP_PLASMAGUN:
+		Weapon_Plasmagun_Fire( ent );
+		break;
+	case WP_RAILGUN:
+		weapon_railgun_fire( ent );
+		break;
+	case WP_BFG:
+		BFG_Fire( ent );
+		break;
+	case WP_GRAPPLING_HOOK:
+		Weapon_GrapplingHook_Fire( ent );
+		break;
+	case WP_NAILGUN:
+		Weapon_Nailgun_Fire( ent );
+		break;
+	case WP_PROX_LAUNCHER:
+		weapon_proxlauncher_fire( ent );
+		break;
+	case WP_CHAINGUN:
+		Bullet_Fire( ent, CHAINGUN_SPREAD, MACHINEGUN_DAMAGE );
+		break;
+	default:
+// FIXME		G_Error( "Bad ent->s.weapon" );
+		break;
+	};
+};
+
+void CBasePlayer::PlayerJump(edict_t *self)
+{
+	vector start, end;
+
+	if (self->v.flags & FL_WATERJUMP)
+		return;
+	
+	if (self->v.waterlevel >= 2)
+	{
+// play swiming sound
+		if (self->v.swim_flag < time)
+		{
+			self->v.swim_flag = time + 1;
+			if (random() < 0.5)
+				gpEngine->pfnEmitSound(self, CHAN_BODY, "misc/water1.wav", 1, ATTN_NORM);
+			else
+				gpEngine->pfnEmitSound(self, CHAN_BODY, "misc/water2.wav", 1, ATTN_NORM);
+		}
+
+		return;
+	}
+
+	if (!(self->v.flags & FL_ONGROUND))
+		return;
+
+	if ( !(self->v.flags & FL_JUMPRELEASED) )
+		return;         // don't pogo stick
+
+	self->v.flags = self->v.flags - (self->v.flags & FL_JUMPRELEASED);       
+	self->v.button2 = 0;
+
+// player jumping sound
+	gpEngine->pfnEmitSound(self, CHAN_BODY, "player/plyrjmp8.wav", 1, ATTN_NORM);
+};
+
+/*
+===========
+WaterMove
+
+============
+*/
+.float  dmgtime;
+
+void CBasePlayer::WaterMove(edict_t *self)
+{
+//dprint (ftos(self.waterlevel));
+	if (self->GetMoveType() == MOVETYPE_NOCLIP)
+		return;
+	
+	if (self->GetHealth() < 0)
+		return;
+
+	if (self->v.waterlevel != 3)
+	{
+		if (self->v.air_finished < time)
+			gpEngine->pfnEmitSound(self, CHAN_VOICE, "player/gasp2.wav", 1, ATTN_NORM);
+		else if (self->v.air_finished < time + 9)
+			gpEngine->pfnEmitSound(self, CHAN_VOICE, "player/gasp1.wav", 1, ATTN_NORM);
+		self->v.air_finished = time + 12;
+		self->v.dmg = 2;
+	}
+	else if (self->v.air_finished < time)
+	{       // drown!
+		if (self->v.pain_finished < time)
+		{
+			self->v.dmg = self->v.dmg + 2;
+			if (self->v.dmg > 15)
+				self->v.dmg = 10;
+			T_Damage (self, world, world, self->v.dmg);
+			self->v.pain_finished = time + 1;
+		}
+	}
+	
+	if (!self->v.waterlevel)
+	{
+		if (self->v.flags & FL_INWATER)
+		{       
+			// play leave water sound
+			gpEngine->pfnEmitSound (self, CHAN_BODY, "misc/outwater.wav", 1, ATTN_NORM);
+			self->v.flags = self->v.flags - FL_INWATER;
+		}
+		return;
+	}
+
+	if (self->v.watertype == CONTENT_LAVA)
+	{       // do damage
+		if (self->v.dmgtime < time)
+		{
+			if (self->v.radsuit_finished > time)
+				self->v.dmgtime = time + 1;
+			else
+				self->v.dmgtime = time + 0.2;
+
+			T_Damage (self, world, world, 10*self->v.waterlevel);
+		}
+	}
+	else if (self->v.watertype == CONTENT_SLIME)
+	{       // do damage
+		if (self->v.dmgtime < time && self->v.radsuit_finished < time)
+		{
+			self->v.dmgtime = time + 1;
+			T_Damage (self, world, world, 4*self->v.waterlevel);
+		}
+	}
+	
+	if ( !(self->v.flags & FL_INWATER) )
+	{       
+
+// player enter water sound
+
+		if (self->v.watertype == CONTENT_LAVA)
+			gpEngine->pfnEmitSound(self, CHAN_BODY, "player/inlava.wav", 1, ATTN_NORM);
+		if (self->v.watertype == CONTENT_WATER)
+			gpEngine->pfnEmitSound(self, CHAN_BODY, "player/inh2o.wav", 1, ATTN_NORM);
+		if (self->v.watertype == CONTENT_SLIME)
+			gpEngine->pfnEmitSound(self, CHAN_BODY, "player/slimbrn2.wav", 1, ATTN_NORM);
+
+		self->v.flags += FL_INWATER;
+		self->v.dmgtime = 0;
+	}       
+};
+
+void CBasePlayer::CheckWaterJump(edict_t *self)
+{
+	vector start, end;
+
+// check for a jump-out-of-water
+	makevectors (self->v.angles);
+	start = self->v.origin;
+	start_z = start_z + 8; 
+	v_forward_z = 0;
+	normalize(v_forward);
+	end = start + v_forward*24;
+	traceline (start, end, TRUE, self);
+	if (trace_fraction < 1)
+	{       // solid at waist
+		start_z = start_z + self->v.maxs_z - 8;
+		end = start + v_forward*24;
+		self->v.movedir = trace_plane_normal * -50;
+		traceline (start, end, TRUE, self);
+		if (trace_fraction == 1)
+		{       // open at eye level
+			self->v.flags |= FL_WATERJUMP;
+			self->v.velocity_z = 225;
+			self->v.flags = self->v.flags - (self->v.flags & FL_JUMPRELEASED);
+			self->v.teleport_time = time + 2;  // safety net
+			return;
+		};
+	};
+};
