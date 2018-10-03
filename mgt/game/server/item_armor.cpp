@@ -17,7 +17,7 @@ public:
 	~CItemArmor();
 	
 	void Spawn() override;
-	void Touch(entvars_t *other) override;
+	void Touch(CBaseEntity *other) override;
 private:
 };
 
@@ -26,24 +26,22 @@ CItemArmor::~CItemArmor() = default;
 
 void CItemArmor::Spawn()
 {
-	self->SetTouchCallback(CItemArmor::Touch);
+	SetTouchCallback(CItemArmor::Touch);
 	
 	gpEngine->pfnPrecacheModel("models/armor.mdl");
-	gpEngine->pfnSetModel(self, "models/armor.mdl");
+	SetModel("models/armor.mdl");
 	
 	self->skin = 0;
 	//self->skin = 1; for item_armor2
 	//self->skin = 2; for item_armorInv
 	
-	gpEngine->pfnSetSize(self, '-16 -16 0', '16 16 56');
+	SetSize('-16 -16 0', '16 16 56');
 	
 	StartItem(self);
 };
 
-void CItemArmor::Touch(entvars_t *other)
+void CItemArmor::Touch(CBaseEntity *other)
 {
-	float type, value, bit;
-
 	if(other->GetHealth() <= 0)
 		return;
 	
@@ -54,10 +52,12 @@ void CItemArmor::Touch(entvars_t *other)
 		if(other->invincible_time > 0)
 			return;
 
+	float type{0.0f}, value{0.0f}, bit{0.0f};
+	
 	if(self->GetClassName() == "item_armor")
 	{
-		type = 0.3;
-		value = 100;
+		type = 0.3f;
+		value = 100.0f;
 		bit = IT_ARMOR1;
 	};
 	
@@ -65,15 +65,15 @@ void CItemArmor::Touch(entvars_t *other)
 	/*
 	if(self->GetClassName() == "item_armor2")
 	{
-		type = 0.6;
-		value = 150;
+		type = 0.6f;
+		value = 150.0f;
 		bit = IT_ARMOR2;
 	};
 	
 	if(self->GetClassName() == "item_armorInv")
 	{
-		type = 0.8;
-		value = 200;
+		type = 0.8f;
+		value = 200.0f;
 		bit = IT_ARMOR3;
 	};
 	*/
@@ -96,7 +96,8 @@ void CItemArmor::Touch(entvars_t *other)
 	sprint(other, PRINT_LOW, "You got armor\n");
 	
 	// armor touch sound
-	gpEngine->pfnEmitSound(other, CHAN_ITEM, "items/armor1.wav", 1, ATTN_NORM);
+	other->EmitSound(CHAN_ITEM, "items/armor1.wav", 1, ATTN_NORM);
+	
 	stuffcmd(other, "bf\n");
 
 	activator = other;
