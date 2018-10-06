@@ -733,9 +733,9 @@ void SV_ReadPackets()
 		// read the qport out of the message so we can fix up
 		// stupid address translating routers
 		MSG_BeginReading();
-		MSG_ReadLong(); // sequence number
-		MSG_ReadLong(); // sequence number
-		qport = MSG_ReadShort() & 0xffff;
+		MSG_ReadLong(&net_message); // sequence number
+		MSG_ReadLong(&net_message); // sequence number
+		qport = MSG_ReadShort(&net_message) & 0xffff;
 
 		// check for packets from connected clients
 		for(i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
@@ -756,7 +756,7 @@ void SV_ReadPackets()
 				svs.stats.packets++;
 				good = true;
 				cl->send_message = true; // reply at end of frame
-				SV_ExecuteClientMessage(cl);
+				SV_ExecuteClientMessage(cl, &net_message);
 			}
 			break;
 		}
@@ -1398,9 +1398,9 @@ void SV_ConnectionlessPacket()
 	const char *c;
 
 	MSG_BeginReading();
-	MSG_ReadLong(); // skip the -1 marker
+	MSG_ReadLong(net_message); // skip the -1 marker
 
-	//s = MSG_ReadStringLine(); // TODO
+	//s = MSG_ReadStringLine(net_message); // TODO
 
 	Cmd_TokenizeString(s);
 

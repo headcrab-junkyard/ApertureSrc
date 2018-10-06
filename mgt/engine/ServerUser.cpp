@@ -691,32 +691,32 @@ void SV_ReadClientMove(usercmd_t *move)
 	int bits;
 
 	// read ping time
-	host_client->ping_times[host_client->num_pings % NUM_PING_TIMES] = sv.time - MSG_ReadFloat();
+	host_client->ping_times[host_client->num_pings % NUM_PING_TIMES] = sv.time - MSG_ReadFloat(net_message);
 	host_client->num_pings++;
 
 	// read current angles
 	for(i = 0; i < 3; i++)
-		angle[i] = MSG_ReadAngle();
+		angle[i] = MSG_ReadAngle(net_message);
 
 	VectorCopy(angle, host_client->edict->v.v_angle);
 
 	// read movement
-	move->forwardmove = MSG_ReadShort();
-	move->sidemove = MSG_ReadShort();
-	move->upmove = MSG_ReadShort();
+	move->forwardmove = MSG_ReadShort(net_message);
+	move->sidemove = MSG_ReadShort(net_message);
+	move->upmove = MSG_ReadShort(net_message);
 
 	// read buttons
-	bits = MSG_ReadByte();
+	bits = MSG_ReadByte(net_message);
 	host_client->edict->v.button0 = bits & 1;
 	host_client->edict->v.button2 = (bits & 2) >> 1;
 
-	i = MSG_ReadByte();
+	i = MSG_ReadByte(net_message);
 	if(i)
 		host_client->edict->v.impulse = i;
 
 #ifdef QUAKE2
 	// read light level
-	host_client->edict->v.light_level = MSG_ReadByte();
+	host_client->edict->v.light_level = MSG_ReadByte(net_message);
 #endif
 }
 
@@ -737,7 +737,7 @@ qboolean SV_ReadClientMessage()
 	do
 	{
 	nextmsg:
-		ret = NET_GetPacket(NS_SERVER, &net_from, &host_client->netchan.message); // TODO
+		ret = NET_GetPacket(NS_SERVER, &net_from, &net_message); // TODO
 		if(ret == -1)
 		{
 			Sys_Printf("SV_ReadClientMessage: NET_GetMessage failed\n");
@@ -759,7 +759,7 @@ qboolean SV_ReadClientMessage()
 				return false;
 			}
 
-			cmd = MSG_ReadChar();
+			cmd = MSG_ReadChar(net_message);
 
 			switch(cmd)
 			{
@@ -775,7 +775,7 @@ qboolean SV_ReadClientMessage()
 				break;
 
 			case clc_stringcmd:
-				s = MSG_ReadString();
+				s = MSG_ReadString(net_message);
 				//if (host_client->privileged) // TODO
 				ret = 2;
 				//else
@@ -885,7 +885,7 @@ SV_ExecuteClientMessage
 The current net_message is parsed for the given client
 ===================
 */
-void SV_ExecuteClientMessage (client_t *cl)
+void SV_ExecuteClientMessage (client_t *cl, sizebuf_t *net_message)
 {
 	int		c;
 	char	*s;
@@ -931,7 +931,7 @@ void SV_ExecuteClientMessage (client_t *cl)
 			return;
 		}	
 
-		c = MSG_ReadByte ();
+		c = MSG_ReadByte (net_message);
 		if (c == -1)
 			break;
 				
@@ -946,7 +946,7 @@ void SV_ExecuteClientMessage (client_t *cl)
 			break;
 
 		case clc_delta:
-			cl->delta_sequence = MSG_ReadByte ();
+			cl->delta_sequence = MSG_ReadByte (net_message);
 			break;
 
 		case clc_move:
@@ -956,10 +956,10 @@ void SV_ExecuteClientMessage (client_t *cl)
 			move_issued = true;
 
 			checksumIndex = MSG_GetReadCount();
-			checksum = (byte)MSG_ReadByte ();
+			checksum = (byte)MSG_ReadByte (net_message);
 
 			// read loss percentage
-			//cl->lossage = MSG_ReadByte(); // TODO
+			//cl->lossage = MSG_ReadByte(net_message); // TODO
 
 			MSG_ReadDeltaUsercmd (&nullcmd, &oldest);
 			MSG_ReadDeltaUsercmd (&oldest, &oldcmd);
@@ -971,7 +971,7 @@ void SV_ExecuteClientMessage (client_t *cl)
 			// if the checksum fails, ignore the rest of the packet
 			// TODO
 			//calculatedChecksum = COM_BlockSequenceCRCByte(
-				//net_message.data + checksumIndex + 1,
+				//net_message->data + checksumIndex + 1,
 				//MSG_GetReadCount() - checksumIndex - 1,
 				//seq_hash);
 
@@ -1008,14 +1008,14 @@ void SV_ExecuteClientMessage (client_t *cl)
 
 
 		case clc_stringcmd:	
-			s = MSG_ReadString ();
+			s = MSG_ReadString (net_message);
 			//SV_ExecuteUserCommand (s); // TODO
 			break;
 
 		case clc_tmove:
-			o[0] = MSG_ReadCoord();
-			o[1] = MSG_ReadCoord();
-			o[2] = MSG_ReadCoord();
+			o[0] = MSG_ReadCoord(net_message);
+			o[1] = MSG_ReadCoord(net_message);
+			o[2] = MSG_ReadCoord(net_message);
 			// only allowed by spectators
 			//if (host_client->spectator) // TODO
 			{
