@@ -36,12 +36,28 @@ public:
 	void WriteShort(int nValue) override;
 	void WriteLong(int nValue) override;
 	
+	void WriteFloat(float fValue) override;
 	void WriteAngle(float fValue) override;
 	void WriteCoord(float fValue) override;
 	
 	void WriteString(const char *sValue) override;
 	
 	void WriteEntity(int nValue) override;
+	
+	//
+	
+	void BeginReading() override;
+	
+	int ReadChar() override;
+	int ReadByte() override;
+	int ReadShort() override;
+	int ReadLong() override;
+	
+	float ReadFloat() override;
+	float ReadCoord() override;
+	float ReadAngle() override;
+	
+	char *ReadString() override;
 private:
 	sizebuf_t *mpBuf{nullptr};
 };

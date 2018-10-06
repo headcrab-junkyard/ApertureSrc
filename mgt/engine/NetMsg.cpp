@@ -66,3 +66,43 @@ void CNetMsg::WriteEntity(int nValue)
 	// TODO
 	//MSG_WriteEntity(mpBuf, nValue);
 };
+
+int CNetMsg::ReadChar()
+{
+	return MSG_ReadChar(mpBuf);
+};
+
+int CNetMsg::ReadByte()
+{
+	return MSG_ReadByte(mpBuf);
+};
+
+int CNetMsg::ReadShort()
+{
+	return MSG_ReadShort(mpBuf);
+};
+
+int CNetMsg::ReadLong()
+{
+	return MSG_ReadLong(mpBuf);
+};
+
+float CNetMsg::ReadFloat()
+{
+	return MSG_ReadFloat(mpBuf);
+};
+
+float CNetMsg::ReadCoord()
+{
+	return MSG_ReadCoord(mpBuf);
+};
+
+float CNetMsg::ReadAngle()
+{
+	return MSG_ReadAngle(mpBuf);
+};
+
+char *CNetMsg::ReadString()
+{
+	return MSG_ReadString(mpBuf);
+};
