@@ -35,8 +35,6 @@ extern netadr_t net_local_adr;
 extern netadr_t net_from; // address of who sent the packet
 extern sizebuf_t net_message;
 
-extern cvar_t hostname; // TODO
-
 //extern	int		net_socket;
 
 void NET_Init();
@@ -69,7 +67,7 @@ void Netchan_Setup(netsrc_t sock, netchan_t *chan, netadr_t adr, int qport);
 void Netchan_Transmit(netchan_t *chan, int length, byte *data);
 void Netchan_OutOfBand(int net_socket, netadr_t adr, int length, byte *data);
 void Netchan_OutOfBandPrint(int net_socket, netadr_t adr, const char *format, ...);
-qboolean Netchan_Process(netchan_t *chan);
+bool Netchan_Process(netchan_t *chan, sizebuf_t *net_message);
 
-qboolean Netchan_CanPacket(netchan_t *chan); // TODO: ???
-qboolean Netchan_CanReliable(netchan_t *chan);
+bool Netchan_CanPacket(netchan_t *chan); // TODO: ???
+bool Netchan_CanReliable(netchan_t *chan);

@@ -53,8 +53,8 @@ extern CConVar developer;
 
 extern bool host_initialized; // true if into command execution
 extern double host_frametime;
-extern byte *host_basepal;
-extern byte *host_colormap;
+//extern byte *host_basepal;
+//extern byte *host_colormap;
 extern int host_framecount; // incremented every frame, never reset
 extern double realtime;     // not bounded in any way, changed at
                             // start of every frame, never reset
@@ -77,7 +77,7 @@ void Host_ClientCommands(client_t *host_client, const char *fmt, ...);
 void Host_ShutdownServer(bool crash);
 //void Host_WriteConfiguration ();
 
-class CHost final
+class CHost final : public IHost
 {
 public:
 	CHost();
@@ -88,11 +88,17 @@ public:
 	
 	void Frame(float time);
 	
-	void ClearMemory();
+	void EndGame(const char *message, ...) override;
+	
+	void Error(const char *message, ...) override;
+	
+	void ClearMemory() override;
 	
 	void ServerFrame();
 	
-	void ShutdownServer(bool crash);
+	void ShutdownServer(bool crash) override;
+	
+	bool IsServerActive() const override;
 private:
 	void InitLocal();
 	void InitCommands();

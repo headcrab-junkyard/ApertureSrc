@@ -112,6 +112,16 @@ typedef struct
 #define MAX_INFO_STRING 256
 #endif
 
+typedef struct
+{
+	// received from client
+
+	// reply
+	double				senttime;
+	float				ping_time;
+	packet_entities_t	entities;
+} client_frame_t;
+
 typedef struct client_s
 {
 	qboolean active;    // false = client is free
@@ -131,9 +141,12 @@ typedef struct client_s
 
 	edict_t *edict; // EDICT_NUM(clientnum+1)
 	char name[32];  // for printing to other people
+	
 	int topcolor;
 	int bottomcolor;
 
+	client_frame_t frames[UPDATE_BACKUP]; // updates can be deltad from here
+	
 	float ping_times[NUM_PING_TIMES];
 	int num_pings; // ping_times[num_pings%NUM_PING_TIMES]
 
@@ -223,6 +236,7 @@ void SV_BroadcastCommand(const char *fmt, ...);
 void SV_Frame();
 
 void SV_Physics();
+qboolean SV_RunThink(edict_t *ent);
 
 qboolean SV_CheckBottom(edict_t *ent);
 qboolean SV_movestep(edict_t *ent, vec3_t move, qboolean relink);

@@ -85,6 +85,13 @@ void Cmd_AddCommand(const char *cmd_name, xcommand_t function);
 // called by the init functions of other parts of the program to
 // register commands and functions to call for them.
 // The cmd_name is referenced later, so it should not be in temp memory
+//
+// Q3 rules:
+//
+// if function is NULL, the command will be forwarded to the server
+// as a clc_clientCommand instead of executed locally
+
+void Cmd_RemoveCommand(const char *cmd_name);
 
 qboolean Cmd_Exists(const char *cmd_name);
 // used by the cvar code to check for cvar / command name overlap
@@ -94,7 +101,7 @@ const char *Cmd_CompleteCommand(const char *partial);
 // returns nullptr if nothing fits
 
 int Cmd_Argc();
-const char *Cmd_Argv(int arg);
+const char *Cmd_Argv(int arg); // TODO: return non-const?
 const char *Cmd_Args();
 // The functions that execute commands get their parameters with these
 // functions. Cmd_Argv () will return an empty string, not a nullptr
