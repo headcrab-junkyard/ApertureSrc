@@ -61,9 +61,6 @@ client_t *host_client; // current client
 
 jmp_buf host_abortserver;
 
-byte *host_basepal; // TODO: unsigned short
-byte *host_colormap;
-
 void *gpEngineClientLib{ nullptr };
 IEngineClient *gpEngineClient{ nullptr };
 
@@ -764,17 +761,8 @@ void Host_Init(quakeparms_t *parms)
 	//R_InitTextures(); // TODO: we need a blank texture instance for model loading code
 
 	if(!isDedicated) // TODO: gbDedicatedServer
-	{
-		host_basepal = (byte *)COM_LoadHunkFile("gfx/palette.lmp");
-		if(!host_basepal)
-			Sys_Error("Couldn't load gfx/palette.lmp");
-		host_colormap = (byte *)COM_LoadHunkFile("gfx/colormap.lmp");
-		if(!host_colormap)
-			Sys_Error("Couldn't load gfx/colormap.lmp");
-
 		if(!InitEngineClient())
 			return;
-	};
 
 	Cbuf_InsertText("exec valve.rc\n");
 
