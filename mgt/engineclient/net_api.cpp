@@ -54,9 +54,9 @@ net_api_t netapi =
 
   nullptr, //NET_AdrToString, // TODO
   nullptr, //NET_CompareAdr, // TODO
-  NET_StringToAdr,
+  nullptr, //NET_StringToAdr, // TODO
 
   nullptr, //Info_ValueForKey, // TODO
-  Info_RemoveKey,
-  Info_SetValueForKey
+  nullptr, //Info_RemoveKey, // TODO
+  nullptr //Info_SetValueForKey // TODO
 };
