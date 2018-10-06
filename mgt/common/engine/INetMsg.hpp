@@ -27,16 +27,19 @@
 interface INetMsg
 {
 	///
-	virtual void WriteByte(int nValue) = 0;
+	virtual void WriteChar(int nValue) = 0;
 	
 	///
-	virtual void WriteChar(int nValue) = 0;
+	virtual void WriteByte(int nValue) = 0;
 	
 	///
 	virtual void WriteShort(int nValue) = 0;
 	
 	///
 	virtual void WriteLong(int nValue) = 0;
+	
+	///
+	virtual void WriteFloat(float fValue) = 0;
 	
 	///
 	virtual void WriteAngle(float fValue) = 0;
@@ -49,4 +52,33 @@ interface INetMsg
 	
 	///
 	virtual void WriteEntity(int nValue) = 0;
+	
+	//
+	
+	///
+	virtual void BeginReading() = 0;
+	
+	///
+	virtual int ReadChar() = 0;
+	
+	///
+	virtual int ReadByte() = 0;
+	
+	///
+	virtual int ReadShort() = 0;
+	
+	///
+	virtual int ReadLong() = 0;
+	
+	///
+	virtual float ReadFloat() = 0;
+	
+	///
+	virtual float ReadCoord() = 0;
+	
+	///
+	virtual float ReadAngle() = 0;
+	
+	///
+	virtual char *ReadString() = 0;
 };
