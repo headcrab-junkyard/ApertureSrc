@@ -38,13 +38,15 @@ extern	qboolean	msg_badread;		// set if a read goes beyond end of message
 
 void MSG_BeginReading ();
 int MSG_GetReadCount(); // TODO: used by ServerUser
-int MSG_ReadChar ();
-int MSG_ReadByte ();
-int MSG_ReadShort ();
-int MSG_ReadLong ();
-float MSG_ReadFloat ();
-char *MSG_ReadString ();
 
-float MSG_ReadCoord ();
-float MSG_ReadAngle ();
+int MSG_ReadChar (sizebuf_t *net_message);
+int MSG_ReadByte (sizebuf_t *net_message);
+int MSG_ReadShort (sizebuf_t *net_message);
+int MSG_ReadLong (sizebuf_t *net_message);
+
+float MSG_ReadFloat (sizebuf_t *net_message);
+float MSG_ReadCoord (sizebuf_t *net_message);
+float MSG_ReadAngle (sizebuf_t *net_message);
+
+char *MSG_ReadString (sizebuf_t *net_message);
 void MSG_ReadDeltaUsercmd(struct usercmd_s *from, struct usercmd_s *cmd); // TODO: used by ServerUser
