@@ -751,8 +751,9 @@ void SV_ReadPackets()
 				Con_DPrintf("SV_ReadPackets: fixing up a translated port\n");
 				cl->netchan.remote_address.port = net_from.port;
 			}
-			if(Netchan_Process(&cl->netchan))
-			{ // this is a valid, sequenced packet, so process it
+			if(Netchan_Process(&cl->netchan, &net_message))
+			{
+				// this is a valid, sequenced packet, so process it
 				svs.stats.packets++;
 				good = true;
 				cl->send_message = true; // reply at end of frame

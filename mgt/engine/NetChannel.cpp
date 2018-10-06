@@ -313,7 +313,7 @@ called when the current net_message is from remote_address
 modifies net_message so that it points to the packet payload
 =================
 */
-qboolean Netchan_Process(netchan_t *chan)
+bool Netchan_Process(netchan_t *chan, sizebuf_t *net_message)
 {
 	unsigned sequence, sequence_ack;
 	unsigned reliable_ack, reliable_message;
@@ -345,7 +345,7 @@ qboolean Netchan_Process(netchan_t *chan)
 	sequence_ack &= ~(1 << 31);
 
 	if(net_showpackets.value)
-		Con_Printf("<-- s=%i(%i) a=%i(%i) %i\n", sequence, reliable_message, sequence_ack, reliable_ack, net_message.cursize);
+		Con_Printf("<-- s=%i(%i) a=%i(%i) %i\n", sequence, reliable_message, sequence_ack, reliable_ack, net_message->cursize);
 
 // get a rate estimation
 #if 0
