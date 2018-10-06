@@ -32,7 +32,7 @@ struct ISoundWorld;
 interface ISound : public IBaseInterface
 {
 	/// All non-hardware initialization
-	virtual bool Init() = 0;
+	virtual bool Init(CreateInterfaceFn afnEngineFactory) = 0;
 	
 	/// Shutdown routine
 	virtual void Shutdown() = 0;
