@@ -29,9 +29,9 @@ public:
 	CSound();
 	~CSound();
 	
-	bool Init() override;
+	bool Init(CreateInterfaceFn afnEngineFactory) override;
 	void Shutdown() override;
 	
-	void Update(float, float, float, float) override;
+	void Update(float *, float *, float *, float *) override;
 private:
 };
