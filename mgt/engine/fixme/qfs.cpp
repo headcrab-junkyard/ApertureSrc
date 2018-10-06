@@ -22,8 +22,6 @@
 
 #include "quakedef.h"
 
-qboolean com_modified; // set true if using non-id files
-
 /*
 =============================================================================
 
@@ -171,7 +169,6 @@ void COM_InitFilesystem()
 	i = COM_CheckParm("-game");
 	if(i && i < com_argc - 1)
 	{
-		com_modified = true;
 		COM_AddGameDirectory(va("%s/%s", basedir, com_argv[i + 1]));
 	}
 
@@ -182,7 +179,6 @@ void COM_InitFilesystem()
 	i = COM_CheckParm("-path");
 	if(i)
 	{
-		com_modified = true;
 		com_searchpaths = nullptr;
 		while(++i < com_argc)
 		{
