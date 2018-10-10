@@ -28,17 +28,17 @@ class CGameClientEventListener final : public IGameClientEventListener
 public:
 	CGameClientEventListener();
 	~CGameClientEventListener();
+
+	void Release() override { delete this; }
 	
-	void Release() override {delete this;}
-	
-	bool OnClientConnect(edict_t *pEntity, const char *name, const char *adr, char *sRejectReason[128]) override;
-	void OnClientDisconnect(edict_t *pclent) override;
-	
-	void OnClientKill(edict_t *pclent) override;
-	
-	void OnClientPutInServer(edict_t *pclent) override;
-	
-	void OnClientCommand(edict_t *pclent) override;
-	
-	void OnClientUserInfoChanged(edict_t *pclent, char *userinfo) override;
+	bool OnClientConnect(int clientid, const char *name, const char *adr, char sRejectReason[128]) override;
+	void OnClientDisconnect(int clientid) override;
+
+	void OnClientKill(int clientid) override;
+
+	void OnClientPutInServer(int clientid) override;
+
+	void OnClientCommand(int clientid, const ICmdArgs &apArgs) override;
+
+	void OnClientUserInfoChanged(int clientid, char *userinfo) override;
 };

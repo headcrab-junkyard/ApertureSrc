@@ -30,20 +30,20 @@ interface IGameClientEventListener
 	virtual void Release() = 0;
 	
 	///
-	virtual bool OnClientConnect(edict_t *pEntity, const char *name, const char *adr, char *sRejectReason[128]) = 0;
+	virtual bool OnClientConnect(int clientid, const char *name, const char *adr, char sRejectReason[128]) = 0;
 	
 	///
-	virtual void OnClientDisconnect(edict_t *pclent) = 0;
+	virtual void OnClientDisconnect(int clientid) = 0;
 	
 	///
-	virtual void OnClientKill(edict_t *pclent) = 0;
+	virtual void OnClientKill(int clientid) = 0;
 	
 	///
-	virtual void OnClientPutInServer(edict_t *pclent) = 0;
+	virtual void OnClientPutInServer(int clientid) = 0;
 	
 	///
-	virtual void OnClientCommand(edict_t *pclent) = 0;
+	virtual void OnClientCommand(int clientid, const ICmdArgs &apArgs) = 0;
 	
 	///
-	virtual void OnClientUserInfoChanged(edict_t *pclent, char *userinfo) = 0;
+	virtual void OnClientUserInfoChanged(int clientid, char *userinfo) = 0;
 };

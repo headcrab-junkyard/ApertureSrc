@@ -21,6 +21,8 @@
 
 #include "GameClientEventListener.hpp"
 
+extern edict_t gEntities[MAX_EDICTS];
+
 CGameClientEventListener::CGameClientEventListener() = default;
 CGameClientEventListener::~CGameClientEventListener() = default;
 
@@ -31,15 +33,18 @@ ClientConnect
 called when a player connects to a server
 ============
 */
-bool CGameClientEventListener::OnClientConnect(edict_t *self, const char *name, const char *adr, char *sRejectReason[128])
+bool CGameClientEventListener::OnClientConnect(int clientid /*edict_t *self*/, const char *name, const char *adr, char sRejectReason[128])
 {
-	bprint (PRINT_HIGH, self->v.netname);
-	bprint (PRINT_HIGH, " entered the game\n");
+	if(!gEntities[clientid])
+		return;
 	
+	bprint(PRINT_HIGH, gEntities[clientid]->v.netname);
+	bprint(PRINT_HIGH, " entered the game\n");
+
 	// a client connecting during an intermission can cause problems
 	//if(intermission_running)
-		//GotoNextMap();
-	
+	//GotoNextMap();
+
 	return true;
 };
 
@@ -47,18 +52,20 @@ bool CGameClientEventListener::OnClientConnect(edict_t *self, const char *name, 
 ===========
 ClientDisconnect
 
-called when a player disconnects from a server
+Called when a player disconnects/drops from a server
+Will not be called between levels
 ============
 */
-void CGameClientEventListener::OnClientDisconnect(edict_t *self)
+void CGameClientEventListener::OnClientDisconnect(int clientid /*edict_t *self*/)
 {
+	if(!gEntities[clientid])
+		return;
+	
 	// let everyone else know
-	bprint (PRINT_HIGH, self->v.netname);
-		bprint (PRINT_HIGH, " left the game with ");
-		bprint (PRINT_HIGH, ftos(self->v.frags));
-		bprint (PRINT_HIGH, " frags\n");
-	gpEngine->pfnEmitSound (self, CHAN_BODY, "player/tornoff2.wav", 1, ATTN_NONE);
-	set_suicide_frame (self->v);
+	bprint(PRINT_HIGH, gEntities[clientid]->v.netname);
+	bprint(PRINT_HIGH, " left the game");
+	gpEngine->pfnEmitSound(gEntities[clientid], CHAN_BODY, "player/tornoff2.wav", 1, ATTN_NONE);
+	set_suicide_frame(gEntities[clientid]->v);
 };
 
 /*
@@ -68,17 +75,20 @@ ClientKill
 Player entered the suicide command
 ============
 */
-void CGameClientEventListener::OnClientKill(edict_t *self) // TODO: -> OnClientCommand?
+void CGameClientEventListener::OnClientKill(int clientid /*edict_t *self*/) // TODO: -> OnClientCommand?
 {
-	bprint (PRINT_MEDIUM, self->v.netname);
-	bprint (PRINT_MEDIUM, " suicides\n");
+	if(!gEntities[clientid])
+		return;
 	
-	set_suicide_frame (self->v);
-	
-	//self->v.modelindex = modelindex_player;
-	//logfrag(self, self);
-	//self->v.frags -= 2; // extra penalty
-	//respawn(&self->v);
+	bprint(PRINT_MEDIUM, gEntities[clientid]->v.netname);
+	bprint(PRINT_MEDIUM, " suicides\n");
+
+	set_suicide_frame(gEntities[clientid]->v);
+
+	//gEntities[clientid]->v.modelindex = modelindex_player;
+	//logfrag(gEntities[clientid], gEntities[clientid]);
+	//gEntities[clientid]->v.frags -= 2; // extra penalty
+	//respawn(&gEntities[clientid]->v);
 };
 
 /*
@@ -88,127 +98,225 @@ ClientPutInServer
 called each time a player enters a new level
 ============
 */
-void CGameClientEventListener::OnClientPutInServer(edict_t *client)
+void CGameClientEventListener::OnClientPutInServer(int client /*edict_t *client*/)
 {
-	entvars_t spot;
-	string	s;
-
-	client->v.classname = "player";
-	client->v.health = 100;
-	client->v.takedamage = DAMAGE_AIM;
-	client->v.solid = SOLID_SLIDEBOX;
-	client->v.movetype = MOVETYPE_WALK;
-	client->v.show_hostile = 0;
-	client->v.max_health = 100;
-	client->v.flags = FL_CLIENT;
-	client->v.air_finished = time + 12;
-	client->v.dmg = 2;                   // initial water damage
-	client->v.super_damage_finished = 0;
-	client->v.radsuit_finished = 0;
-	client->v.invisible_finished = 0;
-	client->v.invincible_finished = 0;
-	client->v.effects = 0;
-	client->v.invincible_time = 0;
-
-	DecodeLevelParms ();
+	if(!gEntities[client])
+		return;
 	
-	W_SetCurrentAmmo (client);
+	CBaseEntity spot;
+	string s;
 
-	client->v.attack_finished = time;
-	client->v.th_pain = player_pain;
-	client->v.th_die = PlayerDie;
-	
-	client->v.deadflag = DEAD_NO;
-// paustime is set by teleporters to keep the player from moving a while
-	client->v.pausetime = 0;
-	
-	spot = SelectSpawnPoint ();
+	gEntities[client]->v.classname = "player";
+	gEntities[client]->v.health = 100;
+	gEntities[client]->v.takedamage = DAMAGE_AIM;
+	gEntities[client]->v.solid = SOLID_SLIDEBOX;
+	gEntities[client]->v.movetype = MOVETYPE_WALK;
+	gEntities[client]->v.show_hostile = 0;
+	gEntities[client]->v.max_health = 100;
+	gEntities[client]->v.flags = FL_CLIENT;
+	gEntities[client]->v.air_finished = time + 12;
+	gEntities[client]->v.dmg = 2; // initial water damage
+	gEntities[client]->v.super_damage_finished = 0;
+	gEntities[client]->v.radsuit_finished = 0;
+	gEntities[client]->v.invisible_finished = 0;
+	gEntities[client]->v.invincible_finished = 0;
+	gEntities[client]->v.effects = 0;
+	gEntities[client]->v.invincible_time = 0;
 
-	client->v.origin = spot.origin + '0 0 1';
-	client->v.angles = spot.angles;
-	client->v.fixangle = TRUE;           // turn this way immediately
+	DecodeLevelParms();
 
-// oh, this is a hack!
-	gpEngine->SetModel (client, "models/eyes.mdl");
-	modelindex_eyes = client->v.modelindex;
+	W_SetCurrentAmmo(gEntities[client]);
 
-	gpEngine->SetModel (client, "models/player.mdl");
-	modelindex_player = client->v.modelindex;
+	gEntities[client]->v.attack_finished = time;
+	gEntities[client]->v.th_pain = player_pain;
+	gEntities[client]->v.th_die = PlayerDie;
 
-	gpEngine->SetSize (client, VEC_HULL_MIN, VEC_HULL_MAX);
-	
-	client->v.view_ofs = '0 0 22';
+	gEntities[client]->v.deadflag = DEAD_NO;
+	// paustime is set by teleporters to keep the player from moving a while
+	gEntities[client]->v.pausetime = 0;
 
-// Mod - Xian (May.20.97)
-// Bug where player would have velocity from their last kill
+	spot = SelectSpawnPoint();
 
-	client->v.velocity = '0 0 0';
+	gEntities[client]->v.origin = spot.GetOrigin() + '0 0 1';
+	gEntities[client]->v.angles = spot.GetOrigin();
+	gEntities[client]->v.fixangle = TRUE; // turn this way immediately
 
-	player_stand1 ();
-	
-	makevectors(client->v.angles);
-	spawn_tfog (client->v.origin + v_forward*20);
+	// oh, this is a hack!
+	gpEngine->SetModel(gEntities[client], "models/eyes.mdl");
+	modelindex_eyes = gEntities[client]->v.modelindex;
 
-	spawn_tdeath (client->v.origin, client->v);
+	gpEngine->SetModel(gEntities[client], "models/player.mdl");
+	modelindex_player = gEntities[client]->v.modelindex;
+
+	gpEngine->SetSize(gEntities[client], VEC_HULL_MIN, VEC_HULL_MAX);
+
+	gEntities[client]->v.view_ofs = '0 0 22';
+
+	// Mod - Xian (May.20.97)
+	// Bug where player would have velocity from their last kill
+
+	gEntities[client]->v.velocity = '0 0 0';
+
+	player_stand1();
+
+	makevectors(gEntities[client]->v.angles);
+	spawn_tfog(gEntities[client]->v.origin + v_forward * 20);
+
+	spawn_tdeath(gEntities[client]->v.origin, gEntities[client]->v);
 
 	// Set Rocket Jump Modifiers
-	if (stof(infokey(world, "rj")) != 0)
+	if(stof(infokey(world, "rj")) != 0)
 		rj = stof(infokey(world, "rj"));
 
-	if (deathmatch == 4)
+	if(deathmatch == 4)
 	{
-		client->v.ammo_shells = 0;
-		if (stof(infokey(world, "axe")) == 0)
+		gEntities[client]->v.ammo_shells = 0;
+		if(stof(infokey(world, "axe")) == 0)
 		{
-			client->v.ammo_nails = 255;
-			client->v.ammo_shells = 255;
-			client->v.ammo_rockets = 255;
-			client->v.ammo_cells = 255;
-			
-			client->v.items |= IT_NAILGUN;
-			client->v.items |= IT_SUPER_NAILGUN;
-			client->v.items |= IT_SUPER_SHOTGUN;
-			client->v.items |= IT_ROCKET_LAUNCHER;
-			//client->v.items |= IT_GRENADE_LAUNCHER;
-			client->v.items |= IT_LIGHTNING;
+			gEntities[client]->v.ammo_nails = 255;
+			gEntities[client]->v.ammo_shells = 255;
+			gEntities[client]->v.ammo_rockets = 255;
+			gEntities[client]->v.ammo_cells = 255;
+
+			gEntities[client]->v.items |= IT_NAILGUN;
+			gEntities[client]->v.items |= IT_SUPER_NAILGUN;
+			gEntities[client]->v.items |= IT_SUPER_SHOTGUN;
+			gEntities[client]->v.items |= IT_ROCKET_LAUNCHER;
+			//gEntities[client]->v.items |= IT_GRENADE_LAUNCHER;
+			gEntities[client]->v.items |= IT_LIGHTNING;
 		};
-		client->v.items = client->v.items - (client->v.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) + IT_ARMOR3;
-		client->v.armorvalue = 200;
-		client->v.armortype = 0.8;
-		client->v.health = 250;
-		client->v.items = client->v.items | IT_INVULNERABILITY;
-		client->v.invincible_time = 1;
-		client->v.invincible_finished = time + 3;
+		gEntities[client]->v.items = gEntities[client]->v.items - (gEntities[client]->v.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) + IT_ARMOR3;
+		gEntities[client]->v.armorvalue = 200;
+		gEntities[client]->v.armortype = 0.8;
+		gEntities[client]->v.health = 250;
+		gEntities[client]->v.items |= IT_INVULNERABILITY;
+		gEntities[client]->v.invincible_time = 1;
+		gEntities[client]->v.invincible_finished = time + 3;
 	};
 
-	if (deathmatch == 5)
+	if(deathmatch == 5)
 	{
-		client->v.ammo_nails = 80;
-		client->v.ammo_shells = 30;
-		client->v.ammo_rockets = 10;
-		client->v.ammo_cells = 30;
-		client->v.items = client->v.items | IT_NAILGUN;
-		client->v.items = client->v.items | IT_SUPER_NAILGUN;
-		client->v.items = client->v.items | IT_SUPER_SHOTGUN;
-		client->v.items = client->v.items | IT_ROCKET_LAUNCHER;
-		client->v.items = client->v.items | IT_GRENADE_LAUNCHER;
-		client->v.items = client->v.items | IT_LIGHTNING;
-		client->v.items = client->v.items - (client->v.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) + IT_ARMOR3;
-		client->v.armorvalue = 200;
-		client->v.armortype = 0.8;
-		client->v.health = 200;
-		client->v.items = client->v.items | IT_INVULNERABILITY;
-		client->v.invincible_time = 1;
-		client->v.invincible_finished = time + 3;
+		gEntities[client]->v.ammo_nails = 80;
+		gEntities[client]->v.ammo_shells = 30;
+		gEntities[client]->v.ammo_rockets = 10;
+		gEntities[client]->v.ammo_cells = 30;
+		gEntities[client]->v.items |= IT_NAILGUN;
+		gEntities[client]->v.items |= IT_SUPER_NAILGUN;
+		gEntities[client]->v.items |= IT_SUPER_SHOTGUN;
+		gEntities[client]->v.items |= IT_ROCKET_LAUNCHER;
+		gEntities[client]->v.items |= IT_GRENADE_LAUNCHER;
+		gEntities[client]->v.items |= IT_LIGHTNING;
+		gEntities[client]->v.items = gEntities[client]->v.items - (gEntities[client]->v.items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) + IT_ARMOR3;
+		gEntities[client]->v.armorvalue = 200;
+		gEntities[client]->v.armortype = 0.8;
+		gEntities[client]->v.health = 200;
+		gEntities[client]->v.items |= IT_INVULNERABILITY;
+		gEntities[client]->v.invincible_time = 1;
+		gEntities[client]->v.invincible_finished = time + 3;
 	};
 };
 
-void CGameClientEventListener::OnClientCommand(edict_t *pclent)
+/*
+=================
+ClientCommand
+=================
+*/
+void CGameClientEventListener::OnClientCommand(int clientid, const ICmdArgs &apArgs)
 {
-	// TODO
+	if(!gEntities[clientid])
+		return;
+	
+	// not fully in game yet
+	//if(!gEntities[clientid]->client)
+		//return;
+
+	char *cmd = apArgs.GetByIndex(0);
+
+	if (Q_stricmp (cmd, "players") == 0)
+	{
+		Cmd_Players_f(gEntities[clientid]);
+		return;
+	};
+	
+	if (Q_stricmp (cmd, "say") == 0)
+	{
+		Cmd_Say_f (gEntities[clientid], false, false);
+		return;
+	};
+	
+	if (Q_stricmp (cmd, "say_team") == 0)
+	{
+		Cmd_Say_f (gEntities[clientid], true, false);
+		return;
+	};
+	
+	if (Q_stricmp (cmd, "score") == 0)
+	{
+		Cmd_Score_f (gEntities[clientid]);
+		return;
+	};
+	
+	if (Q_stricmp (cmd, "help") == 0)
+	{
+		Cmd_Help_f (gEntities[clientid]);
+		return;
+	};
+
+	if (level.intermissiontime)
+		return;
+
+	if (Q_stricmp (cmd, "use") == 0)
+		Cmd_Use_f (gEntities[clientid]);
+	else if (Q_stricmp (cmd, "drop") == 0)
+		Cmd_Drop_f (gEntities[clientid]);
+	else if (Q_stricmp (cmd, "give") == 0)
+		Cmd_Give_f (gEntities[clientid]);
+	else if (Q_stricmp (cmd, "god") == 0)
+		Cmd_God_f (gEntities[clientid]);
+	else if (Q_stricmp (cmd, "notarget") == 0)
+		Cmd_Notarget_f (gEntities[clientid]);
+	else if (Q_stricmp (cmd, "noclip") == 0)
+		Cmd_Noclip_f (gEntities[clientid]);
+	else if (Q_stricmp (cmd, "inven") == 0)
+		Cmd_Inven_f (gEntities[clientid]);
+	else if (Q_stricmp (cmd, "invnext") == 0)
+		SelectNextItem (gEntities[clientid], -1);
+	else if (Q_stricmp (cmd, "invprev") == 0)
+		SelectPrevItem (gEntities[clientid], -1);
+	else if (Q_stricmp (cmd, "invnextw") == 0)
+		SelectNextItem (gEntities[clientid], IT_WEAPON);
+	else if (Q_stricmp (cmd, "invprevw") == 0)
+		SelectPrevItem (gEntities[clientid], IT_WEAPON);
+	else if (Q_stricmp (cmd, "invnextp") == 0)
+		SelectNextItem (gEntities[clientid], IT_POWERUP);
+	else if (Q_stricmp (cmd, "invprevp") == 0)
+		SelectPrevItem (gEntities[clientid], IT_POWERUP);
+	else if (Q_stricmp (cmd, "invuse") == 0)
+		Cmd_InvUse_f (gEntities[clientid]);
+	else if (Q_stricmp (cmd, "invdrop") == 0)
+		Cmd_InvDrop_f (gEntities[clientid]);
+	else if (Q_stricmp (cmd, "weapprev") == 0)
+		Cmd_WeapPrev_f (gEntities[clientid]);
+	else if (Q_stricmp (cmd, "weapnext") == 0)
+		Cmd_WeapNext_f (gEntities[clientid]);
+	else if (Q_stricmp (cmd, "weaplast") == 0)
+		Cmd_WeapLast_f (gEntities[clientid]);
+	else if (Q_stricmp (cmd, "kill") == 0)
+		Cmd_Kill_f (gEntities[clientid]);
+	else if (Q_stricmp (cmd, "putaway") == 0)
+		Cmd_PutAway_f (gEntities[clientid]);
+	else if (Q_stricmp (cmd, "wave") == 0)
+		Cmd_Wave_f (gEntities[clientid]);
+	else if (Q_stricmp(cmd, "playerlist") == 0)
+		Cmd_PlayerList_f(gEntities[clientid]);
+	else	// anything that doesn't match a command will be a chat
+		Cmd_Say_f (gEntities[clientid], false, true);
 };
 
-void CGameClientEventListener::OnClientUserInfoChanged(edict_t *pclent, char *userinfo)
+void CGameClientEventListener::OnClientUserInfoChanged(int clientid, char *userinfo)
 {
+	if(!gEntities[clientid])
+		return;
+	
 	// TODO
 };
