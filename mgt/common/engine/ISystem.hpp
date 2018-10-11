@@ -41,7 +41,10 @@ interface ISystem : public IBaseInterface
 	virtual void Printf(const char *asMsg, ...) = 0;
 	
 	///
-	//virtual void Warning(const char *asMsg, ...) = 0;
+	virtual void DevPrintf(const char *msg, ...) = 0;
+	
+	///
+	virtual void Warning(const char *asMsg, ...) = 0;
 	
 	/// An error will cause the entire program to exit
 	virtual void Error(const char *asMsg, ...) = 0;
