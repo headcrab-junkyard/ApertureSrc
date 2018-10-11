@@ -35,7 +35,7 @@ void CItemArmor::Spawn()
 	//self->skin = 1; for item_armor2
 	//self->skin = 2; for item_armorInv
 	
-	SetSize('-16 -16 0', '16 16 56');
+	SetSize(vec3_t{-16.0f, -16.0f, 0.0f}, vec3_t{16.0f, 16.0f, 56.0f});
 	
 	StartItem(self);
 };
@@ -78,18 +78,18 @@ void CItemArmor::Touch(CBaseEntity *other)
 	};
 	*/
 	
-	if(other->armortype * other->armorvalue >= type * value)
+	if(other->GetArmorType() * other->GetArmorValue() >= type * value)
 		return;
 
-	other->armortype = type;
-	other->armorvalue = value;
+	other->SetArmorType(type);
+	other->SetArmorValue(value);
 	other->items = other->items - (other->items & (IT_ARMOR1 | IT_ARMOR2 | IT_ARMOR3)) + bit;
 
 	self->solid = SOLID_NOT;
-	self->model = string_null;
+	self->SetModel(string_null);
 	
 	if(deathmatch != 2)
-		self->nextthink = time + 20;
+		self->SetNextThink(time + 20);
 	
 	self->SetThinkCallback(SUB_regen);
 
