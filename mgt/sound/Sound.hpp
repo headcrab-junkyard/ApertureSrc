@@ -23,6 +23,9 @@
 
 #include "sound/ISound.hpp"
 
+interface ISystem;
+interface IMemory;
+
 class CSound final : public ISound
 {
 public:
@@ -33,5 +36,35 @@ public:
 	void Shutdown() override;
 	
 	void Update(float *, float *, float *, float *) override;
+	void ExtraUpdate() override;
+	
+	void ClearBuffer() override;
+	
+	void BeginPrecaching() override;
+	void EndPrecaching() override;
+	
+	sfx_t *PrecacheSound(const char *sample) override;
+	
+	void TouchSound(const char *sample) override;
+	
+	void StartStaticSound(sfx_t *sfx, vec3_t origin, float vol, float attenuation) override;
+	void StartDynamicSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation) override;
+	
+	void StopSound(int entnum, int entchannel) override;
+	void StopAllSounds(bool clear) override;
 private:
+	void Startup();
+	
+	void Update_();
+	void UpdateAmbientSounds();
+	
+	void GetSoundtime();
+	
+	sfx_t *FindName(const char *name);
+	
+	// spatializes a channel
+	void SND_Spatialize(channel_t *ch);
+	
+	ISystem *mpSystem{nullptr};
+	IMemory *mpMemory{nullptr};
 };
