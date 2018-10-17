@@ -19,11 +19,35 @@
 
 /// @file
 
-#include "LinuxApplication.hpp"
+#ifdef _WIN32
+#include <windows.h>
 
+#include "win/WinApplication.hpp"
+#else
+#include "linux/LinuxApplication.hpp"
+#endif
+
+//HINSTANCE global_hInstance;
+//int global_nCmdShow;
+
+#ifdef _WIN32
+int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
+#else
 int main(int argc, char **argv)
+#endif
 {
+#ifdef _WIN32
+	// previous instances do not exist in Win32
+	if(hPrevInstance)
+		return 0;
+
+	//global_hInstance = hInstance;
+	//global_nCmdShow = nCmdShow;
+	
+	CWinApplication App(lpCmdLine);
+#else
 	CLinuxApplication App(argc, argv);
+#endif
 	
 	return App.Run();
 };
