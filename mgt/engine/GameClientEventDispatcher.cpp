@@ -55,12 +55,12 @@ void CGameClientEventDispatcher::RemoveListener(IGameClientEventListener *apList
 	//mlstListeners.erase(apListener);
 };
 
-bool CGameClientEventDispatcher::DispatchConnect(edict_t *pEntity, const char *name, const char *adr, char *sRejectReason[128])
+bool CGameClientEventDispatcher::DispatchConnect(int clientid, const char *name, const char *adr, char sRejectReason[128])
 {
 	// TODO: Pre
 	
 	for(auto It : mlstListeners)
-		if(!It->OnClientConnect(pEntity, name, adr, sRejectReason))
+		if(!It->OnClientConnect(clientid, name, adr, sRejectReason))
 			return false;
 	
 	// TODO: Post
@@ -68,52 +68,52 @@ bool CGameClientEventDispatcher::DispatchConnect(edict_t *pEntity, const char *n
 	return true; // TODO
 };
 
-void CGameClientEventDispatcher::DispatchDisconnect(edict_t *pclent)
+void CGameClientEventDispatcher::DispatchDisconnect(int clientid)
 {
 	// TODO: Pre
 	
 	for(auto It : mlstListeners)
-		It->OnClientDisconnect(pclent);
+		It->OnClientDisconnect(clientid);
 	
 	// TODO: Post
 };
 
-void CGameClientEventDispatcher::DispatchKill(edict_t *pclent)
+void CGameClientEventDispatcher::DispatchKill(int clientid)
 {
 	// TODO: Pre
 	
 	for(auto It : mlstListeners)
-		It->OnClientKill(pclent);
+		It->OnClientKill(clientid);
 	
 	// TODO: Post
 };
 
-void CGameClientEventDispatcher::DispatchPutInServer(edict_t *pclent)
+void CGameClientEventDispatcher::DispatchPutInServer(int clientid)
 {
 	// TODO: Pre
 	
 	for(auto It : mlstListeners)
-		It->OnClientPutInServer(pclent);
+		It->OnClientPutInServer(clientid);
 	
 	// TODO: Post
 };
 
-void CGameClientEventDispatcher::DispatchCommand(edict_t *pclent)
+void CGameClientEventDispatcher::DispatchCommand(int clientid)
 {
 	// TODO: Pre
 	
 	for(auto It : mlstListeners)
-		It->OnClientCommand(pclent);
+		It->OnClientCommand(clientid);
 	
 	// TODO: Post
 };
 
-void CGameClientEventDispatcher::DispatchUserInfoChange(edict_t *pclent, char *userinfo)
+void CGameClientEventDispatcher::DispatchUserInfoChange(int clientid, char *userinfo)
 {
 	// TODO: Pre
 	
 	for(auto It : mlstListeners)
-		It->OnClientUserInfoChanged(pclent, userinfo);
+		It->OnClientUserInfoChanged(clientid, userinfo);
 	
 	// TODO: Post
 };

@@ -36,12 +36,12 @@ public:
 	void AddListener(IGameClientEventListener *apListener);
 	void RemoveListener(IGameClientEventListener *apListener);
 	
-	bool DispatchConnect(edict_t *pEntity, const char *name, const char *adr, char *sRejectReason[128]);
-	void DispatchDisconnect(edict_t *pclent);
-	void DispatchKill(edict_t *pclent);
-	void DispatchPutInServer(edict_t *pclent);
-	void DispatchCommand(edict_t *pclent);
-	void DispatchUserInfoChange(edict_t *pclent, char *userinfo);
+	bool DispatchConnect(int clientid, const char *name, const char *adr, char sRejectReason[128]);
+	void DispatchDisconnect(int clientid);
+	void DispatchKill(int clientid);
+	void DispatchPutInServer(int clientid);
+	void DispatchCommand(int clientid);
+	void DispatchUserInfoChange(int clientid, char *userinfo);
 private:
 	tGameClientEventListenerList mlstListeners;
 };
