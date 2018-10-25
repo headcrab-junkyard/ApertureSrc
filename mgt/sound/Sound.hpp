@@ -23,8 +23,12 @@
 
 #include "sound/ISound.hpp"
 
+typedef struct channel_s channel_t;
+
 interface ISystem;
 interface IMemory;
+interface ICmdRegistry;
+interface ICvarRegistry;
 
 class CSound final : public ISound
 {
@@ -67,4 +71,6 @@ private:
 	
 	ISystem *mpSystem{nullptr};
 	IMemory *mpMemory{nullptr};
+	ICmdRegistry *mpCmdRegistry{nullptr};
+	ICvarRegistry *mpCvarRegistry{nullptr};
 };

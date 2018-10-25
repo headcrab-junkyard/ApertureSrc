@@ -22,10 +22,7 @@
 /// @brief main control for any streaming sound output device
 
 #include "quakedef.h"
-
 #include "vox.h"
-
-vec_t sound_nominal_clip_dist = 1000.0f;
 
 int desired_speed = 11025;
 int desired_bits = 16;

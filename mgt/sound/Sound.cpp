@@ -19,18 +19,23 @@
 
 /// @file
 
-#include "Sound.hpp"
-#include "qlibc/qlibc.h"
-#include "engine/ISystem.hpp"
-#include "engine/IMemory.hpp"
-#include "engine/ICmdArgs.hpp"
-#include "cvardef.h"
-
 #ifdef _WIN32
 #include "winquake.h"
 #endif
 
+#include "qlibc/qlibc.h"
+#include "bspfile.h"
+#include "cvardef.h"
+
+#include "Sound.hpp"
+#include "engine/ISystem.hpp"
+#include "engine/IMemory.hpp"
+#include "engine/ICmdArgs.hpp"
+#include "engine/ICmdRegistry.hpp"
+#include "engine/ICvarRegistry.hpp"
+
 ISound *gpSound{nullptr};
+ISystem *gpSystem{nullptr};
 IMemory *gpMemory{nullptr};
 
 // =======================================================================
@@ -76,7 +81,7 @@ typedef struct
 } dma_t;
 
 // !!! if this is changed, it much be changed in asm_i386.h too !!!
-typedef struct
+typedef struct channel_s
 {
 	sfx_t *sfx;      // sfx number
 	int leftvol;     // 0-255 volume
@@ -138,6 +143,8 @@ vec3_t listener_up;
 // pointer should go away
 volatile dma_t *shm{nullptr};
 volatile dma_t sn;
+
+float sound_nominal_clip_dist = 1000.0f;
 
 cvar_t bgmvolume = { "bgmvolume", "1", true };
 cvar_t volume = { "volume", "0.7", true };
@@ -203,8 +210,8 @@ void S_Play(const ICmdArgs &apArgs)
 		else
 			Q_strcpy(name, apArgs.GetByIndex(i));
 		
-		sfx = S_PrecacheSound(name);
-		S_StartDynamicSound(hash++, 0, sfx, listener_origin, 1.0, 1.0);
+		sfx = gpSound->PrecacheSound(name);
+		gpSound->StartDynamicSound(hash++, 0, sfx, listener_origin, 1.0, 1.0);
 		i++;
 	};
 };
@@ -228,9 +235,9 @@ void S_PlayVol(const ICmdArgs &apArgs)
 		else
 			Q_strcpy(name, apArgs.GetByIndex(i));
 		
-		sfx = S_PrecacheSound(name);
+		sfx = gpSound->PrecacheSound(name);
 		vol = Q_atof(apArgs.GetByIndex(i + 1));
-		S_StartStaticSound(hash++, 0, sfx, listener_origin, vol, 1.0);
+		gpSound->StartDynamicSound(hash++, 0, sfx, listener_origin, vol, 1.0);
 		i += 2;
 	};
 };
@@ -256,30 +263,30 @@ void S_SoundList(const ICmdArgs &apArgs)
 		size = sc->length * sc->width * (sc->stereo + 1);
 		total += size;
 		if(sc->loopstart >= 0)
-			Con_Printf("L");
+			gpSystem->Printf("L");
 		else
-			Con_Printf(" ");
-		Con_Printf("(%2db) %6i : %s\n", sc->width * 8, size, sfx->name);
+			gpSystem->Printf(" ");
+		gpSystem->Printf("(%2db) %6i : %s\n", sc->width * 8, size, sfx->name);
 	};
-	Con_Printf("Total resident: %i\n", total);
+	gpSystem->Printf("Total resident: %i\n", total);
 };
 
 void S_SoundInfo_f(const ICmdArgs &apArgs)
 {
 	if(!sound_started || !shm)
 	{
-		Con_Printf("sound system not started\n");
+		gpSystem->Printf("sound system not started\n");
 		return;
 	};
 
-	Con_Printf("%5d stereo\n", shm->channels - 1);
-	Con_Printf("%5d samples\n", shm->samples);
-	Con_Printf("%5d samplepos\n", shm->samplepos);
-	Con_Printf("%5d samplebits\n", shm->samplebits);
-	Con_Printf("%5d submission_chunk\n", shm->submission_chunk);
-	Con_Printf("%5d speed\n", shm->speed);
-	Con_Printf("0x%x dma buffer\n", shm->buffer);
-	Con_Printf("%5d total_channels\n", total_channels);
+	gpSystem->Printf("%5d stereo\n", shm->channels - 1);
+	gpSystem->Printf("%5d samples\n", shm->samples);
+	gpSystem->Printf("%5d samplepos\n", shm->samplepos);
+	gpSystem->Printf("%5d samplebits\n", shm->samplebits);
+	gpSystem->Printf("%5d submission_chunk\n", shm->submission_chunk);
+	gpSystem->Printf("%5d speed\n", shm->speed);
+	gpSystem->Printf("0x%x dma buffer\n", shm->buffer);
+	gpSystem->Printf("%5d total_channels\n", total_channels);
 };
 
 EXPOSE_SINGLE_INTERFACE(CSound, ISound, MGT_SOUND_INTERFACE_VERSION);
@@ -296,6 +303,8 @@ bool CSound::Init(CreateInterfaceFn afnEngineFactory)
 {
 	mpSystem = (ISystem*)afnEngineFactory(MGT_SYSTEM_INTERFACE_VERSION, nullptr);
 	mpMemory = (IMemory*)afnEngineFactory(MGT_MEMORY_INTERFACE_VERSION, nullptr);
+	mpCmdRegistry = (ICmdRegistry*)afnEngineFactory(MGT_CMDREGISTRY_INTERFACE_VERSION, nullptr);
+	mpCvarRegistry = (ICvarRegistry*)afnEngineFactory(MGT_CVARREGISTRY_INTERFACE_VERSION, nullptr);
 	
 	if(!mpSystem)
 	{
@@ -309,7 +318,20 @@ bool CSound::Init(CreateInterfaceFn afnEngineFactory)
 		return false;
 	};
 	
+	if(!mpCmdRegistry)
+	{
+		printf("ICmdRegistry query failed!\n");
+		return false;
+	};
+	
+	if(!mpCvarRegistry)
+	{
+		printf("ICvarRegistry query failed!\n");
+		return false;
+	};
+	
 	gpSound = this;
+	gpSystem = mpSystem;
 	gpMemory = mpMemory;
 	
 	mpSystem->Printf("\nSound Initialization\n");
@@ -318,23 +340,23 @@ bool CSound::Init(CreateInterfaceFn afnEngineFactory)
 	if(COM_CheckParm("-simsound"))
 		fakedma = true;
 
-	Cmd_AddCommand("play", S_Play);
-	Cmd_AddCommand("playvol", S_PlayVol);
-	Cmd_AddCommand("stopsound", S_StopAllSoundsC);
-	Cmd_AddCommand("soundlist", S_SoundList);
-	Cmd_AddCommand("soundinfo", S_SoundInfo_f);
+	mpCmdRegistry->Add("play", S_Play);
+	mpCmdRegistry->Add("playvol", S_PlayVol);
+	mpCmdRegistry->Add("stopsound", S_StopAllSoundsC);
+	mpCmdRegistry->Add("soundlist", S_SoundList);
+	mpCmdRegistry->Add("soundinfo", S_SoundInfo_f);
 
-	Cvar_RegisterVariable(&nosound);
-	Cvar_RegisterVariable(&volume);
-	Cvar_RegisterVariable(&precache);
-	Cvar_RegisterVariable(&loadas8bit);
-	Cvar_RegisterVariable(&bgmvolume);
-	Cvar_RegisterVariable(&bgmbuffer);
-	Cvar_RegisterVariable(&ambient_level);
-	Cvar_RegisterVariable(&ambient_fade);
-	Cvar_RegisterVariable(&snd_noextraupdate);
-	Cvar_RegisterVariable(&snd_show);
-	Cvar_RegisterVariable(&_snd_mixahead);
+	mpCvarRegistry->Register(&nosound);
+	mpCvarRegistry->Register(&volume);
+	mpCvarRegistry->Register(&precache);
+	mpCvarRegistry->Register(&loadas8bit);
+	mpCvarRegistry->Register(&bgmvolume);
+	mpCvarRegistry->Register(&bgmbuffer);
+	mpCvarRegistry->Register(&ambient_level);
+	mpCvarRegistry->Register(&ambient_fade);
+	mpCvarRegistry->Register(&snd_noextraupdate);
+	mpCvarRegistry->Register(&snd_show);
+	mpCvarRegistry->Register(&_snd_mixahead);
 
 	// TODO
 	/*
@@ -659,7 +681,7 @@ void CSound::StartStaticSound(sfx_t *sfx, vec3_t origin, float vol, float attenu
 
 	if(total_channels == MAX_CHANNELS)
 	{
-		Con_Printf("total_channels == MAX_CHANNELS\n");
+		mpSystem->Printf("total_channels == MAX_CHANNELS\n");
 		return;
 	}
 
@@ -672,7 +694,7 @@ void CSound::StartStaticSound(sfx_t *sfx, vec3_t origin, float vol, float attenu
 
 	if(sc->loopstart == -1)
 	{
-		Con_Printf("Sound %s not looped\n", sfx->name);
+		mpSystem->Printf("Sound %s not looped\n", sfx->name);
 		return;
 	}
 
@@ -847,7 +869,7 @@ void CSound::Update_()
 
 		if(pDSBuf)
 		{
-			if(pDSBuf->GetStatus(&dwStatus) != DD_OK)
+			if(pDSBuf->GetStatus(&dwStatus) != DS_OK)
 				mpSystem->Printf("Couldn't get sound buffer status\n");
 
 			if(dwStatus & DSBSTATUS_BUFFERLOST)
@@ -993,9 +1015,9 @@ SND_Spatialize
 */
 void CSound::SND_Spatialize(channel_t *ch)
 {
-	vec_t dot;
-	vec_t dist;
-	vec_t lscale, rscale, scale;
+	float dot;
+	float dist;
+	float lscale, rscale, scale;
 	vec3_t source_vec;
 	sfx_t *snd;
 
