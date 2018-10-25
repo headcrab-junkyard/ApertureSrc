@@ -1,24 +1,25 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+ * This file is part of Magenta Engine
+ *
+ * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 2018 BlackPhrase
+ *
+ * Magenta Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Magenta Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
-// screen.c -- master for refresh, status bar, console, chat, notify, etc
+/// @file
+/// @brief master for refresh, status bar, console, chat, notify, etc
 
 #include "quakedef.h"
 
@@ -115,7 +116,7 @@ float		scr_disabled_time;
 
 qboolean	block_drawing;
 
-void SCR_ScreenShot_f (void);
+void SCR_ScreenShot_f ();
 
 /*
 ===============================================================================
@@ -157,7 +158,7 @@ void SCR_CenterPrint (char *str)
 }
 
 
-void SCR_DrawCenterString (void)
+void SCR_DrawCenterString ()
 {
 	char	*start;
 	int		l;
@@ -204,7 +205,7 @@ void SCR_DrawCenterString (void)
 	} while (1);
 }
 
-void SCR_CheckDrawCenterString (void)
+void SCR_CheckDrawCenterString ()
 {
 	scr_copytop = 1;
 	if (scr_center_lines > scr_erase_lines)
@@ -233,7 +234,7 @@ float CalcFov (float fov_x, float width, float height)
         float   x;
 
         if (fov_x < 1 || fov_x > 179)
-                Sys_Error ("Bad fov: %f", fov_x);
+                gpSystem->Error ("Bad fov: %f", fov_x);
 
         x = width/tan(fov_x/360*M_PI);
 
@@ -252,7 +253,7 @@ Must be called whenever vid changes
 Internal use only
 =================
 */
-static void SCR_CalcRefdef (void)
+static void SCR_CalcRefdef ()
 {
 	vrect_t		vrect;
 	float		size;
@@ -340,7 +341,7 @@ SCR_SizeUp_f
 Keybinding command
 =================
 */
-void SCR_SizeUp_f (void)
+void SCR_SizeUp_f ()
 {
 	Cvar_SetValue ("viewsize",scr_viewsize.value+10);
 	vid.recalc_refdef = 1;
@@ -354,7 +355,7 @@ SCR_SizeDown_f
 Keybinding command
 =================
 */
-void SCR_SizeDown_f (void)
+void SCR_SizeDown_f ()
 {
 	Cvar_SetValue ("viewsize",scr_viewsize.value-10);
 	vid.recalc_refdef = 1;
@@ -367,7 +368,7 @@ void SCR_SizeDown_f (void)
 SCR_Init
 ==================
 */
-void SCR_Init (void)
+void SCR_Init ()
 {
 	Cvar_RegisterVariable (&scr_fov);
 	Cvar_RegisterVariable (&scr_viewsize);
@@ -400,7 +401,7 @@ void SCR_Init (void)
 SCR_DrawRam
 ==============
 */
-void SCR_DrawRam (void)
+void SCR_DrawRam ()
 {
 	if (!scr_showram.value)
 		return;
@@ -416,7 +417,7 @@ void SCR_DrawRam (void)
 SCR_DrawTurtle
 ==============
 */
-void SCR_DrawTurtle (void)
+void SCR_DrawTurtle ()
 {
 	static int	count;
 	
@@ -441,7 +442,7 @@ void SCR_DrawTurtle (void)
 SCR_DrawNet
 ==============
 */
-void SCR_DrawNet (void)
+void SCR_DrawNet ()
 {
 	if (realtime - cl.last_received_message < 0.3)
 		return;
@@ -456,7 +457,7 @@ void SCR_DrawNet (void)
 DrawPause
 ==============
 */
-void SCR_DrawPause (void)
+void SCR_DrawPause ()
 {
 	qpic_t	*pic;
 
@@ -478,7 +479,7 @@ void SCR_DrawPause (void)
 SCR_DrawLoading
 ==============
 */
-void SCR_DrawLoading (void)
+void SCR_DrawLoading ()
 {
 	qpic_t	*pic;
 
@@ -500,7 +501,7 @@ void SCR_DrawLoading (void)
 SCR_SetUpToDrawConsole
 ==================
 */
-void SCR_SetUpToDrawConsole (void)
+void SCR_SetUpToDrawConsole ()
 {
 	Con_CheckResize ();
 	
@@ -550,7 +551,7 @@ void SCR_SetUpToDrawConsole (void)
 SCR_DrawConsole
 ==================
 */
-void SCR_DrawConsole (void)
+void SCR_DrawConsole ()
 {
 	if (scr_con_current)
 	{
@@ -588,7 +589,7 @@ typedef struct _TargaHeader {
 SCR_ScreenShot_f
 ================== 
 */  
-void SCR_ScreenShot_f (void) 
+void SCR_ScreenShot_f () 
 {
 	byte		*buffer;
 	char		pcxname[80]; 
@@ -636,7 +637,7 @@ void SCR_ScreenShot_f (void)
 	COM_WriteFile (pcxname, buffer, glwidth*glheight*3 + 18 );
 
 	free (buffer);
-	Con_Printf ("Wrote %s\n", pcxname);
+	gpSystem->Printf ("Wrote %s\n", pcxname);
 } 
 
 
@@ -649,7 +650,7 @@ SCR_BeginLoadingPlaque
 
 ================
 */
-void SCR_BeginLoadingPlaque (void)
+void SCR_BeginLoadingPlaque ()
 {
 	S_StopAllSounds (true);
 
@@ -680,7 +681,7 @@ SCR_EndLoadingPlaque
 
 ================
 */
-void SCR_EndLoadingPlaque (void)
+void SCR_EndLoadingPlaque ()
 {
 	scr_disabled_for_loading = false;
 	scr_fullupdate = 0;
@@ -692,7 +693,7 @@ void SCR_EndLoadingPlaque (void)
 char	*scr_notifystring;
 qboolean	scr_drawdialog;
 
-void SCR_DrawNotifyString (void)
+void SCR_DrawNotifyString ()
 {
 	char	*start;
 	int		l;
@@ -769,7 +770,7 @@ SCR_BringDownConsole
 Brings the console down and fades the palettes back to normal
 ================
 */
-void SCR_BringDownConsole (void)
+void SCR_BringDownConsole ()
 {
 	int		i;
 	
@@ -782,7 +783,7 @@ void SCR_BringDownConsole (void)
 	VID_SetPalette (host_basepal);
 }
 
-void SCR_TileClear (void)
+void SCR_TileClear ()
 {
 	if (r_refdef.vrect.x > 0) {
 		// left
@@ -817,7 +818,7 @@ WARNING: be very careful calling this from elsewhere, because the refresh
 needs almost the entire 256k of stack space!
 ==================
 */
-void SCR_UpdateScreen (void)
+void SCR_UpdateScreen ()
 {
 	static float	oldscr_viewsize;
 	vrect_t		vrect;
@@ -835,7 +836,7 @@ void SCR_UpdateScreen (void)
 		if (realtime - scr_disabled_time > 60)
 		{
 			scr_disabled_for_loading = false;
-			Con_Printf ("load failed.\n");
+			gpSystem->Printf ("load failed.\n");
 		}
 		else
 			return;

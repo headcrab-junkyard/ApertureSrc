@@ -1,31 +1,31 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+ * This file is part of Magenta Engine
+ *
+ * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 2018 BlackPhrase
+ *
+ * Magenta Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Magenta Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
-// draw.c -- this is the only file outside the refresh that touches the
-// vid buffer
+/// @file
+/// @brief this is the only file outside the render that touches the vid buffer
 
 #include "quakedef.h"
 
 #define GL_COLOR_INDEX8_EXT     0x80E5
 
-extern unsigned char d_15to8table[65536];
+extern byte d_15to8table[65536];
 
 cvar_t		gl_nobind = {"gl_nobind", "0"};
 cvar_t		gl_max_size = {"gl_max_size", "1024"};
@@ -143,12 +143,12 @@ int Scrap_AllocBlock (int w, int h, int *x, int *y)
 		return texnum;
 	}
 
-	Sys_Error ("Scrap_AllocBlock: full");
+	gpSystem->Error ("Scrap_AllocBlock: full");
 }
 
 int	scrap_uploads;
 
-void Scrap_Upload (void)
+void Scrap_Upload ()
 {
 	int		texnum;
 
@@ -240,7 +240,7 @@ qpic_t	*Draw_CachePic (char *path)
 			return &pic->pic;
 
 	if (menu_numcachepics == MAX_CACHED_PICS)
-		Sys_Error ("menu_numcachepics == MAX_CACHED_PICS");
+		gpSystem->Error ("menu_numcachepics == MAX_CACHED_PICS");
 	menu_numcachepics++;
 	strcpy (pic->name, path);
 
@@ -249,7 +249,7 @@ qpic_t	*Draw_CachePic (char *path)
 //
 	dat = (qpic_t *)COM_LoadTempFile (path);	
 	if (!dat)
-		Sys_Error ("Draw_CachePic: failed to load %s", path);
+		gpSystem->Error ("Draw_CachePic: failed to load %s", path);
 	SwapPic (dat);
 
 	// HACK HACK HACK --- we need to keep the bytes for
@@ -298,7 +298,7 @@ void Draw_CharToConback (int num, byte *dest)
 
 typedef struct
 {
-	char *name;
+	const char *name;
 	int	minimize, maximize;
 } glmode_t;
 
@@ -316,7 +316,7 @@ glmode_t modes[] = {
 Draw_TextureMode_f
 ===============
 */
-void Draw_TextureMode_f (void)
+void Draw_TextureMode_f ()
 {
 	int		i;
 	gltexture_t	*glt;
@@ -326,10 +326,10 @@ void Draw_TextureMode_f (void)
 		for (i=0 ; i< 6 ; i++)
 			if (gl_filter_min == modes[i].minimize)
 			{
-				Con_Printf ("%s\n", modes[i].name);
+				gpSystem->Printf ("%s\n", modes[i].name);
 				return;
 			}
-		Con_Printf ("current filter is unknown???\n");
+		gpSystem->Printf ("current filter is unknown???\n");
 		return;
 	}
 
@@ -340,7 +340,7 @@ void Draw_TextureMode_f (void)
 	}
 	if (i == 6)
 	{
-		Con_Printf ("bad filter name\n");
+		gpSystem->Printf ("bad filter name\n");
 		return;
 	}
 
@@ -364,7 +364,7 @@ void Draw_TextureMode_f (void)
 Draw_Init
 ===============
 */
-void Draw_Init (void)
+void Draw_Init ()
 {
 	int		i;
 	qpic_t	*cb;
@@ -773,7 +773,7 @@ Draw_FadeScreen
 
 ================
 */
-void Draw_FadeScreen (void)
+void Draw_FadeScreen ()
 {
 	qglEnable (GL_BLEND);
 	qglDisable (GL_TEXTURE_2D);
@@ -803,7 +803,7 @@ Draws the little blue disc in the corner of the screen.
 Call before beginning any disc IO.
 ================
 */
-void Draw_BeginDisc (void)
+void Draw_BeginDisc ()
 {
 	if (!draw_disc)
 		return;
@@ -821,7 +821,7 @@ Erases the disc icon.
 Call after completing any disc IO
 ================
 */
-void Draw_EndDisc (void)
+void Draw_EndDisc ()
 {
 }
 
@@ -832,7 +832,7 @@ GL_Set2D
 Setup as if the screen was 320*200
 ================
 */
-void GL_Set2D (void)
+void GL_Set2D ()
 {
 	qglViewport (glx, gly, glwidth, glheight);
 
@@ -1020,7 +1020,7 @@ static	unsigned	scaled[1024*512];	// [512*256];
 		scaled_height = gl_max_size.value;
 
 	if (scaled_width * scaled_height > sizeof(scaled)/4)
-		Sys_Error ("GL_LoadTexture: too big");
+		gpSystem->Error ("GL_LoadTexture: too big");
 
 	samples = alpha ? gl_alpha_format : gl_solid_format;
 
@@ -1124,7 +1124,7 @@ void GL_Upload8_EXT (byte *data, int width, int height,  qboolean mipmap, qboole
 		scaled_height = gl_max_size.value;
 
 	if (scaled_width * scaled_height > sizeof(scaled))
-		Sys_Error ("GL_LoadTexture: too big");
+		gpSystem->Error ("GL_LoadTexture: too big");
 
 	samples = 1; // alpha ? gl_alpha_format : gl_solid_format;
 
@@ -1208,7 +1208,7 @@ static	unsigned	trans[640*480];		// FIXME, temporary
 	else
 	{
 		if (s&3)
-			Sys_Error ("GL_Upload8: s&3");
+			gpSystem->Error ("GL_Upload8: s&3");
 		for (i=0 ; i<s ; i+=4)
 		{
 			trans[i] = d_8to24table[data[i]];
@@ -1244,7 +1244,7 @@ int GL_LoadTexture (char *identifier, int width, int height, byte *data, qboolea
 			if (!strcmp (identifier, glt->identifier))
 			{
 				if (width != glt->width || height != glt->height)
-					Sys_Error ("GL_LoadTexture: cache mismatch");
+					gpSystem->Error ("GL_LoadTexture: cache mismatch");
 				return gltextures[i].texnum;
 			}
 		}

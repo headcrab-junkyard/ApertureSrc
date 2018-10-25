@@ -1,23 +1,25 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+ * This file is part of Magenta Engine
+ *
+ * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 2018 BlackPhrase
+ *
+ * Magenta Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Magenta Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
-// r_surf.c: surface-related refresh code
+
+/// @file
+/// @brief surface-related refresh code
 
 #include "quakedef.h"
 
@@ -218,7 +220,7 @@ store:
 		}
 		break;
 	default:
-		Sys_Error ("Bad lightmap format");
+		gpSystem->Error ("Bad lightmap format");
 	}
 }
 
@@ -251,9 +253,9 @@ texture_t *R_TextureAnimation (texture_t *base)
 	{
 		base = base->anim_next;
 		if (!base)
-			Sys_Error ("R_TextureAnimation: broken cycle");
+			gpSystem->Error ("R_TextureAnimation: broken cycle");
 		if (++count > 100)
-			Sys_Error ("R_TextureAnimation: infinite cycle");
+			gpSystem->Error ("R_TextureAnimation: infinite cycle");
 	}
 
 	return base;
@@ -283,7 +285,7 @@ qboolean mtexenabled = false;
 
 void GL_SelectTexture (GLenum target);
 
-void GL_DisableMultitexture(void) 
+void GL_DisableMultitexture() 
 {
 	if (mtexenabled) {
 		qglDisable(GL_TEXTURE_2D);
@@ -292,7 +294,7 @@ void GL_DisableMultitexture(void)
 	}
 }
 
-void GL_EnableMultitexture(void) 
+void GL_EnableMultitexture() 
 {
 	if (gl_mtexable) {
 		GL_SelectTexture(TEXTURE1_SGIS);
@@ -662,7 +664,7 @@ void DrawGLPoly (glpoly_t *p)
 R_BlendLightmaps
 ================
 */
-void R_BlendLightmaps (void)
+void R_BlendLightmaps ()
 {
 	int			i, j;
 	glpoly_t	*p;
@@ -899,7 +901,7 @@ void R_MirrorChain (msurface_t *s)
 R_DrawWaterSurfaces
 ================
 */
-void R_DrawWaterSurfaces (void)
+void R_DrawWaterSurfaces ()
 {
 	int			i;
 	msurface_t	*s;
@@ -948,7 +950,7 @@ void R_DrawWaterSurfaces (void)
 R_DrawWaterSurfaces
 ================
 */
-void R_DrawWaterSurfaces (void)
+void R_DrawWaterSurfaces ()
 {
 	int			i;
 	msurface_t	*s;
@@ -1020,7 +1022,7 @@ void R_DrawWaterSurfaces (void)
 DrawTextureChains
 ================
 */
-void DrawTextureChains (void)
+void DrawTextureChains ()
 {
 	int		i;
 	msurface_t	*s;
@@ -1307,7 +1309,7 @@ void R_RecursiveWorldNode (mnode_t *node)
 R_DrawWorld
 =============
 */
-void R_DrawWorld (void)
+void R_DrawWorld ()
 {
 	cl_entity_t	ent;
 	int			i;
@@ -1343,7 +1345,7 @@ void R_DrawWorld (void)
 R_MarkLeaves
 ===============
 */
-void R_MarkLeaves (void)
+void R_MarkLeaves ()
 {
 	byte	*vis;
 	mnode_t	*node;
@@ -1432,7 +1434,7 @@ int AllocBlock (int w, int h, int *x, int *y)
 		return texnum;
 	}
 
-	Sys_Error ("AllocBlock: full");
+	gpSystem->Error ("AllocBlock: full");
 }
 
 
@@ -1592,7 +1594,7 @@ Builds the lightmap texture
 with all the surfaces from all brush models
 ==================
 */
-void GL_BuildLightmaps (void)
+void GL_BuildLightmaps ()
 {
 	int		i, j;
 	model_t	*m;

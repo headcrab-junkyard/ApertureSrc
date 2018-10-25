@@ -1,34 +1,33 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+ * This file is part of Magenta Engine
+ *
+ * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 2018 BlackPhrase
+ *
+ * Magenta Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Magenta Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
-// r_misc.c
+
+/// @file
 
 #include "quakedef.h"
-
-
 
 /*
 ==================
 R_InitTextures
 ==================
 */
-void	R_InitTextures (void)
+void	R_InitTextures ()
 {
 	int		x,y, m;
 	byte	*dest;
@@ -67,7 +66,7 @@ byte	dottexture[8][8] =
 	{0,0,0,0,0,0,0,0},
 	{0,0,0,0,0,0,0,0},
 };
-void R_InitParticleTexture (void)
+void R_InitParticleTexture ()
 {
 	int		x,y;
 	byte	data[8][8][4];
@@ -103,7 +102,7 @@ R_Envmap_f
 Grab six views for environment mapping tests
 ===============
 */
-void R_Envmap_f (void)
+void R_Envmap_f ()
 {
 	byte	buffer[256*256*4];
 
@@ -167,7 +166,7 @@ void R_Envmap_f (void)
 R_Init
 ===============
 */
-void R_Init (void)
+void R_Init ()
 {	
 	extern byte *hunk_base;
 	extern cvar_t gl_finish;
@@ -276,12 +275,12 @@ void R_TranslatePlayerSkin (int playernum)
 	paliashdr = (aliashdr_t *)Mod_Extradata (model);
 	s = paliashdr->skinwidth * paliashdr->skinheight;
 	if (currententity->skinnum < 0 || currententity->skinnum >= paliashdr->numskins) {
-		Con_Printf("(%d): Invalid player skin #%d\n", playernum, currententity->skinnum);
+		gpSystem->Printf("(%d): Invalid player skin #%d\n", playernum, currententity->skinnum);
 		original = (byte *)paliashdr + paliashdr->texels[0];
 	} else
 		original = (byte *)paliashdr + paliashdr->texels[currententity->skinnum];
 	if (s & 3)
-		Sys_Error ("R_TranslateSkin: s&3");
+		gpSystem->Error ("R_TranslateSkin: s&3");
 
 	inwidth = paliashdr->skinwidth;
 	inheight = paliashdr->skinheight;
@@ -375,7 +374,7 @@ void R_TranslatePlayerSkin (int playernum)
 R_NewMap
 ===============
 */
-void R_NewMap (void)
+void R_NewMap ()
 {
 	int		i;
 	
@@ -421,7 +420,7 @@ R_TimeRefresh_f
 For program optimization
 ====================
 */
-void R_TimeRefresh_f (void)
+void R_TimeRefresh_f ()
 {
 	int			i;
 	float		start, stop, time;
@@ -429,7 +428,7 @@ void R_TimeRefresh_f (void)
 	qglDrawBuffer  (GL_FRONT);
 	qglFinish ();
 
-	start = Sys_FloatTime ();
+	start = gpSystem->GetFloatTime ();
 	for (i=0 ; i<128 ; i++)
 	{
 		r_refdef.viewangles[1] = i/128.0*360.0;
@@ -439,13 +438,13 @@ void R_TimeRefresh_f (void)
 	qglFinish ();
 	stop = Sys_FloatTime ();
 	time = stop-start;
-	Con_Printf ("%f seconds (%f fps)\n", time, 128/time);
+	gpSystem->Printf ("%f seconds (%f fps)\n", time, 128/time);
 
 	qglDrawBuffer  (GL_BACK);
 	GL_EndRendering ();
 }
 
-void D_FlushCaches (void)
+void D_FlushCaches ()
 {
 }
 

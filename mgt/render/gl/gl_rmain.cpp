@@ -1,23 +1,24 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+ * This file is part of Magenta Engine
+ *
+ * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 2018 BlackPhrase
+ *
+ * Magenta Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Magenta Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
-// r_main.c
+
+/// @file
 
 #include "quakedef.h"
 
@@ -71,7 +72,7 @@ texture_t	*r_notexture_mip;
 int		d_lightstylevalue[256];	// 8.8 fraction of base light value
 
 
-void R_MarkLeaves (void);
+void R_MarkLeaves ();
 
 cvar_t	r_norefresh = {"r_norefresh","0"};
 cvar_t	r_drawentities = {"r_drawentities","1"};
@@ -154,7 +155,7 @@ mspriteframe_t *R_GetSpriteFrame (cl_entity_t *currententity)
 
 	if ((frame >= psprite->numframes) || (frame < 0))
 	{
-		Con_Printf ("R_DrawSprite: no such frame %d\n", frame);
+		gpSystem->Printf ("R_DrawSprite: no such frame %d\n", frame);
 		frame = 0;
 	}
 
@@ -408,7 +409,7 @@ void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr)
 
 	if ((frame >= paliashdr->numframes) || (frame < 0))
 	{
-		Con_DPrintf ("R_AliasSetupFrame: no such frame %d\n", frame);
+		gpSystem->DevPrintf ("R_AliasSetupFrame: no such frame %d\n", frame);
 		frame = 0;
 	}
 
@@ -588,7 +589,7 @@ void R_DrawAliasModel (cl_entity_t *e)
 R_DrawEntitiesOnList
 =============
 */
-void R_DrawEntitiesOnList (void)
+void R_DrawEntitiesOnList ()
 {
 	int		i;
 
@@ -633,7 +634,7 @@ void R_DrawEntitiesOnList (void)
 R_DrawViewModel
 =============
 */
-void R_DrawViewModel (void)
+void R_DrawViewModel ()
 {
 	float		ambient[4], diffuse[4];
 	int			j;
@@ -704,7 +705,7 @@ void R_DrawViewModel (void)
 R_PolyBlend
 ============
 */
-void R_PolyBlend (void)
+void R_PolyBlend ()
 {
 	if (!gl_polyblend.value)
 		return;
@@ -756,7 +757,7 @@ int SignbitsForPlane (mplane_t *out)
 }
 
 
-void R_SetFrustum (void)
+void R_SetFrustum ()
 {
 	int		i;
 
@@ -797,7 +798,7 @@ void R_SetFrustum (void)
 R_SetupFrame
 ===============
 */
-void R_SetupFrame (void)
+void R_SetupFrame ()
 {
 	int				edgecount;
 	vrect_t			vrect;
@@ -851,7 +852,7 @@ void MYgluPerspective( GLdouble fovy, GLdouble aspect,
 R_SetupGL
 =============
 */
-void R_SetupGL (void)
+void R_SetupGL ()
 {
 	float	screenaspect;
 	float	yfov;
@@ -936,7 +937,7 @@ R_RenderScene
 r_refdef must be set before the first call
 ================
 */
-void R_RenderScene (void)
+void R_RenderScene ()
 {
 	R_SetupFrame ();
 
@@ -970,7 +971,7 @@ void R_RenderScene (void)
 R_Clear
 =============
 */
-void R_Clear (void)
+void R_Clear ()
 {
 	if (r_mirroralpha.value != 1.0)
 	{
@@ -1022,7 +1023,7 @@ void R_Clear (void)
 R_Mirror
 =============
 */
-void R_Mirror (void)
+void R_Mirror ()
 {
 	float		d;
 	msurface_t	*s;
@@ -1091,7 +1092,7 @@ R_RenderView
 r_refdef must be set before the first call
 ================
 */
-void R_RenderView (void)
+void R_RenderView ()
 {
 	double	time1, time2;
 	GLfloat colors[4] = {(GLfloat) 0.0, (GLfloat) 0.0, (GLfloat) 1, (GLfloat) 0.20};
@@ -1100,7 +1101,7 @@ void R_RenderView (void)
 		return;
 
 	if (!r_worldentity.model || !cl.worldmodel)
-		Sys_Error ("R_RenderView: NULL worldmodel");
+		gpSystem->Error ("R_RenderView: NULL worldmodel");
 
 	if (r_speeds.value)
 	{
@@ -1144,6 +1145,6 @@ void R_RenderView (void)
 	{
 //		qglFinish ();
 		time2 = Sys_FloatTime ();
-		Con_Printf ("%3i ms  %4i wpoly %4i epoly\n", (int)((time2-time1)*1000), c_brush_polys, c_alias_polys); 
+		gpSystem->Printf ("%3i ms  %4i wpoly %4i epoly\n", (int)((time2-time1)*1000), c_brush_polys, c_alias_polys); 
 	}
 }

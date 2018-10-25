@@ -1,23 +1,25 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
-
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+ * This file is part of Magenta Engine
+ *
+ * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 2018 BlackPhrase
+ *
+ * Magenta Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Magenta Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
-// gl_warp.c -- sky and water polygons
+
+/// @file
+/// @brief sky and water polygons
 
 #include "quakedef.h"
 
@@ -502,11 +504,11 @@ void LoadTGA (FILE *fin)
 
 	if (targa_header.image_type!=2 
 		&& targa_header.image_type!=10) 
-		Sys_Error ("LoadTGA: Only type 2 and 10 targa RGB images supported\n");
+		gpSystem->Error ("LoadTGA: Only type 2 and 10 targa RGB images supported\n");
 
 	if (targa_header.colormap_type !=0 
 		|| (targa_header.pixel_size!=32 && targa_header.pixel_size!=24))
-		Sys_Error ("Texture_LoadTGA: Only 32 or 24 bit images supported (no colormaps)\n");
+		gpSystem->Error ("Texture_LoadTGA: Only 32 or 24 bit images supported (no colormaps)\n");
 
 	columns = targa_header.width;
 	rows = targa_header.height;
@@ -634,7 +636,7 @@ R_LoadSkys
 ==================
 */
 char	*suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
-void R_LoadSkys (void)
+void R_LoadSkys ()
 {
 	int		i;
 	FILE	*f;
@@ -804,7 +806,7 @@ void ClipSkyPolygon (int nump, vec3_t vecs, int stage)
 	int		i, j;
 
 	if (nump > MAX_CLIP_VERTS-2)
-		Sys_Error ("ClipSkyPolygon: MAX_CLIP_VERTS");
+		gpSystem->Error ("ClipSkyPolygon: MAX_CLIP_VERTS");
 	if (stage == 6)
 	{	// fully clipped, so draw it
 		DrawSkyPolygon (nump, vecs);
@@ -919,7 +921,7 @@ void R_DrawSkyChain (msurface_t *s)
 R_ClearSkyBox
 ==============
 */
-void R_ClearSkyBox (void)
+void R_ClearSkyBox ()
 {
 	int		i;
 
@@ -974,7 +976,7 @@ R_DrawSkyBox
 ==============
 */
 int	skytexorder[6] = {0,2,1,3,4,5};
-void R_DrawSkyBox (void)
+void R_DrawSkyBox ()
 {
 	int		i, j, k;
 	vec3_t	v;
@@ -1085,4 +1087,3 @@ void R_InitSky (texture_t *mt)
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 	qglTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 }
-
