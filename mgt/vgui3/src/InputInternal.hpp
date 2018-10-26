@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "vgui3/IInputInternal.h"
+#include "vgui3/IInputInternal.hpp"
 
 namespace vgui3
 {

@@ -196,7 +196,7 @@ void CSurface::SetAsToolBar(VPANEL panel, bool state)
 {
 };
 
-void CSurface::CreatePopup(VPANEL panel, bool minimised, bool showTaskbarIcon = true, bool disabled = false, bool mouseInput = true, bool kbInput = true)
+void CSurface::CreatePopup(VPANEL panel, bool minimised, bool showTaskbarIcon, bool disabled, bool mouseInput, bool kbInput)
 {
 };
 
@@ -208,7 +208,7 @@ void CSurface::Invalidate(VPANEL panel)
 {
 };
 
-void SetCursor(HCursor cursor)
+void CSurface::SetCursor(HCursor cursor)
 {
 };
 
@@ -352,7 +352,7 @@ void CSurface::MovePopupToBack(VPANEL panel)
 {
 };
 
-void CSurface::SolveTraverse(VPANEL panel, bool forceApplySchemeSettings = false)
+void CSurface::SolveTraverse(VPANEL panel, bool forceApplySchemeSettings)
 {
 };
 

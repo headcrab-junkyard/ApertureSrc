@@ -19,7 +19,7 @@
 
 /// @file
 
-#pragma once
+#include "System.hpp"
 
 namespace vgui3
 {

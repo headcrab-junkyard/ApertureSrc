@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "vgui3/IHTML.h"
+#include "vgui3/IHTML.hpp"
 
 namespace vgui3
 {

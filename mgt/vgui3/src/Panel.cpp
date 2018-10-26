@@ -202,7 +202,7 @@ void CPanel::PerformApplySchemeSettings(VPANEL vguiPanel)
 {
 };
 
-void CPanel::PaintTraverse(VPANEL vguiPanel, bool forceRepaint, bool allowForce = true)
+void CPanel::PaintTraverse(VPANEL vguiPanel, bool forceRepaint, bool allowForce)
 {
 };
 
@@ -212,7 +212,7 @@ void CPanel::Repaint(VPANEL vguiPanel)
 
 VPANEL CPanel::IsWithinTraverse(VPANEL vguiPanel, int x, int y, bool traversePopups)
 {
-	retrun 0;
+	return 0;
 };
 
 void CPanel::OnChildAdded(VPANEL vguiPanel, VPANEL child)
@@ -232,7 +232,7 @@ bool CPanel::RequestInfo(VPANEL vguiPanel, KeyValues *outputData)
 	return false;
 };
 
-void CPanel::RequestFocus(VPANEL vguiPanel, int direction = 0)
+void CPanel::RequestFocus(VPANEL vguiPanel, int direction)
 {
 };
 

@@ -21,6 +21,20 @@
 
 #include "VGUI.hpp"
 
+#include <Gwork/Gwork.h>
+#include <Gwork/Platform.h>
+#include <Gwork/Skins/Simple.h>
+#include <Gwork/Skins/TexturedBase.h>
+#include <Gwork/Test/Test.h>
+
+#ifdef USE_DEBUG_FONT
+#   include <Gwork/Renderers/OpenGL_DebugFont.h>
+#else
+#   include <Gwork/Renderers/OpenGL.h>
+#endif
+
+//using namespace vgui3;
+
 namespace vgui3
 {
 
@@ -29,20 +43,43 @@ EXPOSE_SINGLE_INTERFACE(CVGui, IVgui, MGT_VGUI3_INTERFACE_VERSION);
 CVGui::CVGui() = default;
 CVGui::~CVGui() = default;
 
-bool CVGUI::Init(CreateInterfaceFn *factoryList, int numFactories) // TODO: Startup?
-{
-	// TODO
-	// * CEGUI::OpenGLRenderer for r_gl
-	// * CEGUI::OpenGL3Renderer for r_gl3
+constexpr auto GWORK_RESOURCE_DIR{"."};
 
-	*gpRenderer = CEGUI::OpenGLRenderer::bootstrapSystem();
+bool CVGui::Init(CreateInterfaceFn *factoryList, int numFactories) // TODO: Startup?
+{
+	const Gwk::Point screenSize(1024,768);
+	
+	Gwk::Platform::RelativeToExecutablePaths paths(GWORK_RESOURCE_DIR);
+
+    // Create a Gwork OpenGL Renderer
+#ifdef USE_DEBUG_FONT
+	renderer = new Gwk::Renderer::OpenGL_DebugFont();
+#else
+	renderer = new Gwk::Renderer::OpenGL(paths, Gwk::Rect(Gwk::Point(0,0), screenSize));
+#endif
+    renderer->Init();
+
+    // Create a Gwork skin
+    skin = new Gwk::Skin::TexturedBase(renderer);
+    skin->Init("DefaultSkin.png");
+    skin->SetDefaultFont("OpenSans.ttf", 11);
+
+    // Create a Canvas (it's root, on which all other Gwork panels are created)
+    canvas = new Gwk::Controls::Canvas(skin);
+    canvas->SetSize(screenSize.x, screenSize.y);
+    canvas->SetDrawBackground(true);
+    canvas->SetBackgroundColor(Gwk::Color(150, 170, 170, 255));
+
+    // Create our unittest control (which is a Window with controls in it)
+    unit = new TestFrame(canvas);
 };
 
-void CVGUI::Shutdown()
+void CVGui::Shutdown()
 {
-	//CEGUI::System::destroy();
-	//CEGUI::OpenGLRenderer::destroy(gpRenderer);
-	CEGUI::OpenGLRenderer::destroySystem();
+	delete unit;
+    delete canvas;
+    delete skin;
+    delete renderer;
 };
 
 void CVGui::Start()
@@ -57,9 +94,10 @@ bool CVGui::IsRunning()
 {
 };
 
-void CVGui::Frame() // TODO: RunFrame?
+void CVGui::RunFrame() // TODO: Frame?
 {
-	CEGUI::System::renderAllGUIContexts();
+	canvas->RenderCanvas();
+	//Gwk::Platform::Sleep(0);
 };
 
 void CVGui::ShutdownMessage(unsigned int shutdownID)
@@ -101,7 +139,7 @@ void CVGui::MarkPanelForDeletion(VPANEL panel)
 {
 };
 
-void CVGui::AddTickSignal(VPANEL panel, int intervalMilliseconds = 0)
+void CVGui::AddTickSignal(VPANEL panel, int intervalMilliseconds)
 {
 };
 
@@ -109,7 +147,7 @@ void CVGui::RemoveTickSignal(VPANEL panekl)
 {
 };
 
-void CVGui::PostMessage(VPANEL target, KeyValues *params, VPANEL from, float delaySeconds = 0.0f)
+void CVGui::PostMessage(VPANEL target, KeyValues *params, VPANEL from, float delaySeconds)
 {
 };
 

@@ -19,7 +19,7 @@
 
 /// @file
 
-#pragma once
+#include "Image.hpp"
 
 namespace vgui3
 {

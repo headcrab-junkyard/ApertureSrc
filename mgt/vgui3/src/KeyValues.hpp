@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "vgui/IKeyValues.h"
+#include "vgui/IKeyValues.hpp"
 
 class CKeyValues final : public vgui3::IKeyValues
 {

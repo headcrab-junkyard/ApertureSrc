@@ -21,7 +21,27 @@
 
 #pragma once
 
-#include "vgui3/IVGUI.h"
+#include "vgui3/IVGUI.hpp"
+
+namespace Gwk
+{
+	namespace Renderer
+	{
+		class OpenGL;
+	};
+	
+	namespace Skin
+	{
+		class TexturedBase;
+	};
+	
+	namespace Controls
+	{
+		class Canvas;
+	};
+};
+
+class TestFrame;
 
 namespace vgui3
 {
@@ -73,7 +93,10 @@ public:
 private:
 	void DispatchMessages();
 	
-	CEGUI::OpenGLRenderer *gpRenderer{nullptr};
+	Gwk::Renderer::OpenGL *renderer;
+	Gwk::Skin::TexturedBase *skin;
+	Gwk::Controls::Canvas *canvas;
+	TestFrame *unit;
 };
 
 }; // namespace vgui3

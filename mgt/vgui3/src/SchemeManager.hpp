@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "vgui3/IScheme.h"
+#include "vgui3/IScheme.hpp"
 
 namespace vgui3
 {

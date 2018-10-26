@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "vgui3/ISurface.h"
+#include "vgui3/ISurface.hpp"
 
 namespace vgui3
 {

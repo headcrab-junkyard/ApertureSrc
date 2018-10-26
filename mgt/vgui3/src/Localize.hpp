@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "vgui3/ILocalize.h"
+#include "vgui3/ILocalize.hpp"
 
 namespace vgui3
 {

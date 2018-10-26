@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "vgui3/IBorder.h"
+#include "vgui3/IBorder.hpp"
 
 namespace vgui3
 {
