@@ -29,20 +29,55 @@ constexpr auto MGT_SOUND_INTERFACE_VERSION{"MGTSound001Alpha"};
 
 struct ISoundWorld;
 
+typedef struct sfx_s sfx_t;
+
 interface ISound : public IBaseInterface
 {
 	/// All non-hardware initialization
-	virtual bool Init(CreateInterfaceFn afnEngineFactory) = 0;
+	virtual bool Init(CreateInterfaceFn afnEngineFactory, void *apWindow) = 0; // TODO
 	
 	/// Shutdown routine
 	virtual void Shutdown() = 0;
 	
 	///
-	//virtual void Startup() = 0;
+	virtual void Startup() = 0;
 	
 	///
 	virtual void Update(float*, float*, float*, float*) = 0;
 	//virtual void Update(float afTimeStep) = 0;
+	
+	///
+	virtual void ExtraUpdate() = 0;
+	
+	///
+	virtual void ClearBuffer() = 0;
+	
+	///
+	virtual void BeginPrecaching() = 0;
+	
+	///
+	virtual void EndPrecaching() = 0;
+	
+	///
+	virtual sfx_t *PrecacheSound(const char *sample) = 0;
+	
+	///
+	virtual void TouchSound(const char *sample) = 0;
+	
+	///
+	virtual void LocalSound(const char *sound) = 0;
+	
+	///
+	virtual void StartStaticSound(sfx_t *sfx, vec3_t origin, float vol, float attenuation) = 0;
+	
+	///
+	virtual void StartDynamicSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation) = 0;
+	
+	///
+	virtual void StopSound(int entnum, int entchannel) = 0;
+	
+	///
+	virtual void StopAllSounds(bool clear) = 0;
 	
 	///
 	//virtual void MuteBackgroundMusic(bool abMute) = 0;
