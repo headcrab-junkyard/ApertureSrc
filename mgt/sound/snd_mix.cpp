@@ -21,7 +21,7 @@
 /// @file
 /// @brief portable code to mix sounds for snd_dma
 
-#include "quakedef.h"
+#include "Sound.hpp"
 
 #ifdef _WIN32
 #include "winquake.h"
@@ -91,17 +91,17 @@ void S_TransferStereo16(int endtime)
 		{
 			if(hresult != DSERR_BUFFERLOST)
 			{
-				Con_Printf("S_TransferStereo16: DS::Lock Sound Buffer Failed\n");
-				S_Shutdown();
-				S_Startup();
+				gpSystem->Printf("S_TransferStereo16: DS::Lock Sound Buffer Failed\n");
+				gpSound->Shutdown();
+				gpSound->Startup();
 				return;
 			}
 
 			if(++reps > 10000)
 			{
-				Con_Printf("S_TransferStereo16: DS: couldn't restore buffer\n");
-				S_Shutdown();
-				S_Startup();
+				gpSystem->Printf("S_TransferStereo16: DS: couldn't restore buffer\n");
+				gpSound->Shutdown();
+				gpSound->Startup();
 				return;
 			}
 		}
@@ -178,17 +178,17 @@ void S_TransferPaintBuffer(int endtime)
 		{
 			if(hresult != DSERR_BUFFERLOST)
 			{
-				Con_Printf("S_TransferPaintBuffer: DS::Lock Sound Buffer Failed\n");
-				S_Shutdown();
-				S_Startup();
+				gpSystem->Printf("S_TransferPaintBuffer: DS::Lock Sound Buffer Failed\n");
+				gpSound->Shutdown();
+				gpSound->Startup();
 				return;
 			}
 
 			if(++reps > 10000)
 			{
-				Con_Printf("S_TransferPaintBuffer: DS: couldn't restore buffer\n");
-				S_Shutdown();
-				S_Startup();
+				gpSystem->Printf("S_TransferPaintBuffer: DS: couldn't restore buffer\n");
+				gpSound->Shutdown();
+				gpSound->Startup();
 				return;
 			}
 		}
@@ -244,7 +244,7 @@ void S_TransferPaintBuffer(int endtime)
 		pDSBuf->GetCurrentPosition(&dwNewpos, &dwWrite);
 
 		//		if ((dwNewpos >= il) && (dwNewpos <= ir))
-		//			Con_Printf("%d-%d p %d c\n", il, ir, dwNewpos);
+		//			gpSystem->Printf("%d-%d p %d c\n", il, ir, dwNewpos);
 	}
 #endif
 }
@@ -347,7 +347,7 @@ void SND_PaintChannelFrom8(channel_t *ch, sfxcache_t *sc, int count)
 {
 	int data;
 	int *lscale, *rscale;
-	unsigned char *sfx;
+	byte *sfx;
 	int i;
 
 	if(ch->leftvol > 255)
@@ -357,7 +357,7 @@ void SND_PaintChannelFrom8(channel_t *ch, sfxcache_t *sc, int count)
 
 	lscale = snd_scaletable[ch->leftvol >> 3];
 	rscale = snd_scaletable[ch->rightvol >> 3];
-	sfx = (signed char *)sc->data + ch->pos;
+	sfx = (byte*)((signed char *)sc->data + ch->pos);
 
 	for(i = 0; i < count; i++)
 	{

@@ -21,8 +21,8 @@
 /// @file
 /// @brief main control for any streaming sound output device
 
-#include "quakedef.h"
-#include "vox.h"
+#include "Sound.hpp"
+//#include "vox.h"
 
 int desired_speed = 11025;
 int desired_bits = 16;
@@ -41,61 +41,12 @@ int fakedma_updates = 15;
 
 void S_AmbientOff()
 {
-	snd_ambient = false;
+	//snd_ambient = false;
 }
 
 void S_AmbientOn()
 {
-	snd_ambient = true;
+	//snd_ambient = true;
 }
 
 //=============================================================================
-
-/*
-=================
-SND_PickChannel
-=================
-*/
-channel_t *SND_PickChannel(int entnum, int entchannel)
-{
-	int ch_idx;
-	int first_to_die;
-	int life_left;
-
-	// Check for replacement sound, or find the best one to replace
-	first_to_die = -1;
-	life_left = 0x7fffffff;
-	for(ch_idx = NUM_AMBIENTS; ch_idx < NUM_AMBIENTS + MAX_DYNAMIC_CHANNELS; ch_idx++)
-	{
-		if(entchannel != 0 // channel 0 never overrides
-		   && channels[ch_idx].entnum == entnum && (channels[ch_idx].entchannel == entchannel || entchannel == -1))
-		{ // allways override sound from same entity
-			first_to_die = ch_idx;
-			break;
-		}
-
-		// don't let monster sounds override player sounds
-		if(channels[ch_idx].entnum == cl.viewentity && entnum != cl.viewentity && channels[ch_idx].sfx)
-			continue;
-
-		if(channels[ch_idx].end - paintedtime < life_left)
-		{
-			life_left = channels[ch_idx].end - paintedtime;
-			first_to_die = ch_idx;
-		}
-	}
-
-	if(first_to_die == -1)
-		return nullptr;
-
-	if(channels[first_to_die].sfx)
-		channels[first_to_die].sfx = nullptr;
-
-	return &channels[first_to_die];
-}
-
-//=============================================================================
-
-void S_ClearPrecache()
-{
-};

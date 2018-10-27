@@ -29,82 +29,25 @@
 
 #include "Sound.hpp"
 #include "engine/ISystem.hpp"
-#include "engine/IMemory.hpp"
+#include "engine/ICmdLine.hpp"
 #include "engine/ICmdArgs.hpp"
 #include "engine/ICmdRegistry.hpp"
 #include "engine/ICvarRegistry.hpp"
+#include "engine/IUtils.hpp"
+#include "filesystem/IFileSystem.hpp"
 
 ISound *gpSound{nullptr};
 ISystem *gpSystem{nullptr};
 IMemory *gpMemory{nullptr};
+IUtils *gpUtils{nullptr};
+IFileSystem *gpFileSystem{nullptr};
+ICmdLine *gpCmdLine{nullptr};
+
+void *mainwindow{nullptr};
 
 // =======================================================================
 // Internal sound data & structures
 // =======================================================================
-
-// !!! if this is changed, it much be changed in asm_i386.h too !!!
-typedef struct
-{
-	int left;
-	int right;
-} portable_samplepair_t;
-
-typedef struct sfx_s
-{
-	char name[MAX_QPATH];
-	cache_user_t cache;
-} sfx_t;
-
-// !!! if this is changed, it much be changed in asm_i386.h too !!!
-typedef struct
-{
-	int length;
-	int loopstart;
-	int speed;
-	int width;
-	int stereo;
-	byte data[1]; // variable sized
-} sfxcache_t;
-
-typedef struct
-{
-	qboolean gamealive;
-	qboolean soundalive;
-	qboolean splitbuffer;
-	int channels;
-	int samples;          // mono samples in buffer
-	int submission_chunk; // don't mix less than this #
-	int samplepos;        // in mono samples
-	int samplebits;
-	int speed;
-	unsigned char *buffer;
-} dma_t;
-
-// !!! if this is changed, it much be changed in asm_i386.h too !!!
-typedef struct channel_s
-{
-	sfx_t *sfx;      // sfx number
-	int leftvol;     // 0-255 volume
-	int rightvol;    // 0-255 volume
-	int end;         // end time in global paintsamples
-	int pos;         // sample position in sfx
-	int looping;     // where to loop, -1 = no looping
-	int entnum;      // to allow overriding a specific sound
-	int entchannel;  //
-	vec3_t origin;   // origin of sound effect
-	vec_t dist_mult; // distance multiplier (attenuation/clipK)
-	int master_vol;  // 0-255 master volume
-} channel_t;
-
-typedef struct
-{
-	int rate;
-	int width;
-	int channels;
-	int loopstart;
-	int samples;
-	int dataofs; // chunk starts this many bytes from file start
-} wavinfo_t;
 
 bool snd_initialized{false};
 
@@ -119,7 +62,6 @@ bool fakedma{false};
 int soundtime;   // sample PAIRS
 int paintedtime; // sample PAIRS
 
-#define MAX_CHANNELS 128
 #define MAX_DYNAMIC_CHANNELS 8
 
 // 0 to MAX_DYNAMIC_CHANNELS-1	= normal entity sounds
@@ -175,11 +117,54 @@ void SNDDMA_Shutdown();
 // picks a channel based on priorities, empty slots, number of channels
 channel_t *SND_PickChannel(int entnum, int entchannel);
 
+/*
+=================
+SND_PickChannel
+=================
+*/
+channel_t *SND_PickChannel(int entnum, int entchannel)
+{
+	int ch_idx;
+	int first_to_die;
+	int life_left;
+
+	// Check for replacement sound, or find the best one to replace
+	first_to_die = -1;
+	life_left = 0x7fffffff;
+	for(ch_idx = NUM_AMBIENTS; ch_idx < NUM_AMBIENTS + MAX_DYNAMIC_CHANNELS; ch_idx++)
+	{
+		if(entchannel != 0 // channel 0 never overrides
+		   && channels[ch_idx].entnum == entnum && (channels[ch_idx].entchannel == entchannel || entchannel == -1))
+		{ // allways override sound from same entity
+			first_to_die = ch_idx;
+			break;
+		}
+
+		// don't let monster sounds override player sounds
+		//if(channels[ch_idx].entnum == cl.viewentity && entnum != cl.viewentity && channels[ch_idx].sfx) // TODO: again...
+			//continue;
+
+		if(channels[ch_idx].end - paintedtime < life_left)
+		{
+			life_left = channels[ch_idx].end - paintedtime;
+			first_to_die = ch_idx;
+		}
+	}
+
+	if(first_to_die == -1)
+		return nullptr;
+
+	if(channels[first_to_die].sfx)
+		channels[first_to_die].sfx = nullptr;
+
+	return &channels[first_to_die];
+}
+
+void S_ClearPrecache()
+{
+};
+
 void S_PaintChannels(int endtime);
-
-sfxcache_t *S_LoadSound(sfx_t *s);
-
-wavinfo_t GetWavinfo(const char *name, byte *wav, int wavlength);
 
 void S_AmbientOff();
 void S_AmbientOn();
@@ -299,12 +284,15 @@ CSound::~CSound() = default;
 S_Init
 ================
 */
-bool CSound::Init(CreateInterfaceFn afnEngineFactory)
+bool CSound::Init(CreateInterfaceFn afnEngineFactory, void *apWindow)
 {
 	mpSystem = (ISystem*)afnEngineFactory(MGT_SYSTEM_INTERFACE_VERSION, nullptr);
+	mpCmdLine = (ICmdLine*)afnEngineFactory(MGT_CMDLINE_INTERFACE_VERSION, nullptr);
 	mpMemory = (IMemory*)afnEngineFactory(MGT_MEMORY_INTERFACE_VERSION, nullptr);
+	gpUtils = (IUtils*)afnEngineFactory(MGT_UTILS_INTERFACE_VERSION, nullptr);
 	mpCmdRegistry = (ICmdRegistry*)afnEngineFactory(MGT_CMDREGISTRY_INTERFACE_VERSION, nullptr);
 	mpCvarRegistry = (ICvarRegistry*)afnEngineFactory(MGT_CVARREGISTRY_INTERFACE_VERSION, nullptr);
+	gpFileSystem = (IFileSystem*)afnEngineFactory(MGT_FILESYSTEM_INTERFACE_VERSION, nullptr);
 	
 	if(!mpSystem)
 	{
@@ -312,9 +300,21 @@ bool CSound::Init(CreateInterfaceFn afnEngineFactory)
 		return false;
 	};
 	
+	if(!mpCmdLine)
+	{
+		printf("ICmdLine query failed!\n");
+		return false;
+	};
+	
 	if(!mpMemory)
 	{
 		printf("IMemory query failed!\n");
+		return false;
+	};
+	
+	if(!gpUtils)
+	{
+		printf("IUtils query failed!\n");
 		return false;
 	};
 	
@@ -333,11 +333,14 @@ bool CSound::Init(CreateInterfaceFn afnEngineFactory)
 	gpSound = this;
 	gpSystem = mpSystem;
 	gpMemory = mpMemory;
+	gpCmdLine = mpCmdLine;
+	
+	mainwindow = apWindow;
 	
 	mpSystem->Printf("\nSound Initialization\n");
-	VOX_Init(); // TODO
+	//VOX_Init(); // TODO
 
-	if(COM_CheckParm("-simsound"))
+	if(mpCmdLine->HasArg("-simsound"))
 		fakedma = true;
 
 	mpCmdRegistry->Add("play", S_Play);
@@ -425,6 +428,35 @@ void CSound::Shutdown()
 		SNDDMA_Shutdown();
 	
 	gpSound = nullptr;
+};
+
+/*
+================
+S_Startup
+================
+*/
+void CSound::Startup()
+{
+	int rc;
+
+	if(!snd_initialized)
+		return;
+
+	if(!fakedma)
+	{
+		rc = SNDDMA_Init();
+
+		if(!rc)
+		{
+#ifndef _WIN32
+			mpSystem->Printf("S_Startup: SNDDMA_Init failed.\n");
+#endif
+			sound_started = 0;
+			return;
+		};
+	};
+
+	sound_started = 1;
 };
 
 /*
@@ -663,7 +695,7 @@ void CSound::LocalSound(const char *sound)
 		return;
 	};
 	
-	StartDynamicSound(cl.viewentity, -1, sfx, vec3_origin, 1, 1);
+	//StartDynamicSound(cl.viewentity, -1, sfx, vec3_origin, 1, 1); // TODO: also uses viewentity, not a good place for that...
 };
 
 /*
@@ -809,35 +841,6 @@ void CSound::StopAllSounds(bool clear)
 		ClearBuffer();
 };
 
-/*
-================
-S_Startup
-================
-*/
-void CSound::Startup()
-{
-	int rc;
-
-	if(!snd_initialized)
-		return;
-
-	if(!fakedma)
-	{
-		rc = SNDDMA_Init();
-
-		if(!rc)
-		{
-#ifndef _WIN32
-			mpSystem->Printf("S_Startup: SNDDMA_Init failed.\n");
-#endif
-			sound_started = 0;
-			return;
-		};
-	};
-
-	sound_started = 1;
-};
-
 void CSound::Update_()
 {
 	unsigned int endtime;
@@ -893,6 +896,8 @@ S_UpdateAmbientSounds
 */
 void CSound::UpdateAmbientSounds()
 {
+	// TODO: thing thing requires interaction with model geometry interaction, probably should be moved somewhere else?
+/*
 	mleaf_t *l;
 	float vol;
 	int ambient_channel;
@@ -938,6 +943,7 @@ void CSound::UpdateAmbientSounds()
 
 		chan->leftvol = chan->rightvol = chan->master_vol;
 	}
+*/
 }
 
 void CSound::GetSoundtime()
@@ -1021,13 +1027,16 @@ void CSound::SND_Spatialize(channel_t *ch)
 	vec3_t source_vec;
 	sfx_t *snd;
 
-	// anything coming from the view entity will allways be full volume
+	// anything coming from the view entity will always be full volume
+	// TODO: should this check be here? what is we don't have any viewentities in our game?
+	/*
 	if(ch->entnum == cl.viewentity)
 	{
 		ch->leftvol = ch->master_vol;
 		ch->rightvol = ch->master_vol;
 		return;
 	}
+	*/
 
 	// calculate stereo seperation and distance attenuation
 
