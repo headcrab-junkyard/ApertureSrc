@@ -20,70 +20,67 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /// @file
 
-/*QUAKED weapon_rocketlauncher (0 .5 .8) (-16 -16 0) (16 16 32)
+/*QUAKED weapon_grenadelauncher (0 .5 .8) (-16 -16 0) (16 16 32)
 */
-C_EXPORT void weapon_rocketlauncher(entvars_t *self)
+C_EXPORT void weapon_grenadelauncher(entvars_t *self)
 {
-	if(deathmatch <= 3)
-	{
-		gpEngine->pfnPrecacheModel("models/g_rock2.mdl");
-		gpEngine->pfnSetModel(self, "models/g_rock2.mdl");
-		self.weapon = 3;
-		self.netname = "Rocket Launcher";
-		self.touch = weapon_touch;
-		gpEngine->pfnSetModel(self, '-16 -16 0', '16 16 56');
-		StartItem();
-	};
+	CWeaponGrenadeLauncher::Spawn();
 };
 
 /*
 ======================================================================
 
-ROCKET
+GRENADE LAUNCHER
 
 ======================================================================
 */
 
-void CWeaponRocketLauncher::OnAttack()
+void CWeaponGrenadeLauncher::Spawn()
 {
-	if(self.weapon == IT_ROCKET_LAUNCHER)
+	if(deathmatch <= 3)
 	{
-		player_rocket1();
-		self.attack_finished = time + 0.8f;
-		W_FireRocket();
+		precache_model("models/weapons/v_m79.mdl");
+		self->SetModel("models/weapons/v_m79.mdl");
+		self->weapon = 3;
+		self->netname = "Grenade Launcher";
+		self->SetTouchCallback(weapon_touch);
+		self->SetSize('-16 -16 0', '16 16 56');
+		StartItem(self);
 	};
 };
 
-void Weapon_RocketLauncher_Fire(edict_t *ent)
+void CWeaponGrenadeLauncher::OnAttack()
 {
-	vec3_t offset, start;
+	player_rocket1();
+	mpOwner.attack_finished = time + 0.6f;
+	W_FireGrenade();
+};
+
+void weapon_grenadelauncher_fire(edict_t *ent)
+{
+	vec3_t offset;
 	vec3_t forward, right;
-	int damage;
-	float damage_radius;
-	int radius_damage;
+	vec3_t start;
+	int damage = 120;
+	float radius;
 
-	damage = 100 + (int)(random() * 20.0);
-	radius_damage = 120;
-	damage_radius = 120;
+	radius = damage + 40;
 	if(is_quad)
-	{
 		damage *= 4;
-		radius_damage *= 4;
-	}
 
-	AngleVectors(ent->client->v_angle, forward, right, NULL);
+	VectorSet(offset, 8, 8, ent->viewheight - 8);
+	AngleVectors(ent->client->v_angle, forward, right, nullptr);
+	
+	P_ProjectSource(ent->client, ent->s.origin, offset, forward, right, start);
 
 	VectorScale(forward, -2, ent->client->kick_origin);
 	ent->client->kick_angles[0] = -1;
 
-	VectorSet(offset, 8, 8, ent->viewheight - 8);
-	P_ProjectSource(ent->client, ent->s.origin, offset, forward, right, start);
-	fire_rocket(ent, start, forward, damage, 650, damage_radius, radius_damage);
+	fire_grenade(ent, start, forward, damage, 600, 2.5, radius);
 
-	// send muzzle flash
 	gi.WriteByte(svc_muzzleflash);
 	gi.WriteShort(ent - g_edicts);
-	gi.WriteByte(MZ_ROCKET | is_silenced);
+	gi.WriteByte(MZ_GRENADE | is_silenced);
 	gi.multicast(ent->s.origin, MULTICAST_PVS);
 
 	ent->client->ps.gunframe++;
@@ -92,12 +89,12 @@ void Weapon_RocketLauncher_Fire(edict_t *ent)
 
 	if(!((int)dmflags->value & DF_INFINITE_AMMO))
 		ent->client->pers.inventory[ent->client->ammo_index]--;
-}
+};
 
-void Weapon_RocketLauncher(edict_t *ent)
+void Weapon_GrenadeLauncher(edict_t *ent)
 {
-	static int pause_frames[] = { 25, 33, 42, 50, 0 };
-	static int fire_frames[] = { 5, 0 };
+	static int pause_frames[] = { 34, 51, 59, 0 };
+	static int fire_frames[] = { 6, 0 };
 
-	Weapon_Generic(ent, 4, 12, 50, 54, pause_frames, fire_frames, Weapon_RocketLauncher_Fire);
+	Weapon_Generic(ent, 5, 16, 59, 64, pause_frames, fire_frames, weapon_grenadelauncher_fire);
 };

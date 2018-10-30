@@ -20,24 +20,29 @@
 
 /// @file
 
+#include "BaseWeapon.hpp"
+
 void player_axe1();
 void player_axeb1();
 void player_axec1();
 void player_axed1();
 
-class CWeaponMachete : public CBaseWeapon
+class CWeaponFists : public CBaseWeapon
 {
 public:
-	CWeaponMachete();
-	~CWeaponMachete();
-
+	void Spawn() override;
+	
 	void OnAttack() override;
 };
 
-void CWeaponMachete::OnAttack()
+void CWeaponFists::Spawn()
 {
-	mpOwner->attack_finished = time + 0.5f;
-	mpOwner->EmitSound(CHAN_WEAPON, "weapons/ax1.wav", 1, ATTN_NORM);
+};
+
+void CWeaponFists::OnAttack()
+{
+	self->attack_finished = gpGlobals->time + 0.5f;
+	EmitSound(CHAN_WEAPON, "weapons/fists1.wav", 1, ATTN_NORM);
 
 	float r = random();
 
@@ -56,7 +61,7 @@ void CWeaponMachete::OnAttack()
 W_FireAxe
 ================
 */
-void W_FireMachete()
+void W_FireAxe()
 {
 	vec3_t source;
 	vec3_t org;
@@ -85,7 +90,7 @@ void W_FireMachete()
 	else
 	{
 		// hit wall
-		self->EmitSound(CHAN_WEAPON, "player/axhit2.wav", 1, ATTN_NORM);
+		self->EmitSound(CHAN_WEAPON, "player/fisthit2.wav", 1, ATTN_NORM);
 
 		gpEngine->pfnWriteByte(MSG_MULTICAST, SVC_TEMPENTITY);
 		gpEngine->pfnWriteByte(MSG_MULTICAST, TE_GUNSHOT);

@@ -20,6 +20,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 /// @file
 
+#include "BaseWeapon.hpp"
+
 /*
 ======================================================================
 
@@ -28,7 +30,41 @@ SHOTGUN
 ======================================================================
 */
 
-void weapon_shotgun_fire(edict_t *ent)
+class CWeaponSPAS12 : public CBaseWeapon
+{
+public:
+	void Spawn() override;
+	
+	void PrimaryAttack() override;
+};
+
+/*QUAKED weapon_spas12 (0 .5 .8) (-16 -16 0) (16 16 32)
+*/
+C_EXPORT void weapon_spas12(entvars_t *self)
+{
+	CWeaponSPAS12::Spawn();
+};
+
+void CWeaponSPAS12::Spawn()
+{
+	//if(deathmatch <= 3)
+	{
+		gpEngine->pfnPrecacheModel("models/weapons/v_spas12.mdl");
+		gpEngine->pfnPrecacheModel("models/weapons/w_spas12.mdl");
+		
+		SetModel("models/weapons/v_spas12.mdl");
+
+		self->mnID = WEAPON_SPAS12;
+		self->netname = "SPAS-12";
+		SetTouchCallback(weapon_touch);
+
+		SetSize('-16 -16 0', '16 16 56');
+
+		StartItem(self);
+	};
+};
+
+void CWeaponSPAS12::PrimaryAttack(edict_t *ent)
 {
 	vec3_t start;
 	vec3_t forward, right;
@@ -36,25 +72,25 @@ void weapon_shotgun_fire(edict_t *ent)
 	int damage = 4;
 	int kick = 8;
 
-	if(ent->client->ps.gunframe == 9)
+	if(mpOwner->ps.gunframe == 9)
 	{
-		ent->client->ps.gunframe++;
+		mpOwner->ps.gunframe++;
 		return;
-	}
+	};
 
-	AngleVectors(ent->client->v_angle, forward, right, NULL);
+	AngleVectors(mpOwner->v_angle, forward, right, nullptr);
 
-	VectorScale(forward, -2, ent->client->kick_origin);
-	ent->client->kick_angles[0] = -2;
+	VectorScale(forward, -2, mpOwner->kick_origin);
+	mpOwner->kick_angles[0] = -2;
 
 	VectorSet(offset, 0, 8, ent->viewheight - 8);
-	P_ProjectSource(ent->client, ent->s.origin, offset, forward, right, start);
+	P_ProjectSource(mpOwner, ent->GetOrigin(), offset, forward, right, start);
 
 	if(is_quad)
 	{
 		damage *= 4;
 		kick *= 4;
-	}
+	};
 
 	if(deathmatch->value)
 		fire_shotgun(ent, start, forward, damage, kick, 500, 500, DEFAULT_DEATHMATCH_SHOTGUN_COUNT, MOD_SHOTGUN);
@@ -65,14 +101,14 @@ void weapon_shotgun_fire(edict_t *ent)
 	gi.WriteByte(svc_muzzleflash);
 	gi.WriteShort(ent - g_edicts);
 	gi.WriteByte(MZ_SHOTGUN | is_silenced);
-	gi.multicast(ent->s.origin, MULTICAST_PVS);
+	gi.multicast(ent->GetOrigin(), MULTICAST_PVS);
 
-	ent->client->ps.gunframe++;
+	mpOwner->ps.gunframe++;
 	PlayerNoise(ent, start, PNOISE_WEAPON);
 
 	if(!((int)dmflags->value & DF_INFINITE_AMMO))
-		ent->client->pers.inventory[ent->client->ammo_index]--;
-}
+		mpOwner->pers.inventory[mpOwner->ammo_index]--;
+};
 
 void Weapon_Shotgun(edict_t *ent)
 {

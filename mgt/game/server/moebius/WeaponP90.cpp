@@ -22,7 +22,7 @@
 
 #include "BaseWeapon.hpp"
 
-class CWeaponMP5 : public CBaseWeapon
+class CWeaponP90 : public CBaseWeapon
 {
 public:
 	void Spawn() override;
@@ -30,24 +30,24 @@ public:
 	void PrimaryAttack() override;
 };
 
-/*QUAKED weapon_mp5 (0 .5 .8) (-16 -16 0) (16 16 32)
+/*QUAKED weapon_p90 (0 .5 .8) (-16 -16 0) (16 16 32)
 */
-C_EXPORT void weapon_mp5(entvars_t *self)
+C_EXPORT void weapon_p90(entvars_t *self)
 {
-	CWeaponMP5::Spawn();
+	CWeaponP90::Spawn();
 };
 
-void CWeaponMP5::Spawn()
+void CWeaponP90::Spawn()
 {
 	//if(deathmatch <= 3)
 	{
-		gpEngine->pfnPrecacheModel("models/weapons/w_mp5.mdl");
-		gpEngine->pfnPrecacheModel("models/weapons/v_mp5.mdl");
+		gpEngine->pfnPrecacheModel("models/weapons/w_p90.mdl");
+		gpEngine->pfnPrecacheModel("models/weapons/v_p90.mdl");
 		
-		SetModel("models/weapons/v_m16.mdl");
+		SetModel("models/weapons/v_p90.mdl");
 
-		self->mnID = WEAPON_MP5;
-		self->netname = "mp5";
+		self->mnID = WEAPON_P90;
+		self->netname = "P90";
 		SetTouchCallback(weapon_touch);
 
 		SetSize('-16 -16 0', '16 16 56');
@@ -61,7 +61,7 @@ void CWeaponMP5::Spawn()
 W_FireShotgun
 ================
 */
-void CWeaponMP5::PrimaryAttack() // TODO: OnAttack?
+void CWeaponP90::PrimaryAttack() // TODO: OnAttack?
 {
 	player_shot1();
 	self->attack_finished = gpGlobals->time + 0.2f;
