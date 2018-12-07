@@ -39,6 +39,9 @@ public:
 	void RemoveEventListener(ISystemEventListener *apListener) override;
 	
 	void Printf(const char *asMsg, ...) override;
+	void DevPrintf(const char *asMsg, ...) override;
+	
+	void Warning(const char *asMsg, ...) override;
 	
 	void Error(const char *asMsg, ...) override;
 	

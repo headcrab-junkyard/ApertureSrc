@@ -1,6 +1,7 @@
 /*
  * This file is part of Magenta Engine
  *
+ * Copyright (C) 1996-1997 Id Software, Inc.
  * Copyright (C) 2018 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
@@ -22,7 +23,9 @@
 #include "quakedef.h"
 #include "System.hpp"
 #include "SystemEventDispatcher.hpp"
-#include "interface.h"
+#include "Interface.hpp"
+
+constexpr auto MAXPRINTMSG{4096};
 
 CSystem gSystem;
 //CSystem *gpSystem{&gSystem};
@@ -49,13 +52,53 @@ void CSystem::RemoveEventListener(ISystemEventListener *apListener)
 void CSystem::Printf(const char *fmt, ...)
 {
 	va_list argptr;
-	char text[1024]{};
+	char text[MAXPRINTMSG]{};
 
 	va_start(argptr, fmt);
 	vsprintf(text, fmt, argptr);
 	va_end(argptr);
 	
-	Sys_Printf(text);
+	Sys_Printf(false, "%s", text);
+};
+
+/*
+================
+CSystem::DevPrintf
+
+A CSystem::Printf that only shows up if the "developer" cvar is set
+================
+*/
+// FIXME: make a buffer size safe vsprintf?
+void CSystem::DevPrintf(const char *fmt, ...)
+{
+	// don't confuse non-developers with techie stuff...
+	if(!developer.GetValue())
+		return;
+	
+	va_list argptr;
+	char msg[MAXPRINTMSG]{};
+
+	va_start(argptr, fmt);
+	vsprintf(msg, fmt, argptr);
+	va_end(argptr);
+	
+	Printf("%s", msg);
+};
+
+void CSystem::Warning(const char *fmt, ...)
+{
+	va_list argptr;
+	char msg[MAXPRINTMSG]{}; // TODO: 1024 for linux
+
+	va_start(argptr, fmt);
+	vsprintf(msg, fmt, argptr);
+	va_end(argptr);
+	
+#ifdef _WIN32
+	Printf("[WARNING] %s", msg);
+#elif __linux__
+	fprintf(stderr, "[WARNING] %s", msg); // TODO: u sure?
+#endif
 };
 
 void CSystem::Error(const char *fmt, ...)
@@ -74,7 +117,21 @@ void CSystem::Error(const char *fmt, ...)
 
 void CSystem::Quit()
 {
-	Sys_Quit();
+	Host_Shutdown();
+
+#ifdef _WIN32
+
+#ifndef SWDS
+	//if(tevent) // TODO
+		//CloseHandle(tevent); // TODO
+#endif
+
+#elif __linux__
+	fcntl(0, F_SETFL, fcntl(0, F_GETFL, 0) & ~FNDELAY);
+	fflush(stdout);
+#endif
+
+	exit(0);
 };
 
 double CSystem::GetFloatTime() const
