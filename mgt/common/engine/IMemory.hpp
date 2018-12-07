@@ -61,4 +61,7 @@ interface IMemory : public IBaseInterface
 	
 	///
 	virtual void *Cache_Check(cache_user_t *c) = 0;
+	
+	///
+	virtual void *Cache_Report() = 0;
 };
