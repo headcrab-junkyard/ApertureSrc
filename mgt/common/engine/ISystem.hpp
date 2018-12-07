@@ -41,7 +41,10 @@ interface ISystem : public IBaseInterface
 	virtual void Printf(const char *asMsg, ...) = 0;
 	
 	///
-	virtual void DevPrintf(const char *msg, ...) = 0;
+	virtual void DevPrintf(const char *asMsg, ...) = 0;
+	
+	///
+	virtual void SafePrintf(const char *asMsg, ...) = 0; // TODO: temp?
 	
 	///
 	virtual void Warning(const char *asMsg, ...) = 0;
