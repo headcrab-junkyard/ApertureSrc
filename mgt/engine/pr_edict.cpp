@@ -258,11 +258,11 @@ void ED_Print (edict_t *ed)
 
 	if (ed->free)
 	{
-		Con_Printf ("FREE\n");
+		gpSystem->Printf ("FREE\n");
 		return;
 	}
 
-	Con_Printf("\nEDICT %i:\n", NUM_FOR_EDICT(ed));
+	gpSystem->Printf("\nEDICT %i:\n", NUM_FOR_EDICT(ed));
 	for (i=1 ; i<progs->numfielddefs ; i++)
 	{
 		d = &pr_fielddefs[i];
@@ -281,12 +281,12 @@ void ED_Print (edict_t *ed)
 		if (j == type_size[type])
 			continue;
 	
-		Con_Printf ("%s",name);
+		gpSystem->Printf ("%s",name);
 		l = strlen (name);
 		while (l++ < 15)
-			Con_Printf (" ");
+			gpSystem->Printf (" ");
 
-		Con_Printf ("%s\n", PR_ValueString(d->type, (eval_t *)v));		
+		gpSystem->Printf ("%s\n", PR_ValueString(d->type, (eval_t *)v));		
 	}
 }
 */
@@ -362,7 +362,7 @@ void ED_PrintEdicts ()
 {
 	int		i;
 	
-	Con_Printf ("%i entities\n", sv.num_edicts);
+	gpSystem->Printf ("%i entities\n", sv.num_edicts);
 	for (i=0 ; i<sv.num_edicts ; i++)
 		ED_PrintNum (i);
 }
@@ -384,7 +384,7 @@ void ED_PrintEdict_f ()
 	i = Q_atoi (Cmd_Argv(1));
 	if (i >= sv.num_edicts)
 	{
-		Con_Printf("Bad edict number\n");
+		gpSystem->Printf("Bad edict number\n");
 		return;
 	}
 	ED_PrintNum (i);
@@ -420,11 +420,11 @@ void ED_Count()
 			step++;
 	}
 
-	Con_Printf("num_edicts:%3i\n", sv.num_edicts);
-	Con_Printf("active    :%3i\n", active);
-	Con_Printf("view      :%3i\n", models);
-	Con_Printf("touch     :%3i\n", solid);
-	Con_Printf("step      :%3i\n", step);
+	gpSystem->Printf("num_edicts:%3i\n", sv.num_edicts);
+	gpSystem->Printf("active    :%3i\n", active);
+	gpSystem->Printf("view      :%3i\n", models);
+	gpSystem->Printf("touch     :%3i\n", solid);
+	gpSystem->Printf("step      :%3i\n", step);
 }
 
 /*
@@ -505,7 +505,7 @@ void ED_ParseGlobals (char *data)
 
 		if (!key)
 		{
-			Con_Printf ("'%s' is not a global\n", keyname);
+			gpSystem->Printf ("'%s' is not a global\n", keyname);
 			continue;
 		}
 
@@ -622,7 +622,7 @@ char *ED_ParseEdict(char *data, edict_t *ent)
 
 		//if (!key)
 		{
-			//Con_Printf ("'%s' is not a field\n", keyname);
+			//gpSystem->Printf ("'%s' is not a field\n", keyname);
 			//continue;
 		}
 
@@ -706,7 +706,7 @@ void ED_LoadFromFile(char *data)
 		//
 		if(!ent->v.classname)
 		{
-			Con_Printf("No classname for:\n");
+			gpSystem->Printf("No classname for:\n");
 			//ED_Print(ent); // TODO: actually unused in gs, should i fix it?
 			ED_Free(ent);
 			continue;
@@ -717,7 +717,7 @@ void ED_LoadFromFile(char *data)
 
 		//if (!func)
 		{
-			Con_Printf("No spawn function for:\n");
+			gpSystem->Printf("No spawn function for:\n");
 			//ED_Print(ent); // TODO: actually unused in gs, should i fix it?
 			ED_Free(ent);
 			continue;

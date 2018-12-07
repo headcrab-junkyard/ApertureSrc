@@ -253,7 +253,7 @@ qboolean PM_RecursiveHullCheck(hull_t *hull, int num, float p1f, float p2f, vec3
 #ifdef PARANOID
 	if(PM_HullPointContents(pm_hullmodel, mid, node->children[side]) == CONTENTS_SOLID)
 	{
-		Con_Printf("mid PointInHullSolid\n");
+		gpSystem->Printf("mid PointInHullSolid\n");
 		return false;
 	}
 #endif

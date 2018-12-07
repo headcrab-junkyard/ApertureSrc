@@ -226,7 +226,7 @@ before = PM_TestPlayerPosition (pmove->origin);
 after = PM_TestPlayerPosition (pmove->origin);
 
 if (sv_player->v.health > 0 && before && !after )
-	Con_Printf ("player %s got stuck in playermove!!!!\n", host_client->name);
+	gpSystem->Printf ("player %s got stuck in playermove!!!!\n", host_client->name);
 }
 #else
 	PlayerMove ();
@@ -926,7 +926,7 @@ void SV_ExecuteClientMessage (client_t *cl, sizebuf_t *net_message)
 	{
 		if (msg_badread)
 		{
-			Con_Printf ("SV_ReadClientMessage: badread\n");
+			gpSystem->Printf ("SV_ReadClientMessage: badread\n");
 			SV_DropClient (cl, false, "Bad message read");
 			return;
 		}	
@@ -938,7 +938,7 @@ void SV_ExecuteClientMessage (client_t *cl, sizebuf_t *net_message)
 		switch (c)
 		{
 		default:
-			Con_Printf ("SV_ReadClientMessage: unknown command char\n");
+			gpSystem->Printf ("SV_ReadClientMessage: unknown command char\n");
 			SV_DropClient (cl, false, "Unknown command char");
 			return;
 						

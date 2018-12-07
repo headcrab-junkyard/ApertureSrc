@@ -139,7 +139,7 @@ void Host_Error(const char *error, ...)
 	vsprintf(string, error, argptr);
 	va_end(argptr);
 
-	Con_Printf("Host_Error: %s\n", string);
+	gpSystem->Printf("Host_Error: %s\n", string);
 
 	//qw
 	//SV_FinalMessage (va("server crashed: %s\n", string));
@@ -428,7 +428,7 @@ void Host_ShutdownServer(bool crash)
 	SV_BroadcastCommand("disconnect"); // TODO: was count = NET_SendToAll(&buf, 5);
 	
 	if(count)
-		Con_Printf("Host_ShutdownServer: NET_SendToAll failed for %u clients\n", count);
+		gpSystem->Printf("Host_ShutdownServer: NET_SendToAll failed for %u clients\n", count);
 
 	for(i = 0, host_client = svs.clients; i < svs.maxclients; i++, host_client++)
 		if(host_client->active)
@@ -569,7 +569,7 @@ void _Host_Frame(float time)
 		time3 = Sys_FloatTime();
 		pass2 = (time2 - time1) * 1000;
 		pass3 = (time3 - time2) * 1000;
-		Con_Printf("%3i tot %3i server %3i gfx %3i snd\n",
+		gpSystem->Printf("%3i tot %3i server %3i gfx %3i snd\n",
 		           pass1 + pass2 + pass3, pass1, pass2, pass3);
 	};
 
@@ -609,7 +609,7 @@ void Host_Frame(float time)
 			c++;
 	};
 
-	Con_Printf("host_profile: %2i clients %2i msec\n", c, m);
+	gpSystem->Printf("host_profile: %2i clients %2i msec\n", c, m);
 };
 
 //============================================================================
@@ -753,10 +753,10 @@ void Host_Init(quakeparms_t *parms)
 
 	SV_Init();
 
-	Con_Printf("Protocol version %d\n", PROTOCOL_VERSION);
-	//Con_Printf ("Exe version %s/%s (%s)\n", TODO); // Exe version 1.1.2.2/Stdio (tfc)
-	//Con_Printf ("Exe build: " __TIME__ " " __DATE__ "(%d)\n", build_number()); // TODO
-	Con_Printf("%4.1f Mb heap\n", parms->memsize / (1024 * 1024.0));
+	gpSystem->Printf("Protocol version %d\n", PROTOCOL_VERSION);
+	//gpSystem->Printf ("Exe version %s/%s (%s)\n", TODO); // Exe version 1.1.2.2/Stdio (tfc)
+	//gpSystem->Printf ("Exe build: " __TIME__ " " __DATE__ "(%d)\n", build_number()); // TODO
+	gpSystem->Printf("%4.1f Mb heap\n", parms->memsize / (1024 * 1024.0));
 
 	//R_InitTextures(); // TODO: we need a blank texture instance for model loading code
 
@@ -773,8 +773,7 @@ void Host_Init(quakeparms_t *parms)
 
 	host_initialized = true;
 
-	//Con_Printf ("\nServer Version %4.2f (Build %04d)\n\n", VERSION, build_number());
-	Sys_Printf("======== MGT Initialized =========\n"); // TODO: Con_Printf?
+	//gpSystem->Printf ("\nServer Version %4.2f (Build %04d)\n\n", VERSION, build_number());
 };
 
 /*

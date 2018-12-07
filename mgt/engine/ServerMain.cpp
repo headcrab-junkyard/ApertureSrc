@@ -71,20 +71,20 @@ void SV_Spawn_f(const ICmdArgs &apArgs) // TODO: was Host_Spawn_f
 
 	if(cmd_source == src_command)
 	{
-		Con_Printf("spawn is not valid from the console\n");
+		gpSystem->Printf("spawn is not valid from the console\n");
 		return;
 	}
 
 	if(host_client->spawned)
 	{
-		Con_Printf("Spawn not valid -- allready spawned\n");
+		gpSystem->Printf("Spawn not valid -- allready spawned\n");
 		return;
 	}
 
 	// handle the case of a level changing while a client was connecting
 	if ( atoi(Cmd_Argv(1)) != svs.spawncount )
 	{
-		Con_Printf ("SV_Spawn_f from different level\n");
+		gpSystem->Printf ("SV_Spawn_f from different level\n");
 		SV_New_f (apArgs);
 		return;
 	}
@@ -253,7 +253,7 @@ void SV_New_f(const ICmdArgs &apArgs)
 	/*
 	if (host_client->num_backbuf)
 	{
-		Con_Printf("WARNING %s: [SV_New] Back buffered (%d0, clearing", host_client->name, host_client->netchan.message.cursize); 
+		gpSystem->Printf("WARNING %s: [SV_New] Back buffered (%d0, clearing", host_client->name, host_client->netchan.message.cursize); 
 		host_client->num_backbuf = 0;
 		SZ_Clear(&host_client->netchan.message);
 	};
@@ -319,20 +319,20 @@ void SV_Serverinfo_f (const ICmdArgs &apArgs)
 
 	if (Cmd_Argc() == 1)
 	{
-		Con_Printf ("Server info settings:\n");
+		gpSystem->Printf ("Server info settings:\n");
 		Info_Print (svs.info);
 		return;
 	};
 
 	if (Cmd_Argc() != 3)
 	{
-		Con_Printf ("usage: serverinfo [ <key> <value> ]\n");
+		gpSystem->Printf ("usage: serverinfo [ <key> <value> ]\n");
 		return;
 	};
 
 	if (Cmd_Argv(1)[0] == '*')
 	{
-		Con_Printf ("Star variables cannot be changed.\n");
+		gpSystem->Printf ("Star variables cannot be changed.\n");
 		return;
 	};
 	
@@ -361,20 +361,20 @@ void SV_Localinfo_f (const ICmdArgs &apArgs)
 {
 	if (Cmd_Argc() == 1)
 	{
-		Con_Printf ("Local info settings:\n");
+		gpSystem->Printf ("Local info settings:\n");
 		Info_Print (localinfo);
 		return;
 	};
 
 	if (Cmd_Argc() != 3)
 	{
-		Con_Printf ("usage: localinfo [ <key> <value> ]\n");
+		gpSystem->Printf ("usage: localinfo [ <key> <value> ]\n");
 		return;
 	};
 
 	if (Cmd_Argv(1)[0] == '*')
 	{
-		Con_Printf ("Star variables cannot be changed.\n");
+		gpSystem->Printf ("Star variables cannot be changed.\n");
 		return;
 	};
 	Info_SetValueForKey (localinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_LOCALINFO_STRING);
@@ -407,7 +407,7 @@ qboolean SV_SetPlayer ()
 			return true;
 		}
 	}
-	Con_Printf ("Userid %i is not on the server\n", idnum);
+	gpSystem->Printf ("Userid %i is not on the server\n", idnum);
 	return false;
 };
 
@@ -422,7 +422,7 @@ void SV_User_f (const ICmdArgs &apArgs)
 {
 	if (Cmd_Argc() != 2)
 	{
-		Con_Printf ("Usage: info <userid>\n");
+		gpSystem->Printf ("Usage: info <userid>\n");
 		return;
 	};
 
@@ -454,7 +454,7 @@ qboolean StringToFilter (const char *s, ipfilter_t *f)
 	{
 		if (*s < '0' || *s > '9')
 		{
-			Con_Printf ("Bad filter address: %s\n", s);
+			gpSystem->Printf ("Bad filter address: %s\n", s);
 			return false;
 		}
 		
@@ -495,7 +495,7 @@ void SV_AddIP_f (const ICmdArgs &apArgs)
 	{
 		if (numipfilters == MAX_IPFILTERS)
 		{
-			Con_Printf ("IP filter list is full\n");
+			gpSystem->Printf ("IP filter list is full\n");
 			return;
 		}
 		numipfilters++;
@@ -524,10 +524,10 @@ void SV_RemoveIP_f (const ICmdArgs &apArgs)
 			for (j=i+1 ; j<numipfilters ; j++)
 				ipfilters[j-1] = ipfilters[j];
 			numipfilters--;
-			Con_Printf ("Removed.\n");
+			gpSystem->Printf ("Removed.\n");
 			return;
 		}
-	Con_Printf ("Didn't find %s.\n", Cmd_Argv(1));
+	gpSystem->Printf ("Didn't find %s.\n", Cmd_Argv(1));
 }
 
 /*
@@ -540,11 +540,11 @@ void SV_ListIP_f (const ICmdArgs &apArgs)
 	int		i;
 	byte	b[4];
 
-	Con_Printf ("Filter list:\n");
+	gpSystem->Printf ("Filter list:\n");
 	for (i=0 ; i<numipfilters ; i++)
 	{
 		*(unsigned *)b = ipfilters[i].compare;
-		Con_Printf ("%3i.%3i.%3i.%3i\n", b[0], b[1], b[2], b[3]);
+		gpSystem->Printf ("%3i.%3i.%3i.%3i\n", b[0], b[1], b[2], b[3]);
 	}
 }
 
@@ -562,12 +562,12 @@ void SV_WriteIP_f (const ICmdArgs &apArgs)
 
 	sprintf (name, "%s/listip.cfg", com_gamedir);
 
-	Con_Printf ("Writing %s.\n", name);
+	gpSystem->Printf ("Writing %s.\n", name);
 
 	f = fopen (name, "wb");
 	if (!f)
 	{
-		Con_Printf ("Couldn't open %s\n", name);
+		gpSystem->Printf ("Couldn't open %s\n", name);
 		return;
 	}
 	
@@ -766,7 +766,7 @@ void SV_ReadPackets()
 			continue;
 
 		// packet is not from a known client
-		//	Con_Printf ("%s:sequenced packet without connection\n", NET_AdrToString(net_from));
+		//	gpSystem->Printf ("%s:sequenced packet without connection\n", NET_AdrToString(net_from));
 	}
 }
 
@@ -953,7 +953,7 @@ void SVC_Status()
 
 	Cmd_TokenizeString("status");
 	SV_BeginRedirect(RD_PACKET);
-	//Con_Printf("%s\n", svs.info); // TODO
+	//gpSystem->Printf("%s\n", svs.info); // TODO
 	for(i = 0; i < MAX_CLIENTS; i++)
 	{
 		cl = &svs.clients[i];
@@ -964,7 +964,7 @@ void SVC_Status()
 			top = (top < 0) ? 0 : ((top > 13) ? 13 : top);
 			bottom = (bottom < 0) ? 0 : ((bottom > 13) ? 13 : bottom);
 			//ping = SV_CalcPing(cl); // TODO
-			Con_Printf("%i %i %i %i \"%s\" \"%s\" %i %i\n", cl->userid,
+			gpSystem->Printf("%i %i %i %i \"%s\" \"%s\" %i %i\n", cl->userid,
 			           cl->old_frags, (int)(realtime - cl->connection_started) / 60,
 			           ping, cl->name, Info_ValueForKey(cl->userinfo, "skin"), top, bottom);
 		}
@@ -997,7 +997,7 @@ void SV_CheckLog()
 		svs.logsequence++;
 		sz = &svs.log[svs.logsequence & 1];
 		sz->cursize = 0;
-		Con_Printf("beginning fraglog sequence %i\n", svs.logsequence);
+		gpSystem->Printf("beginning fraglog sequence %i\n", svs.logsequence);
 	}
 */
 }
@@ -1132,7 +1132,7 @@ void SVC_DirectConnect()
 	if(version != PROTOCOL_VERSION)
 	{
 		Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c\nServer is version %4.2f.\n", A2C_PRINT, VERSION);
-		Con_Printf("* rejected connect from version %i\n", version);
+		gpSystem->Printf("* rejected connect from version %i\n", version);
 		return;
 	}
 
@@ -1171,7 +1171,7 @@ void SVC_DirectConnect()
 			stricmp(spectator_password.string, "none") &&
 			strcmp(spectator_password.string, s) )
 		{	// failed
-			Con_Printf ("%s:spectator password failed\n", NET_AdrToString (net_from));
+			gpSystem->Printf ("%s:spectator password failed\n", NET_AdrToString (net_from));
 			Netchan_OutOfBandPrint (NS_SERVER, net_from, "%c\nrequires a spectator password\n\n", A2C_PRINT);
 			return;
 		}
@@ -1189,7 +1189,7 @@ void SVC_DirectConnect()
 		   stricmp(password.string, "none") &&
 		   strcmp(password.string, s))
 		{
-			Con_Printf("%s:password failed\n", NET_AdrToString(net_from));
+			gpSystem->Printf("%s:password failed\n", NET_AdrToString(net_from));
 			Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c\nserver requires a password\n\n", A2C_PRINT);
 			return;
 		}
@@ -1228,12 +1228,12 @@ void SVC_DirectConnect()
 		{
 			if(cl->connected)
 			{
-				Con_Printf("%s:dup connect\n", NET_AdrToString(adr));
+				gpSystem->Printf("%s:dup connect\n", NET_AdrToString(adr));
 				userid--;
 				return;
 			}
 
-			Con_Printf("%s:reconnect\n", NET_AdrToString(adr));
+			gpSystem->Printf("%s:reconnect\n", NET_AdrToString(adr));
 			SV_DropClient(cl, false, "reconnect");
 			break;
 		}
@@ -1258,7 +1258,7 @@ void SVC_DirectConnect()
 
 	if(/*(spectator && spectators >= (int)maxspectators.value) ||*/ (!spectator && clients >= 4/*(int)maxplayers.value*/)) // TODO
 	{
-		Con_Printf("%s:full connect\n", NET_AdrToString(adr));
+		gpSystem->Printf("%s:full connect\n", NET_AdrToString(adr));
 		Netchan_OutOfBandPrint(NS_SERVER, adr, "%c\nserver is full\n\n", A2C_PRINT);
 		return;
 	}
@@ -1276,7 +1276,7 @@ void SVC_DirectConnect()
 
 	if(!newcl)
 	{
-		Con_Printf("WARNING: miscounted available clients\n");
+		gpSystem->Printf("WARNING: miscounted available clients\n");
 		return;
 	}
 
@@ -1320,7 +1320,7 @@ void SVC_DirectConnect()
 
 	// TODO
 	//if(newcl->spectator)
-		//Con_Printf("Spectator %s connected\n", newcl->name);
+		//gpSystem->Printf("Spectator %s connected\n", newcl->name);
 	//else
 		Con_DPrintf("Client %s connected\n", newcl->name);
 
@@ -1357,15 +1357,15 @@ void SVC_RemoteCommand()
 
 	if(!Rcon_Validate())
 	{
-		Con_Printf("Bad rcon from %s:\n%s\n", NET_AdrToString(net_from), net_message.data + 4);
+		gpSystem->Printf("Bad rcon from %s:\n%s\n", NET_AdrToString(net_from), net_message.data + 4);
 
 		SV_BeginRedirect(RD_PACKET);
 
-		Con_Printf("Bad rcon_password.\n");
+		gpSystem->Printf("Bad rcon_password.\n");
 	}
 	else
 	{
-		Con_Printf("Rcon from %s:\n%s\n", NET_AdrToString(net_from), net_message.data + 4);
+		gpSystem->Printf("Rcon from %s:\n%s\n", NET_AdrToString(net_from), net_message.data + 4);
 
 		SV_BeginRedirect(RD_PACKET);
 
@@ -1414,7 +1414,7 @@ void SV_ConnectionlessPacket()
 	}
 	if(c[0] == A2A_ACK && (c[1] == 0 || c[1] == '\n'))
 	{
-		Con_Printf("A2A_ACK from %s\n", NET_AdrToString(net_from));
+		gpSystem->Printf("A2A_ACK from %s\n", NET_AdrToString(net_from));
 		return;
 	}
 	else if(!strcmp(c, "status"))
@@ -1440,13 +1440,13 @@ void SV_ConnectionlessPacket()
 	else if(!strcmp(c, "rcon"))
 		SVC_RemoteCommand();
 	else
-		Con_Printf("bad connectionless packet from %s:\n%s\n", NET_AdrToString(net_from), s);
+		gpSystem->Printf("bad connectionless packet from %s:\n%s\n", NET_AdrToString(net_from), s);
 }
 
 /*
 =============================================================================
 
-Con_Printf redirection
+gpSystem->Printf redirection
 
 =============================================================================
 */
@@ -1493,7 +1493,7 @@ void SV_FlushRedirect ()
 ==================
 SV_BeginRedirect
 
-  Send Con_Printf data to the remote client
+  Send gpSystem->Printf data to the remote client
   instead of the console
 ==================
 */
@@ -1588,7 +1588,7 @@ void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume,
 
 	if(sound_num == MAX_SOUNDS || !sv.sound_precache[sound_num])
 	{
-		Con_Printf("SV_StartSound: %s not precacheed\n", sample);
+		gpSystem->Printf("SV_StartSound: %s not precacheed\n", sample);
 		return;
 	}
 
@@ -1865,7 +1865,7 @@ void SV_WriteEntitiesToClient(edict_t *clent, sizebuf_t *msg)
 
 		if(msg->maxsize - msg->cursize < 16)
 		{
-			Con_Printf("packet overflow\n");
+			gpSystem->Printf("packet overflow\n");
 			return;
 		}
 
@@ -2419,7 +2419,7 @@ void SV_SendClientMessages()
 			SZ_Clear(&c->netchan.message);
 			SZ_Clear(&c->datagram);
 			//SV_BroadcastPrintf(PRINT_HIGH, "%s overflowed\n", c->name); // TODO
-			Con_Printf("WARNING: reliable overflow for %s\n", c->name);
+			gpSystem->Printf("WARNING: reliable overflow for %s\n", c->name);
 			SV_DropClient(c, true, "Overflowed!");
 			c->send_message = true;
 			c->netchan.cleartime = 0; // don't choke this message
@@ -2730,7 +2730,7 @@ void SV_SpawnServer(const char *server, const char *startspot)
 	sv.worldmodel = Mod_ForName(sv.modelname, false);
 	if(!sv.worldmodel)
 	{
-		Con_Printf("Couldn't spawn server %s\n", sv.modelname);
+		gpSystem->Printf("Couldn't spawn server %s\n", sv.modelname);
 		sv.active = false;
 		return;
 	}

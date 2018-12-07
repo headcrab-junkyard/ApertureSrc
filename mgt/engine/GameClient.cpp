@@ -40,7 +40,7 @@ void CGameClient::Print(const char *s)
 
 	if(entnum < 1 || entnum > svs.maxclients)
 	{
-		Con_Printf("tried to sprint to a non-client\n");
+		gpSystem->Printf("tried to sprint to a non-client\n");
 		return;
 	};
 
@@ -65,7 +65,7 @@ void CGameClient::CenterPrint(const char *s)
 
 	if(entnum < 1 || entnum > svs.maxclients)
 	{
-		Con_Printf("tried to sprint to a non-client\n");
+		gpSystem->Printf("tried to sprint to a non-client\n");
 		return;
 	};
 

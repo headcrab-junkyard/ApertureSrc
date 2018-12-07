@@ -85,7 +85,7 @@ void SV_CheckAllEnts()
 			continue;
 
 		if(SV_TestEntityPosition(check))
-			Con_Printf("entity in invalid position\n");
+			gpSystem->Printf("entity in invalid position\n");
 	}
 }
 
@@ -105,12 +105,12 @@ void SV_CheckVelocity(edict_t *ent)
 	{
 		if(IS_NAN(ent->v.velocity[i]))
 		{
-			Con_Printf("Got a NaN velocity on %s\n", pr_strings + ent->v.classname);
+			gpSystem->Printf("Got a NaN velocity on %s\n", pr_strings + ent->v.classname);
 			ent->v.velocity[i] = 0;
 		}
 		if(IS_NAN(ent->v.origin[i]))
 		{
-			Con_Printf("Got a NaN origin on %s\n", pr_strings + ent->v.classname);
+			gpSystem->Printf("Got a NaN origin on %s\n", pr_strings + ent->v.classname);
 			ent->v.origin[i] = 0;
 		}
 		if(ent->v.velocity[i] > sv_maxvelocity.GetValue())
@@ -325,7 +325,7 @@ int SV_FlyMove(edict_t *ent, float time, trace_t *steptrace)
 		{ // go along the crease
 			if(numplanes != 2)
 			{
-				//				Con_Printf ("clip velocity, numplanes == %i\n",numplanes);
+				//				gpSystem->Printf ("clip velocity, numplanes == %i\n",numplanes);
 				VectorCopy(vec3_origin, ent->v.velocity);
 				return 7;
 			}

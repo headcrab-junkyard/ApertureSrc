@@ -129,7 +129,7 @@ void Cvar_Set(const char *var_name, const char *value)
 	var = Cvar_FindVar(var_name);
 	if(!var)
 	{ // there is an error in C code if this happens
-		Con_Printf("Cvar_Set: variable %s not found\n", var_name);
+		gpSystem->Printf("Cvar_Set: variable %s not found\n", var_name);
 		return;
 	}
 
@@ -174,14 +174,14 @@ void Cvar_RegisterVariable(cvar_t *variable)
 	// first check to see if it has allready been defined
 	if(Cvar_FindVar(variable->name))
 	{
-		Con_Printf("Can't register variable %s, allready defined\n", variable->name);
+		gpSystem->Printf("Can't register variable %s, allready defined\n", variable->name);
 		return;
 	}
 
 	// check for overlap with a command
 	if(Cmd_Exists(variable->name))
 	{
-		Con_Printf("Cvar_RegisterVariable: %s is a command\n", variable->name);
+		gpSystem->Printf("Cvar_RegisterVariable: %s is a command\n", variable->name);
 		return;
 	}
 
@@ -215,7 +215,7 @@ qboolean Cvar_Command()
 	// perform a variable print or set
 	if(Cmd_Argc() == 1)
 	{
-		Con_Printf("\"%s\" is \"%s\"\n", v->name, v->string);
+		gpSystem->Printf("\"%s\" is \"%s\"\n", v->name, v->string);
 		return true;
 	}
 

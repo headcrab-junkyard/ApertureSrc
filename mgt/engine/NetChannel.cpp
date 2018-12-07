@@ -232,7 +232,7 @@ void Netchan_Transmit(netchan_t *chan, int length, byte *data)
 	if(chan->message.overflowed)
 	{
 		chan->fatal_error = true;
-		Con_Printf("%s:Outgoing message overflow\n", NET_AdrToString(chan->remote_address));
+		gpSystem->Printf("%s:Outgoing message overflow\n", NET_AdrToString(chan->remote_address));
 		return;
 	}
 
@@ -302,7 +302,7 @@ void Netchan_Transmit(netchan_t *chan, int length, byte *data)
 #endif
 
 	if(net_showpackets.value)
-		Con_Printf("--> s=%i(%i) a=%i(%i) %i\n", chan->outgoing_sequence, send_reliable, chan->incoming_sequence, chan->incoming_reliable_sequence, send.cursize);
+		gpSystem->Printf("--> s=%i(%i) a=%i(%i) %i\n", chan->outgoing_sequence, send_reliable, chan->incoming_sequence, chan->incoming_reliable_sequence, send.cursize);
 }
 
 /*
@@ -345,7 +345,7 @@ bool Netchan_Process(netchan_t *chan, sizebuf_t *net_message)
 	sequence_ack &= ~(1 << 31);
 
 	if(net_showpackets.value)
-		Con_Printf("<-- s=%i(%i) a=%i(%i) %i\n", sequence, reliable_message, sequence_ack, reliable_ack, net_message->cursize);
+		gpSystem->Printf("<-- s=%i(%i) a=%i(%i) %i\n", sequence, reliable_message, sequence_ack, reliable_ack, net_message->cursize);
 
 // get a rate estimation
 #if 0
@@ -383,7 +383,7 @@ bool Netchan_Process(netchan_t *chan, sizebuf_t *net_message)
 	if(sequence <= (unsigned)chan->incoming_sequence)
 	{
 		if(net_showdrop.value)
-			Con_Printf("%s:Out of order packet %i at %i\n", NET_AdrToString(chan->remote_address), sequence, chan->incoming_sequence);
+			gpSystem->Printf("%s:Out of order packet %i at %i\n", NET_AdrToString(chan->remote_address), sequence, chan->incoming_sequence);
 		return false;
 	}
 
@@ -396,7 +396,7 @@ bool Netchan_Process(netchan_t *chan, sizebuf_t *net_message)
 		chan->drop_count += 1;
 
 		if(net_showdrop.value)
-			Con_Printf("%s:Dropped %i packets at %i\n", NET_AdrToString(chan->remote_address), sequence - (chan->incoming_sequence + 1), sequence);
+			gpSystem->Printf("%s:Dropped %i packets at %i\n", NET_AdrToString(chan->remote_address), sequence - (chan->incoming_sequence + 1), sequence);
 	}
 
 	//

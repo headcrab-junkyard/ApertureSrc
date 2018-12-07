@@ -1824,15 +1824,15 @@ void Mod_Print ()
 {
 	model_t	*mod{mod_known};
 
-	Con_Printf ("Cached models:\n");
+	gpSystem->Printf ("Cached models:\n");
 	for (int i=0; i < mod_numknown ; i++, mod++)
 	{
-		Con_Printf ("%8p : %s",mod->cache.data, mod->name);
+		gpSystem->Printf ("%8p : %s",mod->cache.data, mod->name);
 		if (mod->needload & NL_UNREFERENCED)
-			Con_Printf (" (!R)");
+			gpSystem->Printf (" (!R)");
 		if (mod->needload & NL_NEEDS_LOADED)
-			Con_Printf (" (!P)");
-		Con_Printf ("\n");
+			gpSystem->Printf (" (!P)");
+		gpSystem->Printf ("\n");
 	};
 };
 

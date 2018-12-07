@@ -90,7 +90,7 @@ void Info_RemoveKey(char *s, const char *key)
 
 	if(strstr(key, "\\"))
 	{
-		Con_Printf("Can't use a key with a \\\n");
+		gpSystem->Printf("Can't use a key with a \\\n");
 		return;
 	}
 
@@ -182,19 +182,19 @@ void Info_SetValueForStarKey(char *s, const char *key, const char *value, int ma
 
 	if(strstr(key, "\\") || strstr(value, "\\"))
 	{
-		Con_Printf("Can't use keys or values with a \\\n");
+		gpSystem->Printf("Can't use keys or values with a \\\n");
 		return;
 	}
 
 	if(strstr(key, "\"") || strstr(value, "\""))
 	{
-		Con_Printf("Can't use keys or values with a \"\n");
+		gpSystem->Printf("Can't use keys or values with a \"\n");
 		return;
 	}
 
 	if(strlen(key) > 63 || strlen(value) > 63)
 	{
-		Con_Printf("Keys and values must be < 64 characters.\n");
+		gpSystem->Printf("Keys and values must be < 64 characters.\n");
 		return;
 	}
 
@@ -205,7 +205,7 @@ void Info_SetValueForStarKey(char *s, const char *key, const char *value, int ma
 		// don't change it!
 		if(strlen(value) - strlen(v) + strlen(s) > maxsize)
 		{
-			Con_Printf("Info string length exceeded\n");
+			gpSystem->Printf("Info string length exceeded\n");
 			return;
 		}
 	}
@@ -217,7 +217,7 @@ void Info_SetValueForStarKey(char *s, const char *key, const char *value, int ma
 
 	if((int)(strlen(snew) + strlen(s)) > maxsize)
 	{
-		Con_Printf("Info string length exceeded\n");
+		gpSystem->Printf("Info string length exceeded\n");
 		return;
 	}
 
@@ -257,7 +257,7 @@ void Info_SetValueForKey(char *s, const char *key, const char *value, int maxsiz
 {
 	if(key[0] == '*')
 	{
-		Con_Printf("Can't set * keys\n");
+		gpSystem->Printf("Can't set * keys\n");
 		return;
 	}
 
@@ -287,11 +287,11 @@ void Info_Print(const char *s)
 		}
 		else
 			*o = 0;
-		Con_Printf("%s", key);
+		gpSystem->Printf("%s", key);
 
 		if(!*s)
 		{
-			Con_Printf("MISSING VALUE\n");
+			gpSystem->Printf("MISSING VALUE\n");
 			return;
 		}
 
@@ -303,6 +303,6 @@ void Info_Print(const char *s)
 
 		if(*s)
 			s++;
-		Con_Printf("%s\n", value);
+		gpSystem->Printf("%s\n", value);
 	}
 }

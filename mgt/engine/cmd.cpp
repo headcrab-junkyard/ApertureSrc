@@ -88,7 +88,7 @@ void Cbuf_AddText(const char *text)
 
 	if(cmd_text.cursize + l >= cmd_text.maxsize)
 	{
-		Con_Printf("Cbuf_AddText: overflow\n");
+		gpSystem->Printf("Cbuf_AddText: overflow\n");
 		return;
 	}
 
@@ -213,7 +213,7 @@ void Cmd_StuffCmds_f(const ICmdArgs &apArgs)
 
 	if(apArgs.GetCount() != 1)
 	{
-		Con_Printf("stuffcmds : execute command line parameters\n");
+		gpSystem->Printf("stuffcmds : execute command line parameters\n");
 		return;
 	}
 
@@ -281,7 +281,7 @@ void Cmd_Exec_f(const ICmdArgs &apArgs)
 
 	if(apArgs.GetCount() != 2)
 	{
-		Con_Printf("exec <filename> : execute a script file\n");
+		gpSystem->Printf("exec <filename> : execute a script file\n");
 		return;
 	}
 
@@ -289,10 +289,10 @@ void Cmd_Exec_f(const ICmdArgs &apArgs)
 	f = (char *)COM_LoadHunkFile(apArgs.GetByIndex(1));
 	if(!f)
 	{
-		Con_Printf("couldn't exec %s\n", apArgs.GetByIndex(1));
+		gpSystem->Printf("couldn't exec %s\n", apArgs.GetByIndex(1));
 		return;
 	}
-	Con_Printf("execing %s\n", apArgs.GetByIndex(1));
+	gpSystem->Printf("execing %s\n", apArgs.GetByIndex(1));
 
 	Cbuf_InsertText(f);
 	Hunk_FreeToLowMark(mark);
@@ -310,8 +310,8 @@ void Cmd_Echo_f(const ICmdArgs &apArgs)
 	int i;
 
 	for(i = 1; i < apArgs.GetCount(); i++)
-		Con_Printf("%s ", apArgs.GetByIndex(i));
-	Con_Printf("\n");
+		gpSystem->Printf("%s ", apArgs.GetByIndex(i));
+	gpSystem->Printf("\n");
 }
 
 /*
@@ -338,16 +338,16 @@ void Cmd_Alias_f(const ICmdArgs &apArgs)
 
 	if(apArgs.GetCount() == 1)
 	{
-		Con_Printf("Current alias commands:\n");
+		gpSystem->Printf("Current alias commands:\n");
 		for(a = cmd_alias; a; a = a->next)
-			Con_Printf("%s : %s\n", a->name, a->value);
+			gpSystem->Printf("%s : %s\n", a->name, a->value);
 		return;
 	}
 
 	s = Cmd_Argv(1);
 	if(Q_strlen(s) >= MAX_ALIAS_NAME)
 	{
-		Con_Printf("Alias name is too long\n");
+		gpSystem->Printf("Alias name is too long\n");
 		return;
 	}
 
@@ -524,7 +524,7 @@ void Cmd_AddCommand(const char *cmd_name, xcommand_t function)
 	// fail if the command is a variable name
 	if(Cvar_VariableString(cmd_name)[0])
 	{
-		Con_Printf("Cmd_AddCommand: %s already defined as a var\n", cmd_name);
+		gpSystem->Printf("Cmd_AddCommand: %s already defined as a var\n", cmd_name);
 		return;
 	}
 
@@ -533,7 +533,7 @@ void Cmd_AddCommand(const char *cmd_name, xcommand_t function)
 	{
 		if(!Q_strcmp(cmd_name, cmd->name))
 		{
-			Con_Printf("Cmd_AddCommand: %s already defined\n", cmd_name);
+			gpSystem->Printf("Cmd_AddCommand: %s already defined\n", cmd_name);
 			return;
 		}
 	}
@@ -629,7 +629,7 @@ void Cmd_ExecuteString(const char *text, cmd_source_t src)
 
 	// check cvars
 	if(!Cvar_Command())
-		Con_Printf("Unknown command \"%s\"\n", Args.GetByIndex(0));
+		gpSystem->Printf("Unknown command \"%s\"\n", Args.GetByIndex(0));
 }
 
 /*
