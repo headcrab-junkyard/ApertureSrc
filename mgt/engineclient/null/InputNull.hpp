@@ -1,8 +1,7 @@
 /*
 *	This file is part of Magenta Engine
 *
-*	Copyright (C) 1996-1997 Id Software, Inc.
-*	Copyright (C) 2018 BlackPhrase
+*	Copyright (C) 2017-2018 BlackPhrase
 *
 *	Magenta Engine is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -19,36 +18,23 @@
 */
 
 /// @file
-/// @brief for systems without a mouse
+/// @brief null input module implementation
 
-#include "quakedef.h"
+#include "input/IInput.hpp"
 
-void IN_Init()
+class CInputNull final : public IInput
 {
-}
+public:
+	CInputNull() = default;
+	~CInputNull() = default;
 
-void IN_Shutdown()
-{
-}
-
-void IN_Commands()
-{
-}
-
-void IN_Move(usercmd_t *cmd)
-{
-}
-
-// TODO: IN_ClearStates?
-
-// TODO: unused?
-/*
-===========
-IN_ModeChanged
-===========
-*/
-/*
-void IN_ModeChanged()
-{
-}
-*/
+	bool Init() override { return true; }
+	void Shutdown() override {}
+	
+	//void Frame() override {}
+	
+	void HandleOSMessage(const SOSMessage &apMsg) override {}
+	
+	void AddEventListener(IInputEventListener *apListener) override {}
+	void RemoveEventListener(IInputEventListener *apListener) override {}
+};
