@@ -18,7 +18,7 @@
 
 /// @file
 
-#include "pm_shared.h"
+#include "pm_shared/pm_shared.h"
 #include "mathlib.h"
 
 void PM_ViewEntity()

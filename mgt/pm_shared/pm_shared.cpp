@@ -1,12 +1,12 @@
 /// @file
 
-#include <assert.h>
-#include <math.h>
+#include <cassert>
+#include <cmath>
 
-#include "pm_defs.h"
-#include "pm_shared.h"
-#include "pm_movevars.h"
-//#include "pm_debug.h"
+#include "pm_shared/pm_defs.h"
+#include "pm_shared/pm_shared.h"
+#include "pm_shared/pm_movevars.h"
+//#include "pm_shared/pm_debug.h"
 #include "com_model.h"
 #include "in_buttons.h"
 
