@@ -20,9 +20,9 @@
 
 /// @file
 
+#include <cstdio>
 #include "Network.hpp"
 #include "engine/ISystem.hpp"
-#include "engine/IConsole.hpp"
 
 #ifdef _WIN32
 #include "winquake.h"
@@ -30,10 +30,14 @@
 
 //=============================================================================
 
-netadr_t net_local_adr;
+netadr_t net_local_adr{};
 
-netadr_t net_from;
-sizebuf_t net_message;
+netadr_t net_from{};
+sizebuf_t net_message{};
+
+cvar_t net_showpackets = { "net_showpackets", "0" };
+cvar_t net_showdrop = { "net_showdrop", "0" };
+cvar_t qport = { "qport", "0" };
 
 #ifdef _WIN32
 
@@ -109,6 +113,197 @@ void SockadrToNetadr(struct sockaddr_in *s, netadr_t *a)
 	a->port = s->sin_port;
 };
 
+//=============================================================================
+
+EXPOSE_SINGLE_INTERFACE(CNetwork, INetwork, MGT_NETWORK_INTERFACE_VERSION);
+
+CNetwork::CNetwork() = default;
+CNetwork::~CNetwork() = default;
+
+/*
+====================
+NET_Init
+====================
+*/
+bool CNetwork::Init(CreateInterfaceFn afnEngineFactory /*, int port*/)
+{
+	mpSystem = (ISystem*)afnEngineFactory(MGT_SYSTEM_INTERFACE_VERSION, nullptr);
+	
+	if(!mpSystem)
+	{
+		printf("ISystem query failed!\n");
+		return false;
+	};
+	
+#ifdef _WIN32
+	auto wVersionRequested{MAKEWORD(1, 1)};
+
+	int r{WSAStartup(wVersionRequested, &winsockdata)};
+
+	if(r)
+		mpSystem->Error("Winsock initialization failed.");
+#endif
+
+	//
+	// open the single socket to be used for all communications
+	//
+	net_socket = UDP_OpenSocket(PORT_ANY); // TODO: PORT_CLIENT/PORT_SERVER
+
+	//
+	// init the message buffer
+	//
+	net_message.maxsize = sizeof(net_message_buffer);
+	net_message.data = net_message_buffer;
+
+	//
+	// determine my name & address
+	//
+	GetLocalAddress();
+
+	int port;
+
+// pick a port value that should be nice and random
+#ifdef _WIN32
+	port = ((int)(timeGetTime() * 1000) * time(nullptr)) & 0xffff;
+#else
+	port = ((int)(getpid() + getuid() * 1000) * time(nullptr)) & 0xffff;
+#endif
+
+	mpCvarRegistry->Register(&net_showpackets);
+	mpCvarRegistry->Register(&net_showdrop);
+	mpCvarRegistry->Register(&qport);
+	
+	Cvar_SetValue("qport", port);
+	
+	mpSystem->Printf("UDP Initialized\n");
+	return true;
+};
+
+/*
+====================
+NET_Shutdown
+====================
+*/
+void CNetwork::Shutdown()
+{
+#ifdef _WIN32
+	closesocket(net_socket);
+	WSACleanup();
+#elif __linux__
+	close(net_socket);
+#endif
+};
+
+//=============================================================================
+
+bool CNetwork::GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message)
+{
+	int ret;
+	struct sockaddr_in from;
+	int fromlen;
+
+	fromlen = sizeof(from);
+
+#ifdef _WIN32
+	ret = recvfrom(net_socket, (char *)net_message->data, sizeof(net_message->data), 0, (struct sockaddr *)&from, &fromlen);
+	SockadrToNetadr(&from, net_from);
+
+	if(ret == -1)
+	{
+		int err = WSAGetLastError();
+
+		if(err == WSAEWOULDBLOCK)
+			return false;
+		if(err == WSAEMSGSIZE)
+		{
+			mpSystem->Printf("Warning:  Oversize packet from %s\n", AdrToString(net_from));
+			return false;
+		};
+
+		mpSystem->Error("NET_GetPacket: %s", strerror(err));
+	};
+#elif __linux__
+	ret = recvfrom(net_socket, net_message->data, sizeof(net_message->data), 0, (struct sockaddr *)&from, &fromlen);
+	if(ret == -1)
+	{
+		if(errno == EWOULDBLOCK)
+			return false;
+		if(errno == ECONNREFUSED)
+			return false;
+		mpSystem->Printf("NET_GetPacket: %s\n", strerror(errno));
+		return false;
+	}
+#endif
+
+	net_message->cursize = ret;
+
+#ifdef _WIN32	
+	if(ret == sizeof(net_message_buffer))
+	{
+		mpSystem->Printf("Oversize packet from %s\n", AdrToString(net_from));
+		return false;
+	};
+#elif __linux__
+	SockadrToNetadr(&from, &net_from);
+#endif
+
+	return ret;
+};
+
+//=============================================================================
+
+void CNetwork::SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
+{
+	int ret;
+	struct sockaddr_in addr;
+
+	NetadrToSockadr(&to, &addr);
+
+	ret = sendto(net_socket, (const char*)data, length, 0, (struct sockaddr *)&addr, sizeof(addr));
+
+	if(ret == -1)
+	{
+#ifdef _WIN32
+		int err = WSAGetLastError();
+
+		// wouldblock is silent
+		if(err == WSAEWOULDBLOCK)
+			return;
+
+#ifndef SERVERONLY
+		if(err == WSAEADDRNOTAVAIL)
+			mpSystem->DevPrintf("NET_SendPacket Warning: %i\n", err);
+		else
+#endif
+			mpSystem->Printf("NET_SendPacket ERROR: %i\n", errno);
+#elif __linux__
+		if(errno == EWOULDBLOCK)
+			return;
+		if(errno == ECONNREFUSED)
+			return;
+		mpSystem->Printf("NET_SendPacket: %s\n", strerror(errno));
+#endif
+	};
+};
+
+bool CNetwork::CompareAdr(netadr_t *a, netadr_t *b) const
+{
+	// TODO: use references or validate them
+	
+	if(a->ip[0] == b->ip[0] && a->ip[1] == b->ip[1] && a->ip[2] == b->ip[2] && a->ip[3] == b->ip[3] && a->port == b->port)
+		return true;
+	return false;
+};
+
+char *CNetwork::AdrToString(netadr_t *a) const
+{
+	// TODO: use reference or validate it
+	
+	static char s[64];
+	sprintf(s, "%i.%i.%i.%i:%i", a->ip[0], a->ip[1], a->ip[2], a->ip[3], ntohs(a->port));
+	return s;
+};
+
 /*
 =============
 NET_StringToAdr
@@ -119,7 +314,7 @@ idnewt:28000
 192.246.40.70:28000
 =============
 */
-bool NET_StringToAdr(const char *s, netadr_t *a)
+bool CNetwork::StringToAdr(const char *s, netadr_t *a)
 {
 	struct hostent *h;
 	struct sockaddr_in sadr;
@@ -160,183 +355,6 @@ bool NET_StringToAdr(const char *s, netadr_t *a)
 	return true;
 };
 
-//=============================================================================
-
-EXPOSE_SINGLE_INTERFACE(CNetwork, INetwork, MGT_NETWORK_INTERFACE_VERSION);
-
-CNetwork::CNetwork() = default;
-CNetwork::~CNetwork() = default;
-
-/*
-====================
-NET_Init
-====================
-*/
-bool CNetwork::Init(CreateInterfaceFn afnEngineFactory /*, int port*/)
-{
-	mpSystem = (ISystem*)afnEngineFactory(MGT_SYSTEM_INTERFACE_VERSION, nullptr);
-	mpConsole = (IConsole*)afnEngineFactory(MGT_CONSOLE_INTERFACE_VERSION, nullptr);
-	
-	if(!mpSystem || !mpConsole)
-		return false;
-	
-#ifdef _WIN32
-	WORD wVersionRequested;
-	int r;
-
-	wVersionRequested = MAKEWORD(1, 1);
-
-	r = WSAStartup(MAKEWORD(1, 1), &winsockdata);
-
-	if(r)
-		mpSystem->Error("Winsock initialization failed.");
-#endif
-
-	//
-	// open the single socket to be used for all communications
-	//
-	net_socket = UDP_OpenSocket(PORT_ANY); // TODO: PORT_CLIENT/PORT_SERVER
-
-	//
-	// init the message buffer
-	//
-	net_message.maxsize = sizeof(net_message_buffer);
-	net_message.data = net_message_buffer;
-
-	//
-	// determine my name & address
-	//
-	GetLocalAddress();
-
-	mpConsole->Printf("UDP Initialized\n");
-	return true;
-};
-
-/*
-====================
-NET_Shutdown
-====================
-*/
-void CNetwork::Shutdown()
-{
-#ifdef _WIN32
-	closesocket(net_socket);
-	WSACleanup();
-#elif __linux__
-	close(net_socket);
-#endif
-};
-
-//=============================================================================
-
-bool CNetwork::GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message)
-{
-	int ret;
-	struct sockaddr_in from;
-	int fromlen;
-
-	fromlen = sizeof(from);
-
-#ifdef _WIN32
-	ret = recvfrom(net_socket, (char *)net_message_buffer, sizeof(net_message_buffer), 0, (struct sockaddr *)&from, &fromlen);
-	SockadrToNetadr(&from, net_from);
-
-	if(ret == -1)
-	{
-		int err = WSAGetLastError();
-
-		if(err == WSAEWOULDBLOCK)
-			return false;
-		if(err == WSAEMSGSIZE)
-		{
-			mpConsole->Printf("Warning:  Oversize packet from %s\n", AdrToString(net_from));
-			return false;
-		};
-
-		mpSystem->Error("NET_GetPacket: %s", strerror(err));
-	};
-#elif __linux__
-	ret = recvfrom(net_socket, net_message_buffer, sizeof(net_message_buffer), 0, (struct sockaddr *)&from, &fromlen);
-	if(ret == -1)
-	{
-		if(errno == EWOULDBLOCK)
-			return false;
-		if(errno == ECONNREFUSED)
-			return false;
-		mpSystem->Printf("NET_GetPacket: %s\n", strerror(errno));
-		return false;
-	}
-#endif
-
-	net_message->cursize = ret;
-
-#ifdef _WIN32	
-	if(ret == sizeof(net_message_buffer))
-	{
-		mpConsole->Printf("Oversize packet from %s\n", AdrToString(net_from));
-		return false;
-	};
-#elif __linux__
-	SockadrToNetadr(&from, &net_from);
-#endif
-
-	return ret;
-};
-
-//=============================================================================
-
-void CNetwork::SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
-{
-	int ret;
-	struct sockaddr_in addr;
-
-	NetadrToSockadr(&to, &addr);
-
-	ret = sendto(net_socket, (const char*)data, length, 0, (struct sockaddr *)&addr, sizeof(addr));
-
-	if(ret == -1)
-	{
-#ifdef _WIN32
-		int err = WSAGetLastError();
-
-		// wouldblock is silent
-		if(err == WSAEWOULDBLOCK)
-			return;
-
-#ifndef SERVERONLY
-		if(err == WSAEADDRNOTAVAIL)
-			mpConsole->DevPrintf("NET_SendPacket Warning: %i\n", err);
-		else
-#endif
-			mpConsole->Printf("NET_SendPacket ERROR: %i\n", errno);
-#elif __linux__
-		if(errno == EWOULDBLOCK)
-			return;
-		if(errno == ECONNREFUSED)
-			return;
-		mpSystem->Printf("NET_SendPacket: %s\n", strerror(errno));
-#endif
-	};
-};
-
-bool CNetwork::CompareAdr(netadr_t *a, netadr_t *b) const
-{
-	// TODO: use references or validate them
-	
-	if(a->ip[0] == b->ip[0] && a->ip[1] == b->ip[1] && a->ip[2] == b->ip[2] && a->ip[3] == b->ip[3] && a->port == b->port)
-		return true;
-	return false;
-};
-
-char *CNetwork::AdrToString(netadr_t *a) const
-{
-	// TODO: use reference or validate it
-	
-	static char s[64];
-	sprintf(s, "%i.%i.%i.%i:%i", a->ip[0], a->ip[1], a->ip[2], a->ip[3], ntohs(a->port));
-	return s;
-};
-
 int CNetwork::UDP_OpenSocket(int port)
 {
 #ifdef _WIN32
@@ -359,7 +377,7 @@ int CNetwork::UDP_OpenSocket(int port)
 	if((i = COM_CheckParm("-ip")) != 0 && i < com_argc)
 	{
 		address.sin_addr.s_addr = inet_addr(com_argv[i + 1]);
-		mpConsole->Printf("Binding to IP Interface Address of %s\n", inet_ntoa(address.sin_addr));
+		mpSystem->Printf("Binding to IP Interface Address of %s\n", inet_ntoa(address.sin_addr));
 	}
 	else
 	*/
@@ -387,7 +405,7 @@ void CNetwork::GetLocalAddress()
 	gethostname(buff, 512);
 	buff[512 - 1] = 0;
 
-	NET_StringToAdr(buff, &net_local_adr);
+	StringToAdr(buff, &net_local_adr);
 
 	namelen = sizeof(address);
 	
@@ -397,5 +415,5 @@ void CNetwork::GetLocalAddress()
 
 	net_local_adr.port = address.sin_port;
 
-	mpConsole->Printf("IP address %s\n", AdrToString(&net_local_adr));
+	mpSystem->Printf("IP address %s\n", AdrToString(&net_local_adr));
 };
