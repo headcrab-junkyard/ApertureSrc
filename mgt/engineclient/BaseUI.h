@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "BaseUI/IBaseUI.h"
+#include "engineclient/IBaseUI.hpp"
 
 class CBaseUI : public IBaseUI
 {

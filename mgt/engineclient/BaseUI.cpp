@@ -21,16 +21,60 @@
 
 #include "quakedef.h"
 #include "BaseUI.h"
-#include "GameUI/IGameUI.h"
-#include "GameUI/IGameConsole.h"
+#include "gameui/IGameUI.hpp"
+#include "gameui/IGameConsole.hpp"
 
 extern IGameUI *gpGameUI;
 extern IGameConsole *gpGameConsole;
+
+void *gpGameUILib{nullptr};
 
 CBaseUI gBaseUI;
 IBaseUI *gpBaseUI{&gBaseUI};
 
 EXPOSE_SINGLE_INTERFACE_GLOBALVAR(CBaseUI, IBaseUI, BASEUI_INTERFACE_VERSION, gBaseUI);
+
+void UnloadGameUIModule()
+{
+	if(gpGameUILib)
+	{
+		Sys_UnloadModule(gpGameUILib);
+		gpGameUILib = nullptr;
+	};
+};
+
+void LoadGameUIModule()
+{
+	UnloadGameUIModule();
+
+#ifdef OGS_EVOL
+	gpGameUILib = Sys_LoadModule(va("%s/cl_dlls/gameui", com_gamedir));
+
+	if(!gpGameUILib)
+#endif
+	{
+		gpGameUILib = Sys_LoadModule("valve/cl_dlls/gameui");
+
+		if(!gpGameUILib)
+			return;
+	};
+
+	auto fnGameUIFactory{ Sys_GetFactory(gpGameUILib) };
+
+	if(!fnGameUIFactory)
+		return;
+
+	gpGameUI = (IGameUI*)fnGameUIFactory(MGT_GAMEUI_INTERFACE_VERSION, nullptr);
+	gpGameConsole = (IGameConsole*)fnGameUIFactory(MGT_GAMECONSOLE_INTERFACE_VERSION, nullptr);
+	//gpCareerUI = (ICareerUI*)fnGameUIFactory(CAREERUI_INTERFACE_VERSION, nullptr); // TODO
+
+	if(!gpGameUI || !gpGameConsole) //|| !gpCareerUI)
+		return;
+	
+	// TODO: hacky way to temporary support legacy menu code
+	fnM_Keydown = (pfnM_Keydown)Sys_GetExport(gpGameUILib, "M_Keydown");
+	fnM_Draw = (pfnM_Draw)Sys_GetExport(gpGameUILib, "M_Draw");
+};
 
 CBaseUI::CBaseUI() = default;
 CBaseUI::~CBaseUI() = default;
@@ -71,6 +115,11 @@ void CBaseUI::Initialize(CreateInterfaceFn *factories, int count)
 	vgui_message_dialog_modal = engine->pfnRegisterVariable("vgui_message_dialog_modal", "1", FCVAR_ARCHIVE);
 	vgui_emulatemouse = engine->pfnGetCvarPointer("vgui_emulatemouse");
 */
+
+	LoadGameUIModule();
+	
+	if(gpGameUI)
+		gpGameUI->Init(factories, count);
 };
 
 void CBaseUI::Start(struct cl_enginefuncs_s *engineFuncs, int interfaceVersion)
@@ -97,7 +146,13 @@ void CBaseUI::Start(struct cl_enginefuncs_s *engineFuncs, int interfaceVersion)
 
 void CBaseUI::Shutdown()
 {
-	// TODO
+	if(gpGameUI)
+	{
+		gpGameUI->Shutdown();
+		gpGameUI = nullptr;
+	};
+	
+	UnloadGameUIModule();
 };
 
 int CBaseUI::Key_Event(int down, int keynum, const char *pszCurrentBinding)
@@ -121,26 +176,29 @@ void CBaseUI::Paint(int x, int y, int right, int bottom)
 
 void CBaseUI::HideGameUI()
 {
-	gpGameUI->HideGameUI();
+	gpGameUI->Hide();
 };
 
 void CBaseUI::ActivateGameUI()
 {
-	gpGameUI->ActivateGameUI();
+	gpGameUI->SetActive(true);
 };
 
 bool CBaseUI::IsGameUIVisible()
 {
-	return gpGameUI->IsGameUIActive();
+	return gpGameUI->IsActive();
 };
 
 void CBaseUI::HideConsole()
 {
-	gpGameConsole->Hide();
+	if(gpGameConsole)
+		gpGameConsole->SetActive(false);
 };
 
 void CBaseUI::ShowConsole()
 {
-	gpGameConsole->Activate();
-	//gpGameUI->ActivateGameUI();
+	if(gpGameConsole)
+		gpGameConsole->SetActive(true);
+	
+	//gpGameUI->ActivateGameUI(); // to actually bring it to the screen
 };
