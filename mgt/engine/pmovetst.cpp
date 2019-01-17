@@ -286,7 +286,7 @@ qboolean PM_RecursiveHullCheck(hull_t *hull, int num, float p1f, float p2f, vec3
 		{
 			trace->fraction = midf;
 			VectorCopy(mid, trace->endpos);
-			Con_DPrintf("backup past 0\n");
+			gpSystem->DevPrintf("backup past 0\n");
 			return false;
 		}
 		midf = p1f + (p2f - p1f) * frac;

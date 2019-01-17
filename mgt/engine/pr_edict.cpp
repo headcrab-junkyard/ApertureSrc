@@ -727,7 +727,7 @@ void ED_LoadFromFile(char *data)
 		//PR_ExecuteProgram (func - pr_functions); // TODO
 	}
 
-	Con_DPrintf("%i entities inhibited\n", inhibit);
+	gpSystem->DevPrintf("%i entities inhibited\n", inhibit);
 }
 
 //typedef void (*pfnGiveFnptrsToDll)(enginefuncs_t *apEngFuncs, globalvars_t *apGlobals);

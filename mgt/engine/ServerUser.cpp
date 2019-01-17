@@ -823,7 +823,7 @@ qboolean SV_ReadClientMessage()
 				else if(ret == 1)
 					Cmd_ExecuteString(s, src_client);
 				else
-					Con_DPrintf("%s tried to %s\n", host_client->name, s);
+					gpSystem->DevPrintf("%s tried to %s\n", host_client->name, s);
 				break;
 
 			case clc_disconnect:
@@ -977,7 +977,7 @@ void SV_ExecuteClientMessage (client_t *cl, sizebuf_t *net_message)
 
 			if (calculatedChecksum != checksum)
 			{
-				Con_DPrintf ("Failed command checksum for %s(%d) (%d != %d)\n", 
+				gpSystem->DevPrintf ("Failed command checksum for %s(%d) (%d != %d)\n", 
 					cl->name, cl->netchan.incoming_sequence, checksum, calculatedChecksum);
 				return;
 			}

@@ -748,7 +748,7 @@ void SV_ReadPackets()
 				continue;
 			if(cl->netchan.remote_address.port != net_from.port)
 			{
-				Con_DPrintf("SV_ReadPackets: fixing up a translated port\n");
+				gpSystem->DevPrintf("SV_ReadPackets: fixing up a translated port\n");
 				cl->netchan.remote_address.port = net_from.port;
 			}
 			if(Netchan_Process(&cl->netchan, &net_message))
@@ -1031,7 +1031,7 @@ void SVC_Log()
 		return;
 	}
 
-	Con_DPrintf("sending log %i to %s\n", svs.logsequence - 1, NET_AdrToString(net_from));
+	gpSystem->DevPrintf("sending log %i to %s\n", svs.logsequence - 1, NET_AdrToString(net_from));
 
 	sprintf(data, "stdlog %i\n", svs.logsequence - 1);
 	strcat(data, (char *)svs.log_buf[((svs.logsequence - 1) & 1)]);
@@ -1322,7 +1322,7 @@ void SVC_DirectConnect()
 	//if(newcl->spectator)
 		//gpSystem->Printf("Spectator %s connected\n", newcl->name);
 	//else
-		Con_DPrintf("Client %s connected\n", newcl->name);
+		gpSystem->DevPrintf("Client %s connected\n", newcl->name);
 
 	newcl->sendinfo = true;
 }
@@ -1697,7 +1697,7 @@ void SV_ConnectClient (int clientnum)
 
 	client = svs.clients + clientnum;
 
-	Con_DPrintf ("Client %s connected\n", client->netchan.remote_address);
+	gpSystem->DevPrintf ("Client %s connected\n", client->netchan.remote_address);
 
 	edictnum = clientnum+1;
 
@@ -2374,7 +2374,7 @@ void SV_SendClientMessages()
 			// will it fit?
 			if (c->netchan.message.cursize + c->backbuf_size[0] < c->netchan.message.maxsize)
 			{
-				Con_DPrintf("%s: backbuf %d bytes\n", c->name, c->backbuf_size[0]);
+				gpSystem->DevPrintf("%s: backbuf %d bytes\n", c->name, c->backbuf_size[0]);
 
 				// it'll fit
 				SZ_Write(&c->netchan.message, c->backbuf_data[0], c->backbuf_size[0]);
@@ -2655,7 +2655,7 @@ void SV_SpawnServer(const char *server, const char *startspot)
 		Cvar_Set("hostname", "UNNAMED");
 	//scr_centertime_off = 0; // TODO
 
-	Con_DPrintf("SpawnServer: %s\n", server);
+	gpSystem->DevPrintf("SpawnServer: %s\n", server);
 	svs.changelevel_issued = false; // now safe to issue another
 
 	//
@@ -2804,5 +2804,5 @@ void SV_SpawnServer(const char *server, const char *startspot)
 	//
 
 	//Info_SetValueForKey (svs.info, "map", sv.name, MAX_SERVERINFO_STRING);
-	Con_DPrintf("Server spawned.\n");
+	gpSystem->DevPrintf("Server spawned.\n");
 }

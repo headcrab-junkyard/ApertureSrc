@@ -102,7 +102,7 @@ void Host_EndGame(const char *message, ...)
 	vsprintf(string, message, argptr);
 	va_end(argptr);
 
-	Con_DPrintf("Host_EndGame: %s\n", string);
+	gpSystem->DevPrintf("Host_EndGame: %s\n", string);
 
 	if(sv.active)
 		Host_ShutdownServer(false);
@@ -451,7 +451,7 @@ not reinitialize anything.
 */
 void Host_ClearMemory() // TODO: bool bQuiet
 {
-	Con_DPrintf("Clearing memory\n");
+	gpSystem->DevPrintf("Clearing memory\n");
 
 	Mod_ClearAll();
 
