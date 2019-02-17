@@ -18,4 +18,11 @@
 */
 
 /// @file
-/// @brief
+
+#include "quakedef.h"
+
+client_textmessage_t *TextMessageGet(const char *asName)
+{
+	// TODO
+	return NULL;
+};
