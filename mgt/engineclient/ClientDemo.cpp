@@ -24,6 +24,9 @@
 #include "quakedef.h"
 #include "engine/ICmdArgs.hpp"
 
+#include "network/INetwork.hpp"
+extern INetwork *gpNetwork;
+
 void CL_FinishTimeDemo();
 
 /*
@@ -51,7 +54,7 @@ void CL_StopPlayback()
 	if(!cls.demoplayback)
 		return;
 
-	fclose(cls.demofile);
+	gpFileSystem->CloseFile(cls.demofile);
 	cls.demoplayback = false;
 	cls.demofile = nullptr;
 	cls.state = ca_disconnected;
@@ -67,22 +70,22 @@ CL_WriteDemoMessage
 Dumps the current net message, prefixed by the length and view angles
 ====================
 */
-void CL_WriteDemoMessage()
+void CL_WriteDemoMessage(INetMsg *net_message)
 {
 	int len;
 	int i;
 	float f;
 
-	len = LittleLong(net_message.cursize);
-	fwrite(&len, 4, 1, cls.demofile);
+	len = LittleLong(net_message->cursize);
+	cls.demofile->Write(&len, 4, 1);
 	for(i = 0; i < 3; i++)
 	{
 		f = LittleFloat(cl.viewangles[i]);
-		fwrite(&f, 4, 1, cls.demofile);
+		cls.demofile->Write(&f, 4, 1);
 	};
 
-	fwrite(net_message.data, net_message.cursize, 1, cls.demofile);
-	fflush(cls.demofile);
+	cls.demofile->Write(net_message->data, net_message->cursize, 1);
+	cls.demofile->Flush();
 };
 
 /*
@@ -92,7 +95,7 @@ CL_GetMessage
 Handles recording and playback of demos, on top of NET_ code
 ====================
 */
-int CL_GetMessage()
+qboolean CL_GetMessage(INetMsg *net_message)
 {
 	int r, i;
 	float f;
@@ -117,45 +120,76 @@ int CL_GetMessage()
 		};
 
 		// get the next message
-		fread(&net_message.cursize, 4, 1, cls.demofile);
+		cls.demofile->Read(&net_message->cursize, 4, 1);
 		VectorCopy(cl.mviewangles[0], cl.mviewangles[1]);
 		for(i = 0; i < 3; i++)
 		{
-			r = fread(&f, 4, 1, cls.demofile);
+			r = cls.demofile->Read(&f, 4, 1);
 			cl.mviewangles[0][i] = LittleFloat(f);
 		};
 
-		net_message.cursize = LittleLong(net_message.cursize);
-		if(net_message.cursize > MAX_MSGLEN)
+		net_message->cursize = LittleLong(net_message->cursize);
+		if(net_message->cursize > MAX_MSGLEN)
 			gpSystem->Error("Demo message > MAX_MSGLEN");
-		r = fread(net_message.data, net_message.cursize, 1, cls.demofile);
+		r = cls.demofile->Read(net_message->data, net_message->cursize, 1);
 		if(r != 1)
 		{
 			CL_StopPlayback();
-			return 0;
+			return false;
 		};
 
-		return 1;
+		return true;
 	};
 
-	while(1)
+	// TODO: BYE NETQUAKE!
+	//while(1) // TODO
 	{
-		r = NET_GetPacket(NS_CLIENT, &net_from, &net_message); // TODO: was NET_GetMessage
+		/*r =*/ if(!gpNetwork->GetPacket(NS_CLIENT, &net_from, net_message)) // TODO: was NET_GetMessage
+			return false;
 
-		if(r != 1 && r != 2)
-			return r;
+		//if(r != 1 && r != 2)
+			//return r;
 
 		// discard nop keepalive message
-		if(net_message.cursize == 1 && net_message.data[0] == svc_nop)
-			Con_Printf("<-- server to client keepalive\n");
-		else
-			break;
+		if(net_message->cursize == 1 && net_message->data[0] == svc_nop)
+			gpSystem->Printf("<-- server to client keepalive\n");
+		//else
+			//break;
 	};
 
 	if(cls.demorecording)
-		CL_WriteDemoMessage();
+		CL_WriteDemoMessage(net_message);
 
-	return r;
+	return true;
+};
+
+/*
+====================
+CL_StopRecording
+
+stop recording a demo
+====================
+*/
+void CL_StopRecording()
+{
+	if(!cls.demorecording)
+	{
+		gpSystem->Printf("Not recording a demo.\n");
+		return;
+	};
+
+	// write a disconnect message to the demo file
+	SZ_Clear(&net_message);
+	MSG_WriteByte(&net_message, svc_disconnect);
+	CL_WriteDemoMessage(&net_message);
+
+	// finish up
+	gpFileSystem->CloseFile(cls.demofile);
+	
+	cls.demofile = nullptr;
+	cls.demorecording = false;
+	
+	gpSystem->Printf("Completed demo\n");
 };
 
 /*
@@ -170,24 +204,7 @@ void CL_Stop_f(const ICmdArgs &apArgs)
 	if(cmd_source != src_command)
 		return;
 
-	if(!cls.demorecording)
-	{
-		Con_Printf("Not recording a demo.\n");
-		return;
-	};
-
-	// write a disconnect message to the demo file
-	SZ_Clear(&net_message);
-	MSG_WriteByte(&net_message, svc_disconnect);
-	CL_WriteDemoMessage();
-
-	// finish up
-	fclose(cls.demofile);
-	
-	cls.demofile = nullptr;
-	cls.demorecording = false;
-	
-	Con_Printf("Completed demo\n");
+	CL_StopRecording();
 };
 
 /*
@@ -210,19 +227,19 @@ void CL_Record_f(const ICmdArgs &apArgs)
 
 	if(c != 2 && c != 3 && c != 4)
 	{
-		Con_Printf("record <demoname> [<map> [cd track]]\n");
+		gpSystem->Printf("record <demoname> [<map> [cd track]]\n");
 		return;
 	};
 
 	if(strstr(apArgs.GetByIndex(1), ".."))
 	{
-		Con_Printf("Relative pathnames are not allowed.\n");
+		gpSystem->Printf("Relative pathnames are not allowed.\n");
 		return;
 	};
 
 	if(c == 2 && cls.state == ca_connected)
 	{
-		Con_Printf("Can not record - already connected to server\nClient demo recording must be started before connecting\n");
+		gpSystem->Printf("Can not record - already connected to server\nClient demo recording must be started before connecting\n");
 		return;
 	};
 
@@ -230,7 +247,7 @@ void CL_Record_f(const ICmdArgs &apArgs)
 	if(c == 4)
 	{
 		track = atoi(apArgs.GetByIndex(3));
-		Con_Printf("Forcing CD track to %i\n", cls.forcetrack);
+		gpSystem->Printf("Forcing CD track to %i\n", cls.forcetrack);
 	}
 	else
 		track = -1;
@@ -248,17 +265,17 @@ void CL_Record_f(const ICmdArgs &apArgs)
 	//
 	COM_DefaultExtension(name, ".dem");
 
-	Con_Printf("recording to %s.\n", name);
-	cls.demofile = fopen(name, "wb");
+	gpSystem->Printf("recording to %s.\n", name);
+	cls.demofile = gpFileSystem->OpenFile(name, "wb");
 
 	if(!cls.demofile)
 	{
-		Con_Printf("ERROR: couldn't open.\n");
+		gpSystem->Printf("ERROR: couldn't open.\n");
 		return;
 	};
 
 	cls.forcetrack = track;
-	fprintf(cls.demofile, "%i\n", cls.forcetrack);
+	cls.demofile->Printf("%i\n", cls.forcetrack);
 
 	cls.demorecording = true;
 };
@@ -281,7 +298,7 @@ void CL_PlayDemo_f(const ICmdArgs &apArgs)
 
 	if(apArgs.GetCount() != 2)
 	{
-		Con_Printf("play <demoname> : plays a demo\n");
+		gpSystem->Printf("play <demoname> : plays a demo\n");
 		return;
 	};
 
@@ -296,12 +313,12 @@ void CL_PlayDemo_f(const ICmdArgs &apArgs)
 	strcpy(name, apArgs.GetByIndex(1));
 	COM_DefaultExtension(name, ".dem");
 
-	Con_Printf("Playing demo from %s.\n", name);
-	COM_FOpenFile(name, &cls.demofile);
+	gpSystem->Printf("Playing demo from %s.\n", name);
+	cls.demofile = gpFileSystem->OpenFile(name, "rb");
 
 	if(!cls.demofile)
 	{
-		Con_Printf("ERROR: couldn't open.\n");
+		gpSystem->Printf("ERROR: couldn't open.\n");
 		cls.demonum = -1; // stop demo loop
 		return;
 	};
@@ -310,7 +327,7 @@ void CL_PlayDemo_f(const ICmdArgs &apArgs)
 	cls.state = ca_connected;
 	cls.forcetrack = 0;
 
-	while((c = getc(cls.demofile)) != '\n')
+	while((c = cls.demofile->GetChar()) != '\n')
 		if(c == '-')
 			neg = true;
 		else
@@ -340,7 +357,7 @@ void CL_FinishTimeDemo()
 	time = realtime - cls.td_starttime;
 	if(!time)
 		time = 1;
-	Con_Printf("%i frames %5.1f seconds %5.1f fps\n", frames, time, frames / time);
+	gpSystem->Printf("%i frames %5.1f seconds %5.1f fps\n", frames, time, frames / time);
 };
 
 /*
@@ -357,7 +374,7 @@ void CL_TimeDemo_f(const ICmdArgs &apArgs)
 
 	if(apArgs.GetCount() != 2)
 	{
-		Con_Printf("timedemo <demoname> : gets demo speeds\n");
+		gpSystem->Printf("timedemo <demoname> : gets demo speeds\n");
 		return;
 	};
 
