@@ -36,12 +36,14 @@ static struct predicted_player
 
 //============================================================
 
+// TODO: already defined in ClientMain
 /*
 ===============
 CL_AllocDlight
 
 ===============
 */
+/*
 dlight_t *CL_AllocDlight(int key)
 {
 	int i;
@@ -79,6 +81,7 @@ dlight_t *CL_AllocDlight(int key)
 	dl->key = key;
 	return dl;
 }
+*/
 
 /*
 ===============
@@ -97,40 +100,42 @@ void CL_NewDlight(int key, float x, float y, float z, float radius, float time, 
 	dl->die = cl.time + time;
 	if(type == 0)
 	{
-		dl->color[0] = 0.2;
-		dl->color[1] = 0.1;
-		dl->color[2] = 0.05;
-		dl->color[3] = 0.7;
+		dl->color.r = 0.2;
+		dl->color.g = 0.1;
+		dl->color.b = 0.05;
+		//dl->color[3] = 0.7;
 	}
 	else if(type == 1)
 	{
-		dl->color[0] = 0.05;
-		dl->color[1] = 0.05;
-		dl->color[2] = 0.3;
-		dl->color[3] = 0.7;
+		dl->color.r = 0.05;
+		dl->color.g = 0.05;
+		dl->color.b = 0.3;
+		//dl->color[3] = 0.7;
 	}
 	else if(type == 2)
 	{
-		dl->color[0] = 0.5;
-		dl->color[1] = 0.05;
-		dl->color[2] = 0.05;
-		dl->color[3] = 0.7;
+		dl->color.r = 0.5;
+		dl->color.g = 0.05;
+		dl->color.b = 0.05;
+		//dl->color[3] = 0.7;
 	}
 	else if(type == 3)
 	{
-		dl->color[0] = 0.5;
-		dl->color[1] = 0.05;
-		dl->color[2] = 0.4;
-		dl->color[3] = 0.7;
+		dl->color.r = 0.5;
+		dl->color.g = 0.05;
+		dl->color.b = 0.4;
+		//dl->color[3] = 0.7;
 	}
 }
 
+// TODO: already defined in ClientMain
 /*
 ===============
 CL_DecayLights
 
 ===============
 */
+/*
 void CL_DecayLights()
 {
 	int i;
@@ -147,6 +152,7 @@ void CL_DecayLights()
 			dl->radius = 0;
 	}
 }
+*/
 
 /*
 =========================================================================
@@ -163,6 +169,8 @@ CL_ParseDelta
 Can go from either a baseline or a previous packet_entity
 ==================
 */
+// TODO: unused?
+/*
 int bitcounts[32]; /// just for protocol profiling
 void CL_ParseDelta(entity_state_t *from, entity_state_t *to, int bits)
 {
@@ -197,7 +205,7 @@ void CL_ParseDelta(entity_state_t *from, entity_state_t *to, int bits)
 		to->colormap = MSG_ReadByte();
 
 	if(bits & U_SKIN)
-		to->skinnum = MSG_ReadByte();
+		to->skin = MSG_ReadByte();
 
 	if(bits & U_EFFECTS)
 		to->effects = MSG_ReadByte();
@@ -225,12 +233,15 @@ void CL_ParseDelta(entity_state_t *from, entity_state_t *to, int bits)
 		// FIXME
 	}
 }
+*/
 
 /*
 =================
 FlushEntityPacket
 =================
 */
+// TODO: unused?
+/*
 void FlushEntityPacket()
 {
 	int word;
@@ -259,6 +270,7 @@ void FlushEntityPacket()
 		CL_ParseDelta(&olde, &newe, word);
 	}
 }
+*/
 
 /*
 ==================
@@ -297,8 +309,9 @@ void CL_ParsePacketEntities(qboolean delta)
 	if(oldpacket != -1)
 	{
 		if(cls.netchan.outgoing_sequence - oldpacket >= UPDATE_BACKUP - 1)
-		{ // we can't use this, it is too old
-			FlushEntityPacket();
+		{
+			// we can't use this, it is too old
+			//FlushEntityPacket(); // TODO
 			return;
 		}
 		cl.validsequence = cls.netchan.incoming_sequence;
@@ -320,8 +333,9 @@ void CL_ParsePacketEntities(qboolean delta)
 	{
 		word = (unsigned short)MSG_ReadShort();
 		if(msg_badread)
-		{ // something didn't parse right...
-			Host_EndGame("msg_badread in packetentities");
+		{
+			// something didn't parse right...
+			gpHost->EndGame("msg_badread in packetentities");
 			return;
 		}
 
@@ -331,7 +345,7 @@ void CL_ParsePacketEntities(qboolean delta)
 			{ // copy all the rest of the entities from the old packet
 				//Con_Printf ("copy %i\n", oldp->entities[oldindex].number);
 				if(newindex >= MAX_PACKET_ENTITIES)
-					Host_EndGame("CL_ParsePacketEntities: newindex == MAX_PACKET_ENTITIES");
+					gpHost->EndGame("CL_ParsePacketEntities: newindex == MAX_PACKET_ENTITIES");
 				newp->entities[newindex] = oldp->entities[oldindex];
 				newindex++;
 				oldindex++;
@@ -345,15 +359,15 @@ void CL_ParsePacketEntities(qboolean delta)
 		{
 			if(full)
 			{
-				Con_Printf("WARNING: oldcopy on full update");
-				FlushEntityPacket();
+				gpConsole->Printf("WARNING: oldcopy on full update");
+				//FlushEntityPacket(); // TODO
 				return;
 			}
 
 			//Con_Printf ("copy %i\n", oldnum);
 			// copy one of the old entities over to the new packet unchanged
 			if(newindex >= MAX_PACKET_ENTITIES)
-				Host_EndGame("CL_ParsePacketEntities: newindex == MAX_PACKET_ENTITIES");
+				gpHost->EndGame("CL_ParsePacketEntities: newindex == MAX_PACKET_ENTITIES");
 			newp->entities[newindex] = oldp->entities[oldindex];
 			newindex++;
 			oldindex++;
@@ -363,20 +377,23 @@ void CL_ParsePacketEntities(qboolean delta)
 		if(newnum < oldnum)
 		{ // new from baseline
 			//Con_Printf ("baseline %i\n", newnum);
+			// TODO
+			/*
 			if(word & U_REMOVE)
 			{
 				if(full)
 				{
 					cl.validsequence = 0;
-					Con_Printf("WARNING: U_REMOVE on full update\n");
-					FlushEntityPacket();
+					gpConsole->Printf("WARNING: U_REMOVE on full update\n");
+					//FlushEntityPacket(); // TODO
 					return;
 				}
 				continue;
 			}
+			*/
 			if(newindex >= MAX_PACKET_ENTITIES)
-				Host_EndGame("CL_ParsePacketEntities: newindex == MAX_PACKET_ENTITIES");
-			CL_ParseDelta(&cl_baselines[newnum], &newp->entities[newindex], word);
+				gpHost->EndGame("CL_ParsePacketEntities: newindex == MAX_PACKET_ENTITIES");
+			//CL_ParseDelta(&cl_baselines[newnum], &newp->entities[newindex], word); // TODO
 			newindex++;
 			continue;
 		}
@@ -386,15 +403,18 @@ void CL_ParsePacketEntities(qboolean delta)
 			if(full)
 			{
 				cl.validsequence = 0;
-				Con_Printf("WARNING: delta on full update");
+				gpConsole->Printf("WARNING: delta on full update");
 			}
+			// TODO
+			/*
 			if(word & U_REMOVE)
 			{
 				oldindex++;
 				continue;
 			}
+			*/
 			//Con_Printf ("delta %i\n",newnum);
-			CL_ParseDelta(&oldp->entities[oldindex], &newp->entities[newindex], word);
+			//CL_ParseDelta(&oldp->entities[oldindex], &newp->entities[newindex], word); // TODO
 			newindex++;
 			oldindex++;
 		}
@@ -434,13 +454,16 @@ void CL_LinkPacketEntities()
 		s2 = s1; // FIXME: no interpolation right now
 
 		// spawn light flashes, even ones coming from invisible objects
+		// TODO
+		/*
 		if((s1->effects & (EF_BLUE | EF_RED)) == (EF_BLUE | EF_RED))
 			CL_NewDlight(s1->number, s1->origin[0], s1->origin[1], s1->origin[2], 200 + (rand() & 31), 0.1, 3);
 		else if(s1->effects & EF_BLUE)
 			CL_NewDlight(s1->number, s1->origin[0], s1->origin[1], s1->origin[2], 200 + (rand() & 31), 0.1, 1);
 		else if(s1->effects & EF_RED)
 			CL_NewDlight(s1->number, s1->origin[0], s1->origin[1], s1->origin[2], 200 + (rand() & 31), 0.1, 2);
-		else if(s1->effects & EF_BRIGHTLIGHT)
+		*/
+		/*else*/ if(s1->effects & EF_BRIGHTLIGHT)
 			CL_NewDlight(s1->number, s1->origin[0], s1->origin[1], s1->origin[2] + 16, 400 + (rand() & 31), 0.1, 0);
 		else if(s1->effects & EF_DIMLIGHT)
 			CL_NewDlight(s1->number, s1->origin[0], s1->origin[1], s1->origin[2], 200 + (rand() & 31), 0.1, 0);
@@ -456,23 +479,23 @@ void CL_LinkPacketEntities()
 		ent = &cl_visedicts[cl_numvisedicts];
 		cl_numvisedicts++;
 
-		ent->keynum = s1->number;
+		//ent->keynum = s1->number;
 		ent->model = model = cl.model_precache[s1->modelindex];
 
 		// set colormap
-		if(s1->colormap && (s1->colormap < MAX_CLIENTS) && !strcmp(ent->model->name, "progs/player.mdl"))
+		if(s1->colormap && (s1->colormap < MAX_CLIENTS) && !strcmp(ent->model->name, "models/player.mdl"))
 		{
-			ent->colormap = cl.players[s1->colormap - 1].translations;
-			ent->scoreboard = &cl.players[s1->colormap - 1];
+			//ent->colormap = cl.players[s1->colormap - 1].translations; // TODO
+			//ent->scoreboard = &cl.players[s1->colormap - 1]; // TODO
 		}
 		else
 		{
 			ent->colormap = vid.colormap;
-			ent->scoreboard = nullptr;
+			//ent->scoreboard = nullptr; // TODO
 		}
 
 		// set skin
-		ent->skinnum = s1->skinnum;
+		ent->skinnum = s1->skin;
 
 		// set frame
 		ent->frame = s1->frame;
@@ -510,16 +533,16 @@ void CL_LinkPacketEntities()
 			continue;
 
 		// scan the old entity display list for a matching
-		for(i = 0; i < cl_oldnumvisedicts; i++)
+		//for(i = 0; i < cl_oldnumvisedicts; i++) // TODO
 		{
-			if(cl_oldvisedicts[i].keynum == ent->keynum)
+			//if(cl_oldvisedicts[i].keynum == ent->keynum) // TODO
 			{
-				VectorCopy(cl_oldvisedicts[i].origin, old_origin);
-				break;
+				//VectorCopy(cl_oldvisedicts[i].origin, old_origin); // TODO
+				//break; // TODO
 			}
 		}
-		if(i == cl_oldnumvisedicts)
-			continue; // not in last message
+		//if(i == cl_oldnumvisedicts) // TODO
+			//continue; // not in last message // TODO
 
 		for(i = 0; i < 3; i++)
 			if(abs(old_origin[i] - ent->origin[i]) > 128)
@@ -601,7 +624,7 @@ void CL_ParseProjectiles()
 		pr = &cl_projectiles[cl_num_projectiles];
 		cl_num_projectiles++;
 
-		pr->modelindex = cl_spikeindex;
+		//pr->modelindex = cl_spikeindex; // TODO
 		pr->origin[0] = ((bits[0] + ((bits[1] & 15) << 8)) << 1) - 4096;
 		pr->origin[1] = (((bits[1] >> 4) + (bits[2] << 4)) << 1) - 4096;
 		pr->origin[2] = ((bits[3] + ((bits[4] & 15) << 8)) << 1) - 4096;
@@ -629,7 +652,7 @@ void CL_LinkProjectiles()
 			break; // object list is full
 		ent = &cl_visedicts[cl_numvisedicts];
 		cl_numvisedicts++;
-		ent->keynum = 0;
+		//ent->keynum = 0; // TODO
 
 		if(pr->modelindex < 1)
 			continue;
@@ -637,7 +660,7 @@ void CL_LinkProjectiles()
 		ent->skinnum = 0;
 		ent->frame = 0;
 		ent->colormap = vid.colormap;
-		ent->scoreboard = nullptr;
+		//ent->scoreboard = nullptr; // TODO
 		VectorCopy(pr->origin, ent->origin);
 		VectorCopy(pr->angles, ent->angles);
 	}
@@ -654,7 +677,10 @@ cl_entity_t *CL_NewTempEntity();
 CL_ParsePlayerinfo
 ===================
 */
-extern int parsecountmod;
+//extern int parsecountmod;
+int parsecountmod; // TODO: temp
+// TODO: unused?
+/*
 extern double parsecounttime;
 void CL_ParsePlayerinfo()
 {
@@ -667,7 +693,7 @@ void CL_ParsePlayerinfo()
 
 	num = MSG_ReadByte();
 	if(num > MAX_CLIENTS)
-		Sys_Error("CL_ParsePlayerinfo: bad num");
+		gpSystem->Error("CL_ParsePlayerinfo: bad num");
 
 	info = &cl.players[num];
 
@@ -723,8 +749,9 @@ void CL_ParsePlayerinfo()
 	else
 		state->weaponframe = 0;
 
-	VectorCopy(state->command.angles, state->viewangles);
+	VectorCopy(state->command.viewangles, state->viewangles);
 }
+*/
 
 /*
 ================
@@ -733,6 +760,7 @@ CL_AddFlagModels
 Called when the CTF flags are set
 ================
 */
+/*
 void CL_AddFlagModels(cl_entity_t *ent, int team)
 {
 	int i;
@@ -802,6 +830,7 @@ void CL_AddFlagModels(cl_entity_t *ent, int team)
 	VectorCopy(ent->angles, newent->angles)
 	newent->angles[2] -= 45;
 }
+*/
 
 /*
 =============
@@ -823,7 +852,7 @@ void CL_LinkPlayers()
 	frame_t *frame;
 	int oldphysent;
 
-	playertime = realtime - cls.latency + 0.02;
+	//playertime = realtime - cls.latency + 0.02; // TODO
 	if(playertime > realtime)
 		playertime = realtime;
 
@@ -839,13 +868,14 @@ void CL_LinkPlayers()
 		if(!gl_flashblend.value || j != cl.playernum)
 		{
 #endif
-			if((state->effects & (EF_BLUE | EF_RED)) == (EF_BLUE | EF_RED))
-				CL_NewDlight(j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand() & 31), 0.1, 3);
-			else if(state->effects & EF_BLUE)
-				CL_NewDlight(j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand() & 31), 0.1, 1);
-			else if(state->effects & EF_RED)
-				CL_NewDlight(j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand() & 31), 0.1, 2);
-			else if(state->effects & EF_BRIGHTLIGHT)
+			// TODO
+			//if((state->effects & (EF_BLUE | EF_RED)) == (EF_BLUE | EF_RED))
+				//CL_NewDlight(j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand() & 31), 0.1, 3);
+			//else if(state->effects & EF_BLUE)
+				//CL_NewDlight(j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand() & 31), 0.1, 1);
+			//else if(state->effects & EF_RED)
+				//CL_NewDlight(j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand() & 31), 0.1, 2);
+			/*else*/ if(state->effects & EF_BRIGHTLIGHT)
 				CL_NewDlight(j, state->origin[0], state->origin[1], state->origin[2] + 16, 400 + (rand() & 31), 0.1, 0);
 			else if(state->effects & EF_DIMLIGHT)
 				CL_NewDlight(j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand() & 31), 0.1, 0);
@@ -868,16 +898,16 @@ void CL_LinkPlayers()
 			break; // object list is full
 		ent = &cl_visedicts[cl_numvisedicts];
 		cl_numvisedicts++;
-		ent->keynum = 0;
+		//ent->keynum = 0; // TODO
 
 		ent->model = cl.model_precache[state->modelindex];
 		ent->skinnum = state->skinnum;
 		ent->frame = state->frame;
-		ent->colormap = info->translations;
-		if(state->modelindex == cl_playerindex)
-			ent->scoreboard = info; // use custom skin
-		else
-			ent->scoreboard = nullptr;
+		//ent->colormap = info->translations; // TODO
+		//if(state->modelindex == cl_playerindex)
+			//ent->scoreboard = info; // use custom skin // TODO
+		//else
+			//ent->scoreboard = nullptr; // TODO
 
 		//
 		// angles
@@ -902,17 +932,17 @@ void CL_LinkPlayers()
 			state->command.msec = msec;
 			//Con_DPrintf ("predict: %i\n", msec);
 
-			oldphysent = pmove.numphysent;
+			oldphysent = pmove->numphysent;
 			CL_SetSolidPlayers(j);
 			CL_PredictUsercmd(state, &exact, &state->command, false);
-			pmove.numphysent = oldphysent;
+			pmove->numphysent = oldphysent;
 			VectorCopy(exact.origin, ent->origin);
 		}
 
-		if(state->effects & EF_FLAG1)
-			CL_AddFlagModels(ent, 0);
-		else if(state->effects & EF_FLAG2)
-			CL_AddFlagModels(ent, 1);
+		//if(state->effects & EF_FLAG1) // TODO
+			//CL_AddFlagModels(ent, 0); // TODO
+		//else if(state->effects & EF_FLAG2) // TODO
+			//CL_AddFlagModels(ent, 1); // TODO
 	}
 }
 
@@ -932,10 +962,10 @@ void CL_SetSolidEntities()
 	packet_entities_t *pak;
 	entity_state_t *state;
 
-	pmove.physents[0].model = cl.worldmodel;
-	VectorCopy(vec3_origin, pmove.physents[0].origin);
-	pmove.physents[0].info = 0;
-	pmove.numphysent = 1;
+	pmove->physents[0].model = cl.worldmodel;
+	VectorCopy(vec3_origin, pmove->physents[0].origin);
+	pmove->physents[0].info = 0;
+	pmove->numphysent = 1;
 
 	frame = &cl.frames[parsecountmod];
 	pak = &frame->packet_entities;
@@ -948,11 +978,11 @@ void CL_SetSolidEntities()
 			continue;
 		if(!cl.model_precache[state->modelindex])
 			continue;
-		if(cl.model_precache[state->modelindex]->hulls[1].firstclipnode || cl.model_precache[state->modelindex]->clipbox)
+		if(cl.model_precache[state->modelindex]->hulls[1].firstclipnode /*|| cl.model_precache[state->modelindex]->clipbox*/) // TODO
 		{
-			pmove.physents[pmove.numphysent].model = cl.model_precache[state->modelindex];
-			VectorCopy(state->origin, pmove.physents[pmove.numphysent].origin);
-			pmove.numphysent++;
+			pmove->physents[pmove->numphysent].model = cl.model_precache[state->modelindex];
+			VectorCopy(state->origin, pmove->physents[pmove->numphysent].origin);
+			pmove->numphysent++;
 		}
 	}
 }
@@ -977,7 +1007,7 @@ void CL_SetUpPlayerPrediction(qboolean dopred)
 	frame_t *frame;
 	struct predicted_player *pplayer;
 
-	playertime = realtime - cls.latency + 0.02;
+	//playertime = realtime - cls.latency + 0.02; // TODO
 	if(playertime > realtime)
 		playertime = realtime;
 
@@ -1052,7 +1082,7 @@ void CL_SetSolidPlayers(int playernum)
 	if(!cl_solid_players.value)
 		return;
 
-	pent = pmove.physents + pmove.numphysent;
+	pent = pmove->physents + pmove->numphysent;
 
 	for(j = 0, pplayer = predicted_players; j < MAX_CLIENTS; j++, pplayer++)
 	{
@@ -1063,14 +1093,14 @@ void CL_SetSolidPlayers(int playernum)
 		if(j == playernum)
 			continue;
 
-		if(pplayer->flags & PF_DEAD)
-			continue; // dead players aren't solid
+		//if(pplayer->flags & PF_DEAD) // TODO
+			//continue; // dead players aren't solid
 
 		pent->model = 0;
 		VectorCopy(pplayer->origin, pent->origin);
 		VectorCopy(player_mins, pent->mins);
 		VectorCopy(player_maxs, pent->maxs);
-		pmove.numphysent++;
+		pmove->numphysent++;
 		pent++;
 	}
 }
@@ -1091,9 +1121,9 @@ void CL_EmitEntities()
 	if(!cl.validsequence)
 		return;
 
-	cl_oldnumvisedicts = cl_numvisedicts;
-	cl_oldvisedicts = cl_visedicts_list[(cls.netchan.incoming_sequence - 1) & 1];
-	cl_visedicts = cl_visedicts_list[cls.netchan.incoming_sequence & 1];
+	//cl_oldnumvisedicts = cl_numvisedicts; // TODO
+	//cl_oldvisedicts = cl_visedicts_list[(cls.netchan.incoming_sequence - 1) & 1]; // TODO
+	//cl_visedicts = cl_visedicts_list[cls.netchan.incoming_sequence & 1]; // TODO
 
 	cl_numvisedicts = 0;
 
