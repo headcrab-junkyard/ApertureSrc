@@ -46,7 +46,7 @@ void MSG_WriteChar(sizebuf_t *sb, int c)
 		Sys_Error("MSG_WriteChar: range error");
 #endif
 
-	buf = (byte*)SZ_GetSpace(sb, 1);
+	buf = (byte*)sb->GetSpace(1);
 	buf[0] = c;
 }
 
@@ -59,7 +59,7 @@ void MSG_WriteByte(sizebuf_t *sb, int c)
 		Sys_Error("MSG_WriteByte: range error");
 #endif
 
-	buf = (byte*)SZ_GetSpace(sb, 1);
+	buf = (byte*)sb->GetSpace(1);
 	buf[0] = c;
 }
 
@@ -72,7 +72,7 @@ void MSG_WriteShort(sizebuf_t *sb, int c)
 		Sys_Error("MSG_WriteShort: range error");
 #endif
 
-	buf = (byte*)SZ_GetSpace(sb, 2);
+	buf = (byte*)sb->GetSpace(2);
 	buf[0] = c & 0xff;
 	buf[1] = c >> 8;
 }
@@ -81,7 +81,7 @@ void MSG_WriteLong(sizebuf_t *sb, int c)
 {
 	byte *buf;
 
-	buf = (byte*)SZ_GetSpace(sb, 4);
+	buf = (byte*)sb->GetSpace(4);
 	buf[0] = c & 0xff;
 	buf[1] = (c >> 8) & 0xff;
 	buf[2] = (c >> 16) & 0xff;
@@ -99,16 +99,8 @@ void MSG_WriteFloat(sizebuf_t *sb, float f)
 	dat.f = f;
 	dat.l = LittleLong(dat.l);
 
-	SZ_Write(sb, &dat.l, 4);
-}
-
-void MSG_WriteString(sizebuf_t *sb, const char *s)
-{
-	if(!s)
-		SZ_Write(sb, "", 1);
-	else
-		SZ_Write(sb, s, Q_strlen(s) + 1);
-}
+	sb->Write(&dat.l, 4);
+};
 
 void MSG_WriteCoord(sizebuf_t *sb, float f)
 {
@@ -119,6 +111,14 @@ void MSG_WriteAngle(sizebuf_t *sb, float f)
 {
 	MSG_WriteByte(sb, ((int)f * 256 / 360) & 255);
 }
+
+void MSG_WriteString(sizebuf_t *sb, const char *s)
+{
+	if(!s)
+		sb->Write("", 1);
+	else
+		sb->Write(s, Q_strlen(s) + 1);
+};
 
 //
 // reading functions

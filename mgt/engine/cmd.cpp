@@ -92,7 +92,7 @@ void Cbuf_AddText(const char *text)
 		return;
 	}
 
-	SZ_Write(&cmd_text, text, Q_strlen(text));
+	cmd_text.Write(text, Q_strlen(text));
 }
 
 /*
@@ -115,7 +115,7 @@ void Cbuf_InsertText(const char *text)
 	{
 		temp = (char *)Z_Malloc(templen);
 		Q_memcpy(temp, cmd_text.data, templen);
-		SZ_Clear(&cmd_text);
+		cmd_text.Clear();
 	}
 	else
 		temp = nullptr; // shut up compiler
@@ -126,7 +126,7 @@ void Cbuf_InsertText(const char *text)
 	// add the copied off data
 	if(templen)
 	{
-		SZ_Write(&cmd_text, temp, templen);
+		cmd_text.Write(temp, templen);
 		Z_Free(temp);
 	}
 }

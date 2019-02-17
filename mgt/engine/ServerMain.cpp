@@ -148,7 +148,7 @@ void SV_Spawn_f(const ICmdArgs &apArgs) // TODO: was Host_Spawn_f
 	}
 
 	// send all current names, colors, and frag counts
-	SZ_Clear(&host_client->netchan.message);
+	host_client->netchan.message->Clear();
 
 	// send time of update
 	MSG_WriteByte(&host_client->netchan.message, svc_time);
@@ -1749,7 +1749,7 @@ SV_ClearDatagram
 */
 void SV_ClearDatagram()
 {
-	SZ_Clear(&sv.datagram);
+	sv.datagram.Clear();
 }
 
 /*
@@ -2245,7 +2245,7 @@ SV_SendClientDatagram
 qboolean SV_SendClientDatagram(client_t *client)
 {
 	byte buf[MAX_DATAGRAM];
-	sizebuf_t msg;
+	CSizeBuffer msg;
 
 	msg.data = (byte*)buf;
 	msg.maxsize = sizeof(buf);
@@ -2261,7 +2261,7 @@ qboolean SV_SendClientDatagram(client_t *client)
 
 	// copy the server datagram if there is space
 	if(msg.cursize + sv.datagram.cursize < msg.maxsize)
-		SZ_Write(&msg, sv.datagram.data, sv.datagram.cursize);
+		msg.Write(sv.datagram.data, sv.datagram.cursize);
 
 	// send the datagram
 	// TODO
@@ -2307,10 +2307,10 @@ void SV_UpdateToReliableMessages()
 	{
 		if(!client->active)
 			continue;
-		SZ_Write(&client->netchan.message, sv.reliable_datagram.data, sv.reliable_datagram.cursize);
+		client->netchan.message->Write(sv.reliable_datagram.data, sv.reliable_datagram.cursize);
 	}
 
-	SZ_Clear(&sv.reliable_datagram);
+	sv.reliable_datagram.Clear();
 }
 
 /*
@@ -2416,8 +2416,8 @@ void SV_SendClientMessages()
 		// if the reliable message overflowed, drop the client
 		if(c->netchan.message.overflowed)
 		{
-			SZ_Clear(&c->netchan.message);
-			SZ_Clear(&c->datagram);
+			c->netchan.message->Clear();
+			c->datagram.Clear(&);
 			//SV_BroadcastPrintf(PRINT_HIGH, "%s overflowed\n", c->name); // TODO
 			gpSystem->Printf("WARNING: reliable overflow for %s\n", c->name);
 			SV_DropClient(c, true, "Overflowed!");

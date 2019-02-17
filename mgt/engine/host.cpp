@@ -404,7 +404,7 @@ void Host_ShutdownServer(bool crash)
 				if(Netchan_CanPacket(&host_client->netchan)) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
 				{
 					Netchan_Transmit(&host_client->netchan, strlen(message), buf.data);
-					SZ_Clear(&host_client->netchan.message);
+					host_client->netchan.message->Clear();
 				}
 				else
 				{
