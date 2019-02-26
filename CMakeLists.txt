@@ -19,11 +19,6 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/../bin)
 #set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/../bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/../bin)
 
-# Define a path to engine SDK
-set(MGT_HLSDK_PATH
-	${CMAKE_SOURCE_DIR}/../ogs-sdk
-	CACHE PATH "Path to GoldSrc SDK headers"
-)
 
 # Define available options
 option(MGT_DEDICATED "Build only dedicated server" OFF)
@@ -49,9 +44,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # Add include directories
 include_directories(
-	${CMAKE_CURRENT_SOURCE_DIR}
-	${CMAKE_CURRENT_SOURCE_DIR}/include/mgt
-	${MGT_HLSDK_PATH}
+	${CMAKE_CURRENT_SOURCE_DIR}/mgt/common
 )
 
 # Detect the build type
@@ -70,8 +63,6 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Add subdirectories
-
-#add_subdirectory(${MGT_HLSDK_PATH})
 
 add_subdirectory(mgt)
 add_subdirectory(tests)
