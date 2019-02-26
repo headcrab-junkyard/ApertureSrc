@@ -21,42 +21,22 @@
 /// @file
 /// @brief null ICDAudio interface implementation
 
-#include "quakedef.h"
 #include "icdaudio.h"
 
-class CCDAudio /*Null*/ final : public ICDAudio
+class CCDAudioNull final : public ICDAudio
 {
 public:
-	CCDAudio();
-	~CCDAudio();
+	CCDAudioNull() = default;
+	~CCDAudioNull() = default;
 
-	int Init() override;
-	void Shutdown() override;
+	int Init() override {return 0;}
+	void Shutdown() override {}
 
-	void Frame() override;
+	void Frame() override {} // TODO: was Update
 
-	void Pause() override;
-	void Resume() override;
-
+	void Pause() override {}
+	void Resume() override {}
 private:
 	void Play(byte track, bool looping); // override
-	void Stop();                         // override
+	void Stop(); // override
 };
-
-int CCDAudio::Init()
-{
-	return 0;
-};
-
-void CCDAudio::Shutdown(){};
-
-void CCDAudio::Frame() // TODO: was Update
-{};
-
-void CCDAudio::Play(byte track, bool looping){};
-
-void CCDAudio::Stop(){};
-
-void CCDAudio::Pause(){};
-
-void CCDAudio::Resume(){};
