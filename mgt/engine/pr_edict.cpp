@@ -742,7 +742,7 @@ PR_LoadProgs
 */
 void PR_LoadProgs() // our temporary LoadEntityDLLs
 {
-	gpGameLib = Sys_LoadModule("dlls/server");
+	gpGameLib = Sys_LoadModule(va("%s/bin/server", com_gamedir));
 
 	if(!gpGameLib)
 		Sys_Error("PR_LoadProgs: couldn't load game dll!");
