@@ -1,7 +1,7 @@
 /*
  * This file is part of OGS Engine
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,4 +40,30 @@ typedef struct netadr_s
 	byte	ipx[10];
 	
 	unsigned short	port;
+	
+	inline bool IsLocal() const {return type == NA_LOOPBACK;}
+	
+	inline bool operator==(const netadr_s &other) const
+	{
+		if(ip[0] == other.ip[0] && ip[1] == other.ip[1] && ip[2] == other.ip[2] && ip[3] == other.ip[3] && port == other.port)
+			return true;
+		return false;
+	};
+	
+	inline bool CompareBase(const netadr_s &other) const
+	{
+		if(ip[0] == other.ip[0] && ip[1] == other.ip[1] && ip[2] == other.ip[2] && ip[3] == other.ip[3])
+			return true;
+		return false;
+	};
+	
+	inline const char *ToString(bool abBaseOnly) const
+	{
+		static char s[64]{};
+		if(abBaseOnly)
+			sprintf(s, "%i.%i.%i.%i", ip[0], ip[1], ip[2], ip[3]);
+		else
+			sprintf(s, "%i.%i.%i.%i:%i", ip[0], ip[1], ip[2], ip[3], ntohs(port));
+		return s;
+	};
 } netadr_t;
