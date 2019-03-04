@@ -180,8 +180,36 @@ void Sys_Shutdown(){
 	// TODO
 };
 
-void Sys_InitArgv(/*OrigCmd*/){
-	// TODO
+char *argv[MAX_NUM_ARGVS]{};
+static const char *empty_string{""};
+
+void Sys_InitArgv(char *lpCmdLine)
+{
+	parms.argc = 1;
+	argv[0] = empty_string;
+
+	while (*lpCmdLine && (parms.argc < MAX_NUM_ARGVS))
+	{
+		while (*lpCmdLine && ((*lpCmdLine <= 32) || (*lpCmdLine > 126)))
+			lpCmdLine++;
+
+		if (*lpCmdLine)
+		{
+			argv[parms.argc] = lpCmdLine;
+			parms.argc++;
+
+			while (*lpCmdLine && ((*lpCmdLine > 32) && (*lpCmdLine <= 126)))
+				lpCmdLine++;
+
+			if (*lpCmdLine)
+			{
+				*lpCmdLine = 0;
+				lpCmdLine++;
+			};
+		};
+	};
+	
+	parms.argv = argv;
 };
 
 void Sys_ShutdownArgv(){
