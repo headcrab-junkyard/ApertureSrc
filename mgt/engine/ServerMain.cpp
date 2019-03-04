@@ -751,7 +751,7 @@ void SV_ReadPackets()
 				gpSystem->DevPrintf("SV_ReadPackets: fixing up a translated port\n");
 				cl->netchan.remote_address.port = net_from.port;
 			}
-			if(Netchan_Process(&cl->netchan, &net_message))
+			if(cl->netchan->Process(&net_message))
 			{
 				// this is a valid, sequenced packet, so process it
 				svs.stats.packets++;
@@ -2265,7 +2265,7 @@ qboolean SV_SendClientDatagram(client_t *client)
 
 	// send the datagram
 	// TODO
-	Netchan_Transmit(&client->netchan, msg.cursize, msg.data);
+	client->netchan->Transmit(msg.cursize, msg.data);
 	//if(NET_SendUnreliableMessage(client->netchan, &msg) == -1)
 	{
 		//SV_DropClient(client, true, "datagram"); // if the message couldn't send, kick off
@@ -2333,7 +2333,7 @@ void SV_SendNop(client_t *client)
 	MSG_WriteChar(&msg, svc_nop);
 
 	// TODO
-	Netchan_Transmit(&client->netchan, msg.cursize, msg.data);
+	client->netchan->Transmit(msg.cursize, msg.data);
 	//if(NET_SendUnreliableMessage(client->netchan, &) == -1)
 		//SV_DropClient(client, true, "NOP"); // if the message couldn't send, kick off
 	
@@ -2432,7 +2432,7 @@ void SV_SendClientMessages()
 
 		c->send_message = false; // try putting this after choke?
 
-		if(!sv.paused && !Netchan_CanPacket(&c->netchan))
+		if(!sv.paused && !c->netchan->CanPacket())
 		{
 			c->chokecount++;
 			continue; // bandwidth choke
@@ -2441,7 +2441,7 @@ void SV_SendClientMessages()
 		/*
 		if (c->netchan.message.cursize)
 		{
-			if (!Netchan_CanPacket (&c->netchan)) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
+			if (!c->netchan->CanPacket ()) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
 			{
 //				I_Printf ("can't write\n");
 				continue;
@@ -2463,7 +2463,7 @@ void SV_SendClientMessages()
 		if(c->spawned)
 			SV_SendClientDatagram(c);
 		else
-			Netchan_Transmit(&c->netchan, 0, nullptr); // just update reliable
+			c->netchan->Transmit(0, nullptr); // just update reliable
 	}
 
 	// clear muzzle flashes
