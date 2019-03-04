@@ -308,24 +308,6 @@ void CNetwork::SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
 	};
 };
 
-bool CNetwork::CompareAdr(netadr_t *a, netadr_t *b) const
-{
-	// TODO: use references or validate them
-	
-	if(a->ip[0] == b->ip[0] && a->ip[1] == b->ip[1] && a->ip[2] == b->ip[2] && a->ip[3] == b->ip[3] && a->port == b->port)
-		return true;
-	return false;
-};
-
-char *CNetwork::AdrToString(netadr_t *a) const
-{
-	// TODO: use reference or validate it
-	
-	static char s[64];
-	sprintf(s, "%i.%i.%i.%i:%i", a->ip[0], a->ip[1], a->ip[2], a->ip[3], ntohs(a->port));
-	return s;
-};
-
 /*
 =============
 NET_StringToAdr
