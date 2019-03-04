@@ -2,7 +2,7 @@
 *	This file is part of Magenta Engine
 *
 *	Copyright (C) 1996-1997 Id Software, Inc.
-*	Copyright (C) 2018 BlackPhrase
+*	Copyright (C) 2018-2019 BlackPhrase
 *
 *	Magenta Engine is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -26,6 +26,28 @@
 
 #ifdef _WIN32
 #include "winquake.h"
+#else
+#include <sys/types.h>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <netdb.h>
+#include <sys/param.h>
+#include <sys/ioctl.h>
+#include <sys/uio.h>
+#include <arpa/inet.h>
+#include <errno.h>
+#endif
+
+#if defined(sun)
+#include <unistd.h>
+#endif
+
+#ifdef sun
+#include <sys/filio.h>
+#endif
+
+#ifdef NeXT
+#include <libc.h>
 #endif
 
 //=============================================================================
@@ -357,16 +379,23 @@ bool CNetwork::StringToAdr(const char *s, netadr_t *a)
 
 int CNetwork::UDP_OpenSocket(int port)
 {
-#ifdef _WIN32
 	int newsocket;
 	struct sockaddr_in address;
+#ifdef _WIN32
 	unsigned long _true = true;
+#else
+	bool _true = true;
+#endif
 	int i;
 
 	if((newsocket = socket(PF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
 		mpSystem->Error("UDP_OpenSocket: socket:", strerror(errno));
 
+#ifdef _WIN32
 	if(ioctlsocket(newsocket, FIONBIO, &_true) == -1)
+#else
+	if(ioctl(newsocket, FIONBIO, (char *)&_true) == -1)
+#endif
 		mpSystem->Error("UDP_OpenSocket: ioctl FIONBIO:", strerror(errno));
 
 	address.sin_family = AF_INET;
@@ -388,7 +417,11 @@ int CNetwork::UDP_OpenSocket(int port)
 	else
 		address.sin_port = htons((short)port);
 	
+#ifdef _WIN32
 	if(bind(newsocket, (struct sockaddr *)&address, sizeof(address)) == -1)
+#else
+	if(bind(newsocket, (void *)&address, sizeof(address)) == -1)
+#endif
 		mpSystem->Error("UDP_OpenSocket: bind: %s", strerror(errno));
 
 	return newsocket;
@@ -397,13 +430,21 @@ int CNetwork::UDP_OpenSocket(int port)
 
 void CNetwork::GetLocalAddress()
 {
+#ifdef _WIN32
 	char buff[512];
+#else
+	char buff[MAXHOSTNAMELEN];
+#endif
 	struct sockaddr_in address;
 	int namelen;
 
 #ifdef _WIN32
 	gethostname(buff, 512);
 	buff[512 - 1] = 0;
+#else
+	gethostname(buff, MAXHOSTNAMELEN);
+	buff[MAXHOSTNAMELEN-1] = 0;
+#endif
 
 	StringToAdr(buff, &net_local_adr);
 
@@ -411,7 +452,6 @@ void CNetwork::GetLocalAddress()
 	
 	if(getsockname(net_socket, (struct sockaddr *)&address, &namelen) == -1)
 		mpSystem->Error("NET_Init: getsockname:", strerror(errno));
-#endif
 
 	net_local_adr.port = address.sin_port;
 
