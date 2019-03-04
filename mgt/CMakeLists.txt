@@ -12,25 +12,39 @@ include_directories(
 )
 
 # Add subdirectories
+
+add_subdirectory(qlibc)
+#add_subdirectory(applib)
+add_subdirectory(mathlib)
+add_subdirectory(pm_shared)
+add_subdirectory(interface)
+#add_subdirectory(utils)
+
 #add_subdirectory(optional)
-#add_subdirectory(core)
+
 add_subdirectory(filesystem)
 add_subdirectory(network)
 #add_subdirectory(physics)
-add_subdirectory(engine)
-#add_subdirectory(game)
+add_subdirectory(script)
 
-#add_subdirectory(application)
+#add_subdirectory(core)
+##add_subdirectory(engine)
+
+#add_subdirectory(game) #game/server
+
 add_subdirectory(dedicated)
 
-# If not building as dedicated server then build these modules too
+# If not building as dedicated server then build client-side modules too
 if(NOT MGT_DEDICATED)
-	##add_subdirectory(engineclient)
-	##add_subdirectory(gameui)
+	add_subdirectory(gameui)
 	#add_subdirectory(graphics)
 	add_subdirectory(input)
 	#add_subdirectory(render)
 	add_subdirectory(sound)
+	##add_subdirectory(vgui3)
 	#add_subdirectory(voice)
+	
+	add_subdirectory(engineclient)
+	
 	add_subdirectory(launcher)
 endif()
