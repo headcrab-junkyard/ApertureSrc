@@ -7,16 +7,9 @@ set(MGT_ROOT_DIR ${CMAKE_CURRENT_SOURCE_DIR}) # TODO: MGT_ROOT?
 
 # Add include directories
 include_directories(
+	${CMAKE_CURRENT_SOURCE_DIR}
 	${CMAKE_CURRENT_SOURCE_DIR}/common
-	#${CMAKE_CURRENT_SOURCE_DIR}/public
-	${MGT_HLSDK_PATH}/ogs
-	${MGT_HLSDK_PATH}/ogs/common
-	${MGT_HLSDK_PATH}/ogs/engine
-	${MGT_HLSDK_PATH}/ogs/pm_shared
-	${MGT_HLSDK_PATH}/ogs/public
 )
-
-add_subdirectory(${MGT_HLSDK_PATH} ${CMAKE_BINARY_DIR}/ogs-sdk)
 
 # Add subdirectories
 #add_subdirectory(optional)
