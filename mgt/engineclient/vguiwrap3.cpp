@@ -22,6 +22,46 @@
 
 #include "quakedef.h"
 
+//void *gpGUILib{ nullptr };
+//IGUI *gpGUI{ nullptr };
+
+void VGuiWrap2_Startup()
+{
+/*
+	gpGUILib = Sys_LoadModule("gui");
+
+	if(!gpGUILib)
+		return;
+
+	auto pfnGUIFactory{ Sys_GetFactory(gpGUILib) };
+
+	if(!pfnGUIFactory)
+		return;
+
+	gpGUI = pfnGUIFactory(MGT_GUI_INTERFACE_VERSION, nullptr);
+
+	if(!gpGUI)
+		return;
+
+	if(!gpGUI->Init())
+		return;
+*/
+};
+
+void VGuiWrap2_Shutdown()
+{
+/*
+	if(gpGUI)
+		gpGUI->Shutdown();
+
+	if(gpGUILib)
+	{
+		Sys_UnloadModule(gpGUILib);
+		gpGUILib = nullptr;
+	};
+*/
+};
+
 void VGuiWrap2_Paint(){
 	//CBaseUI::Paint(int, int, int, int); // TODO
 };

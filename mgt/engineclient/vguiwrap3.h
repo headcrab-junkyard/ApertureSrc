@@ -18,9 +18,12 @@
 */
 
 /// @file
-/// @brief
+/// @brief vgui3 library wrapper
 
 #pragma once
 
-void VGuiWrap2_Paint();
-void VguiWrap2_GetMouseDelta(int *x, int *y);
+void VGuiWrap3_Startup();
+void VGuiWrap3_Shutdown();
+
+void VGuiWrap3_Paint();
+void VguiWrap3_GetMouseDelta(int *x, int *y);
