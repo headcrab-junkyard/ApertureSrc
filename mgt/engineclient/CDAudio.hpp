@@ -28,7 +28,7 @@ void CDAudio_Shutdown();
 
 void CDAudio_Update();
 
-void CDAudio_Play(byte track, qboolean looping); // TODO: int track?
+void CDAudio_Play(byte track, bool looping); // TODO: int track?
 void CDAudio_Stop();
 
 void CDAudio_Pause();

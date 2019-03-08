@@ -140,7 +140,7 @@ typedef enum
 } dltype_t;
 */
 
-//struct INetChannel;
+struct INetChannel;
 
 //
 // the client_static_t structure is persistant through an arbitrary number
@@ -152,7 +152,7 @@ typedef struct
 	cactive_t state;
 
 	// network stuff
-	netchan_t /*INetChannel **/ netchan; // TODO
+	/*netchan_t*/ INetChannel *netchan;
 
 	// private userinfo for sending to masterless servers
 	char userinfo[MAX_INFO_STRING];
@@ -175,7 +175,7 @@ typedef struct
 	qboolean demoplayback;
 	qboolean timedemo;
 	int forcetrack; // -1 = use normal cd track
-	FILE *demofile;
+	IFile *demofile;
 	int td_lastframe;   // to meter out one message a frame
 	int td_startframe;  // host_framecount at start
 	float td_starttime; // realtime at second frame of timedemo
@@ -373,7 +373,7 @@ void CL_Signon4 ();
 */
 
 void CL_Disconnect();
-void CL_Disconnect_f();
+void CL_Disconnect_f(const ICmdArgs &apArgs);
 void CL_NextDemo();
 //qboolean CL_DemoBehind();
 
@@ -398,7 +398,7 @@ void CL_InitInput();
 void CL_SendCmd();
 void CL_SendMove(usercmd_t *cmd);
 
-void CL_ParseTEnt();
+void CL_ParseTEnt(INetMsg *net_message);
 void CL_UpdateTEnts();
 
 void CL_ClearState();
@@ -414,18 +414,19 @@ float CL_KeyState(kbutton_t *key);
 // cl_demo.c
 //
 void CL_StopPlayback();
+void CL_StopRecording();
 int CL_GetMessage();
 
-void CL_Stop_f();
-void CL_Record_f();
-//void CL_ReRecord_f ();
-void CL_PlayDemo_f();
-void CL_TimeDemo_f();
+void CL_Stop_f(const ICmdArgs &apArgs);
+void CL_Record_f(const ICmdArgs &apArgs);
+//void CL_ReRecord_f (const ICmdArgs &apArgs);
+void CL_PlayDemo_f(const ICmdArgs &apArgs);
+void CL_TimeDemo_f(const ICmdArgs &apArgs);
 
 //
 // cl_parse.c
 //
-void CL_ParseServerMessage();
+void CL_ParseServerMessage(INetMsg *net_message);
 void CL_NewTranslation(int slot);
 
 //
@@ -437,7 +438,7 @@ void V_StopPitchDrift();
 void V_RenderView();
 void V_UpdatePalette();
 void V_Register();
-void V_ParseDamage();
+void V_ParseDamage(INetMsg *net_message);
 void V_SetContentsColor(int contents);
 //void V_CalcBlend ();
 
@@ -465,4 +466,4 @@ void CL_ParsePlayerinfo();
 void CL_InitPrediction();
 void CL_PredictMove();
 void CL_PredictUsercmd(local_state_t *from, local_state_t *to, usercmd_t *u, qboolean spectator); // TODO
-                                                                                                  //void CL_CheckPredictionError ();
+//void CL_CheckPredictionError ();

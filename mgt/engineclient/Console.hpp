@@ -47,3 +47,12 @@ void Con_ClearNotify();
 void Con_ToggleConsole_f();
 
 void Con_NotifyBox(const char *text); // during startup for sound / cd warnings
+
+class CConsole final //: public IConsole
+{
+public:
+	CConsole();
+	~CConsole();
+	
+	void Print(const char *msg); //override;
+};
