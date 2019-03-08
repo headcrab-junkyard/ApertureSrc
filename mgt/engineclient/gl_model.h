@@ -92,6 +92,7 @@ typedef struct glpoly_s
 	float verts[4][VERTEXSIZE]; // variable sized (xyz s1t1 s2t2)
 } glpoly_t;
 
+/*
 typedef struct msurface_s
 {
 	int visframe; // should be drawn when node is crossed
@@ -122,6 +123,7 @@ typedef struct msurface_s
 	qboolean cached_dlight;         // true if dynamic light in cache
 	byte *samples;                  // [numstyles*surfsize]
 } msurface_t;
+*/
 
 /*
 typedef struct mnode_s
