@@ -333,9 +333,9 @@ void Con_Print(const char *txt)
 
 // TODO: temporary porting helper functions
 
-#include "engine/IConsole.hpp"
+#include "engine/ISystem.hpp"
 
-IConsole *gpConsole{nullptr};
+ISystem *gpSystem{nullptr};
 
 void Con_Printf(const char *fmt, ...)
 {
@@ -346,7 +346,7 @@ void Con_Printf(const char *fmt, ...)
 	vsprintf(msg, fmt, argptr);
 	va_end(argptr);
 	
-	gpConsole->Printf(msg);
+	gpSystem->Printf(msg);
 };
 
 void Con_DPrintf(const char *fmt, ...)
@@ -358,7 +358,7 @@ void Con_DPrintf(const char *fmt, ...)
 	vsprintf(msg, fmt, argptr);
 	va_end(argptr);
 	
-	gpConsole->DevPrintf(msg);
+	gpSystem->DevPrintf(msg);
 };
 
 //
@@ -540,7 +540,7 @@ void Con_NotifyBox(const char *text)
 		realtime += t2 - t1; // make the cursor blink
 	} while(key_count < 0);
 
-	gpConsole->Printf("\n");
+	gpSystem->Printf("\n");
 	key_dest = key_game;
 	realtime = 0; // put the cursor back to invisible
 }
