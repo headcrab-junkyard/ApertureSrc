@@ -21,56 +21,25 @@
 /// @brief
 
 #include "quakedef.h"
-#include "vgui_int.h"
+#include "gui_int.h"
+#include "vguiwrap3.h"
 
-void *gpGUILib{ nullptr };
-IGUI *gpGUI{ nullptr };
-
-void VGui_Startup()
+void GUI_Startup()
 {
-	gpGUILib = Sys_LoadModule("gui");
-
-	if(!gpGUILib)
-		return;
-
-	auto pfnGUIFactory{ Sys_GetFactory(gpGUILib) };
-
-	if(!pfnGUIFactory)
-		return;
-
-	gpGUI = pfnGUIFactory(MGT_GUI_INTERFACE_VERSION, nullptr);
-
-	if(!gpGUI)
-		return;
-
-	if(!gpGUI->Init())
-		return;
+	VGuiWrap3_Startup();
 };
 
-void VGui_Shutdown()
+void GUI_Shutdown()
 {
-	if(gpGUI)
-		gpGUI->Shutdown();
-
-	if(gpGUILib)
-	{
-		Sys_UnloadModule(gpGUILib);
-		gpGUILib = nullptr;
-	};
+	VGuiWrap3_Shutdown();
 };
 
-void VGui_ViewportPaintBackground(int extents[4]){
+void GUI_ViewportPaintBackground(int extents[4]){
 	// TODO
 };
 
-void VGui_ConsolePrint(const char *text)
+void GUI_ConsolePrint(const char *text)
 {
 	// TODO: something else?
 	Con_Print(text);
-};
-
-void *VGui_GetPanel()
-{
-	// TODO
-	return nullptr;
 };
