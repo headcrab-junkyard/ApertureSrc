@@ -27,7 +27,28 @@ public:
 	CSoundNull() = default;
 	~CSoundNull() = default;
 
-	bool Init(CreateInterfaceFn afnEngineFactory) override { return true; }
+	bool Init(CreateInterfaceFn afnEngineFactory, void *apWindow) override { return true; }
 	void Shutdown() override {}
+	
+	void Startup() override {}
+	
 	void Update(float*, float*, float*, float*) override {}
+	
+	void ExtraUpdate() override {}
+	
+	void ClearBuffer() override {}
+	
+	void BeginPrecaching() override {}
+	void EndPrecaching() override {}
+	
+	sfx_t *PrecacheSound(const char *sample) override {return nullptr;}
+	void TouchSound(const char *sample) override {}
+	
+	void LocalSound(const char *sound) override {}
+	
+	void StartStaticSound(sfx_t *sfx, vec3_t origin, float vol, float attenuation) override {}
+	void StartDynamicSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation) override {}
+	
+	void StopSound(int entnum, int entchannel) override {}
+	void StopAllSounds(bool clear) override {}
 };
