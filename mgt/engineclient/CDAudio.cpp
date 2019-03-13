@@ -3,41 +3,52 @@
 #include "quakedef.h"
 #include "icdaudio.h"
 
+#include "null/CDAudioNull.hpp"
+
 ICDAudio *gpCDAudio{ nullptr };
 
 int CDAudio_Init()
 {
 	gpCDAudio = new CCDAudioNull();
 
-	return gpCDAudio->Init();
+	if(gpCDAudio)
+		return gpCDAudio->Init();
+
+	return 0;
 };
 
 void CDAudio_Shutdown()
 {
-	gpCDAudio->Shutdown();
+	if(gpCDAudio)
+		gpCDAudio->Shutdown();
 };
 
 void CDAudio_Update()
 {
-	gpCDAudio->Update();
+	if(gpCDAudio)
+		gpCDAudio->Frame();
 };
 
 void CDAudio_Play(byte track, bool looping)
 {
-	gpCDAudio->Play(track, looping);
+	//if(gpCDAudio)
+		//gpCDAudio->Play(track, looping);
 };
 
 void CDAudio_Stop()
 {
-	gpCDAudio->Stop();
+	//if(gpCDAudio)
+		//gpCDAudio->Stop();
 };
 
 void CDAudio_Pause()
 {
-	gpCDAudio->Pause();
+	if(gpCDAudio)
+		gpCDAudio->Pause();
 };
 
 void CDAudio_Resume()
 {
-	gpCDAudio->Resume();
+	if(gpCDAudio)
+		gpCDAudio->Resume();
 };
