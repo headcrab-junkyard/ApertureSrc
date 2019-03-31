@@ -2,7 +2,7 @@
 *	This file is part of Magenta Engine
 *
 *	Copyright (C) 1996-1997 Id Software, Inc.
-*	Copyright (C) 2018 BlackPhrase
+*	Copyright (C) 2018-2019 BlackPhrase
 *
 *	Magenta Engine is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -20,20 +20,21 @@
 
 /// @file
 
-#include "quakedef.h"
+#include "tier1/SizeBuffer.hpp"
+#include "qlibc/qlibc.h"
 
 void SZ_Alloc(sizebuf_t *buf, int startsize)
 {
 	if(startsize < 256)
 		startsize = 256;
-	buf->data = (byte*)Hunk_AllocName(startsize, "sizebuf");
+	buf->data = (byte*)malloc(startsize); //(byte*)Hunk_AllocName(startsize, "sizebuf"); // TODO
 	buf->maxsize = startsize;
 	buf->cursize = 0;
 };
 
 void SZ_Free(sizebuf_t *buf)
 {
-	Z_Free(buf->data);
+	free(buf->data); //Z_Free(buf->data); // TODO
 	buf->data = nullptr;
 	
 	buf->maxsize = 0;
@@ -61,15 +62,17 @@ void *CSizeBuffer::GetSpace(int length)
 {
 	if(buf->cursize + length > buf->maxsize)
 	{
-		if(!buf->allowoverflow)
-			mpSystem->Error("SZ_GetSpace: overflow without allowoverflow set");
+		// TODO: allow it to interact with ISystem interface?
+		
+		//if(!buf->allowoverflow)
+			//mpSystem->Error("SZ_GetSpace: overflow without allowoverflow set");
 
-		if(length > buf->maxsize)
-			mpSystem->Error("SZ_GetSpace: %i is > full buffer size", length);
+		//if(length > buf->maxsize)
+			//mpSystem->Error("SZ_GetSpace: %i is > full buffer size", length);
 
 		buf->overflowed = true;
-		mpSystem->Printf("SZ_GetSpace: overflow");
-		Clear(buf);
+		//mpSystem->Printf("SZ_GetSpace: overflow");
+		Clear();
 	};
 
 	void *data{buf->data + buf->cursize};
@@ -80,7 +83,7 @@ void *CSizeBuffer::GetSpace(int length)
 
 void CSizeBuffer::Write(const void *data, int length)
 {
-	Q_memcpy(GetSpace(buf, length), data, length);
+	Q_memcpy(GetSpace(length), data, length);
 };
 
 void CSizeBuffer::Print(const char *data)
@@ -88,7 +91,7 @@ void CSizeBuffer::Print(const char *data)
 	int len{Q_strlen(data) + 1};
 
 	if(buf->data[buf->cursize - 1])
-		Q_memcpy((byte *)GetSpace(buf, len), data, len); // no trailing 0
+		Q_memcpy((byte *)GetSpace(len), data, len); // no trailing 0
 	else
-		Q_memcpy((byte *)GetSpace(buf, len - 1) - 1, data, len); // write over trailing 0
+		Q_memcpy((byte *)GetSpace(len - 1) - 1, data, len); // write over trailing 0
 };

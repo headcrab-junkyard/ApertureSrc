@@ -2,7 +2,7 @@
  * This file is part of Magenta Engine
  *
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,28 @@
 
 #pragma once
 
-#include "sizebuf.h"
+#include "CommonTypes.hpp"
+
+typedef struct sizebuf_s
+{
+	//const char *name; // TODO
+	
+	//int flags; // TODO
+	bool	allowoverflow;	// if false, do a Sys_Error
+	bool	overflowed;		// set to true if the buffer size failed
+	
+	byte	*data;
+	int		maxsize;
+	int		cursize;
+} sizebuf_t;
 
 void SZ_Alloc(sizebuf_t *buf, int startsize);
 void SZ_Free(sizebuf_t *buf);
+
+void SZ_Clear(sizebuf_t *buf);
+void *SZ_GetSpace(sizebuf_t *buf, int length);
+void SZ_Write(sizebuf_t *buf, const void *data, int length);
+void SZ_Print(sizebuf_t *buf, const char *data); // strcats onto the sizebuf
 
 interface ISystem;
 
