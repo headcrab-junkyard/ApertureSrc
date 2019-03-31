@@ -25,7 +25,7 @@ option(MGT_DEDICATED "Build only dedicated server" OFF)
 option(MGT_NDK_BUILD_EXAMPLES "Build engine examples" OFF)
 
 # Set C++ language standard
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #set(CMAKE_CXX_STANDARD_EXTENSIONS ON)
 
