@@ -45,19 +45,64 @@ typedef struct netadr_s
 	
 	inline bool operator==(const netadr_s &other) const
 	{
-		if(ip[0] == other.ip[0] && ip[1] == other.ip[1] && ip[2] == other.ip[2] && ip[3] == other.ip[3] && port == other.port)
+		if(type != other.type)
+			return false;
+
+		if(IsLocal())
 			return true;
+
+		if(type == NA_IP)
+		{
+			if(ip[0] == other.ip[0] && ip[1] == other.ip[1] && ip[2] == other.ip[2] && ip[3] == other.ip[3] && port == other.port)
+				return true;
+			return false;
+		};
+
+		if(type == NA_IPX)
+		{
+			if((memcmp(ipx, other.ipx, 10) == 0) && port == other.port)
+				return true;
+			return false;
+		};
+
+		//Com_Printf("NET_CompareAdr: bad address type\n");
 		return false;
 	};
 	
+	/*
+	===================
+	NET_CompareBaseAdr
+
+	Compares without the port
+	===================
+	*/
 	inline bool CompareBase(const netadr_s &other) const
 	{
-		if(ip[0] == other.ip[0] && ip[1] == other.ip[1] && ip[2] == other.ip[2] && ip[3] == other.ip[3])
+		if(type != other.type)
+			return false;
+
+		if(IsLocal())
 			return true;
+
+		if(type == NA_IP)
+		{
+			if(ip[0] == other.ip[0] && ip[1] == other.ip[1] && ip[2] == other.ip[2] && ip[3] == other.ip[3])
+				return true;
+			return false;
+		};
+
+		if(type == NA_IPX)
+		{
+			if((memcmp(ipx, other.ipx, 10) == 0))
+				return true;
+			return false;
+		};
+
+		//Com_Printf("NET_CompareBaseAdr: bad address type\n");
 		return false;
 	};
 	
-	inline const char *ToString(bool abBaseOnly) const
+	inline const char *ToString(bool abBaseOnly = false) const
 	{
 		static char s[64]{};
 		if(abBaseOnly)
