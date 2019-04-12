@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "keydefs.h"
+#include "public/keydefs.h"
 
 struct IFile;
 
