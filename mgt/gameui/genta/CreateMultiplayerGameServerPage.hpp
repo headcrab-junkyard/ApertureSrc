@@ -19,5 +19,11 @@
 
 /// @file
 
-CCreateMutliplayerGameDialog::CCreateMutliplayerGameDialog() = default;
-CCreateMutliplayerGameDialog::~CCreateMutliplayerGameDialog() = default;
+#pragma once
+
+class CCreateMultiplayerGameServerPage
+{
+public:
+	CCreateMultiplayerGameServerPage();
+	~CCreateMultiplayerGameServerPage();
+};

@@ -19,11 +19,7 @@
 
 /// @file
 
-#pragma once
+#include "CreateMultiplayerGameGameplayPage.hpp"
 
-class CCreateMultiplayerGameDialog
-{
-public:
-	CCreateMultiplayerGameDialog();
-	~CCreateMultiplayerGameDialog();
-};
+CCreateMultiplayerGameGameplayPage::CCreateMultiplayerGameGameplayPage() = default;
+CCreateMultiplayerGameGameplayPage::~CCreateMultiplayerGameGameplayPage() = default;

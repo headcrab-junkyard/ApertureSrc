@@ -1,7 +1,7 @@
 /*
  * This file is part of Magenta Engine
  *
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,41 +19,25 @@
 
 /// @file
 
-#include "GameConsole.hpp"
+#pragma once
 
-EXPOSE_SINGLE_INTERFACE(CGameConsole, IGameConsole, GAMECONSOLE_INTERFACE_VERSION);
+#include "gameui/IGameConsole.hpp"
 
-CGameConsole::CGameConsole() = default;
-CGameConsole::~CGameConsole() = default;
-
-void CGameConsole::Activate()
+class CGameConsole final : public IGameConsole
 {
-};
+public:
+	CGameConsole();
+	~CGameConsole();
 
-void CGameConsole::Initialize()
-{
-};
+	void Init() override;
 
-void CGameConsole::Hide()
-{
-};
+	void SetActive(bool abActive) override;
+	bool IsVisible() const override;
 
-void CGameConsole::Clear()
-{
-};
+	void Clear() override;
 
-bool CGameConsole::IsConsoleVisible()
-{
-};
+	void Printf(const char *format, ...) override;
+	void DevPrintf(const char *format, ...) override;
 
-void CGameConsole::Printf(const char *format, ...)
-{
-};
-
-void CGameConsole::DPrintf(const char *format, ...)
-{
-};
-
-void CGameConsole::SetParent(vgui2::VPANEL parent)
-{
+	//void SetParent(int /*vgui3::VPANEL*/ parent);
 };

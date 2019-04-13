@@ -1,7 +1,7 @@
 /*
  * This file is part of Magenta Engine
  *
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,16 +21,17 @@
 
 #include "GameUI.hpp"
 
-EXPOSE_SINGLE_INTERFACE(CGameUI, IGameUI, GAMEUI_INTERFACE_VERSION);
+EXPOSE_SINGLE_INTERFACE(CGameUI, IGameUI, MGT_GAMEUI_INTERFACE_VERSION);
 
 CGameUI::CGameUI() = default;
 CGameUI::~CGameUI() = default;
 
-void CGameUI::Initialize(CreateInterfaceFn *factories, int count)
+bool CGameUI::Init(CreateInterfaceFn *factories, int count)
 {
+	return true;
 };
 
-void CGameUI::Start(/*cl_enginefunc_t*/ struct cl_enginefuncs_s *engineFuncs, int interfaceVersion, /*void*/ IBaseSystem *system)
+void CGameUI::Start(/*cl_enginefunc_t*/ struct cl_enginefuncs_s *engineFuncs, int interfaceVersion, void /*IBaseSystem*/ *system)
 {
 };
 
@@ -38,8 +39,9 @@ void CGameUI::Shutdown()
 {
 };
 
-int CGameUI::ActivateGameUI()
+int CGameUI::Activate()
 {
+	mbActive = true;
 	return true;
 };
 
@@ -65,13 +67,14 @@ void CGameUI::DisconnectFromServer()
 {
 };
 
-void CGameUI::HideGameUI()
+void CGameUI::Hide()
 {
+	mbActive = false;
 };
 
-bool CGameUI::IsGameUIActive()
+bool CGameUI::IsActive() const
 {
-	return true;
+	return mbActive;
 };
 
 void CGameUI::LoadingStarted(const char *resourceType, const char *resourceName)
@@ -105,10 +108,6 @@ void CGameUI::SetSecondaryProgressBar(float progress)
 };
 
 void CGameUI::SetSecondaryProgressBarText(const char *statusText)
-{
-};
-
-void CGameUI::ValidateCDKey(bool force, bool inConnect)
 {
 };
 

@@ -19,5 +19,7 @@
 
 /// @file
 
-CCreateMutliplayerGameServerPage::CCreateMutliplayerGameServerPage() = default;
-CCreateMutliplayerGameServerPage::~CCreateMutliplayerGameServerPage() = default;
+#include "CreateMultiplayerGameServerPage.hpp"
+
+CCreateMultiplayerGameServerPage::CCreateMultiplayerGameServerPage() = default;
+CCreateMultiplayerGameServerPage::~CCreateMultiplayerGameServerPage() = default;

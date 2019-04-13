@@ -1,7 +1,7 @@
 /*
  * This file is part of Magenta Engine
  *
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "GameUI/IGameUI.h"
+#include "gameui/IGameUI.hpp"
 
 class CGameUI final : public IGameUI
 {
@@ -29,23 +29,23 @@ public:
 	CGameUI();
 	~CGameUI();
 	
-	void Initialize(CreateInterfaceFn *factories, int count) override;
-	void Start(/*cl_enginefunc_t*/ struct cl_enginefuncs_s *engineFuncs, int interfaceVersion, /*void*/ IBaseSystem *system) override;
+	void Init(CreateInterfaceFn *factories, int count) override;
+	void Start(/*cl_enginefunc_t*/ struct cl_enginefuncs_s *engineFuncs, int interfaceVersion, void /*IBaseSystem*/ *system) override;
 	void Shutdown() override;
 
-	int ActivateGameUI() override;
+	int Activate() override;
 	int ActivateDemoUI() override;
 
-	int HasExclusiveInput() override;
-
 	void RunFrame() override;
+	
+	void Hide() override;
+
+	bool IsActive() const override;
+	
+	int HasExclusiveInput() override;
 
 	void ConnectToServer(const char *game, int IP, int port) override;
 	void DisconnectFromServer() override;
-
-	void HideGameUI() override;
-
-	bool IsGameUIActive() override;
 
 	void LoadingStarted(const char *resourceType, const char *resourceName) override;
 	void LoadingFinished(const char *resourceType, const char *resourceName) override;
@@ -59,7 +59,7 @@ public:
 	void SetSecondaryProgressBar(float progress) override;
 	void SetSecondaryProgressBarText(const char *statusText) override;
 
-	void ValidateCDKey(bool force, bool inConnect) override;
-
 	void OnDisconnectFromServer(int eSteamLoginFailure, const char *username) override;
+private:
+	bool mbActive{false};
 };

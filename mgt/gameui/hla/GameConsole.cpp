@@ -1,7 +1,7 @@
 /*
  * This file is part of Magenta Engine
  *
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,5 +19,45 @@
 
 /// @file
 
-CCreateMutliplayerGameGameplayPage::CCreateMutliplayerGameGameplayPage() = default;
-CCreateMutliplayerGameGameplayPage::~CCreateMutliplayerGameGameplayPage() = default;
+#include "GameConsole.hpp"
+
+EXPOSE_SINGLE_INTERFACE(CGameConsole, IGameConsole, MGT_GAMECONSOLE_INTERFACE_VERSION);
+
+CGameConsole::CGameConsole() = default;
+CGameConsole::~CGameConsole() = default;
+
+void CGameConsole::Init()
+{
+	// TODO
+};
+
+void CGameConsole::SetActive(bool abActive)
+{
+	// TODO
+};
+
+bool CGameConsole::IsVisible() const
+{
+	// TODO
+	return false;
+};
+
+void CGameConsole::Clear()
+{
+	// TODO
+};
+
+void CGameConsole::Printf(const char *asMsg, ...)
+{
+	// TODO
+};
+
+void CGameConsole::DevPrintf(const char *asMsg, ...)
+{
+	// TODO
+};
+
+//void CGameConsole::SetParent(int /*vgui3::VPANEL*/ parent)
+//{
+	// TODO
+//};

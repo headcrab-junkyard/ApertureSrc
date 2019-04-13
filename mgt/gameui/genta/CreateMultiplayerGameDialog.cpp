@@ -19,5 +19,7 @@
 
 /// @file
 
-CCreateMutliplayerGameBotPage::CCreateMutliplayerGameBotPage() = default;
-CCreateMutliplayerGameBotPage::~CCreateMutliplayerGameBotPage() = default;
+#include "CreateMultiplayerGameDialog.hpp"
+
+CCreateMultiplayerGameDialog::CCreateMultiplayerGameDialog() = default;
+CCreateMultiplayerGameDialog::~CCreateMultiplayerGameDialog() = default;
