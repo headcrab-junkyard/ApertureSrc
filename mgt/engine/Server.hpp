@@ -69,10 +69,10 @@ typedef enum { ss_loading, ss_active } server_state_t;
 
 typedef struct
 {
-	qboolean active; // false if only a net client
+	bool active; // false if only a net client
 
-	qboolean paused;
-	qboolean loadgame; // handle connections specially
+	bool paused;
+	bool loadgame; // handle connections specially
 
 	double time;
 
@@ -124,13 +124,13 @@ typedef struct
 
 typedef struct client_s
 {
-	qboolean active;    // false = client is free
-	qboolean spawned;   // client is fully in game (false = don't send datagrams)
-	qboolean connected; // has been assigned to a client_t, but not in game yet
-	qboolean drop;      // has been told to go to another level
+	bool active;    // false = client is free
+	bool spawned;   // client is fully in game (false = don't send datagrams)
+	bool connected; // has been assigned to a client_t, but not in game yet
+	bool drop;      // has been told to go to another level
 	//int				lossage;			// loss percentage
 
-	qboolean sendinfo; // at end of frame, send info to all
+	bool sendinfo; // at end of frame, send info to all
 	                   // this prevents malicious multiple broadcasts
 
 	int userid;                     // identifying number
@@ -156,7 +156,7 @@ typedef struct client_s
 	byte datagram_buf[MAX_DATAGRAM];
 
 	double connection_started; // or time of disconnect for zombies
-	qboolean send_message;     // set on frames a datagram arived on
+	bool send_message;     // set on frames a datagram arived on
 
 	// spawn parms are carried from level to level
 	float spawn_parms[NUM_SPAWN_PARMS];
