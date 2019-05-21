@@ -1,21 +1,21 @@
 /*
-*	This file is part of Magenta Engine
-*
-*	Copyright (C) 1996-1997 Id Software, Inc.
-*	Copyright (C) 2018 BlackPhrase
-*
-*	Magenta Engine is free software: you can redistribute it and/or modify
-*	it under the terms of the GNU General Public License as published by
-*	the Free Software Foundation, either version 3 of the License, or
-*	(at your option) any later version.
-*
-*	Magenta Engine is distributed in the hope that it will be useful,
-*	but WITHOUT ANY WARRANTY; without even the implied warranty of
-*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-*	GNU General Public License for more details.
-*
-*	You should have received a copy of the GNU General Public License
-*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of Magenta Engine
+ *
+ * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 2018-2019 BlackPhrase
+ *
+ * Magenta Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Magenta Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /// @file
@@ -28,12 +28,6 @@
 #include "winquake.h"
 //#include "dosisms.h"
 
-#define DINPUT_BUFFERSIZE 16
-#define iDirectInputCreate(a, b, c, d) pDirectInputCreate(a, b, c, d)
-
-HRESULT(WINAPI *pDirectInputCreate)(HINSTANCE hinst, DWORD dwVersion,
- LPDIRECTINPUT *lplpDirectInput, LPUNKNOWN punkOuter);
-
 // mouse variables
 cvar_t m_filter = { "m_filter", "0" };
 
@@ -42,15 +36,7 @@ int mouse_oldbuttonstate;
 POINT current_pos;
 int mouse_x, mouse_y, old_mouse_x, old_mouse_y, mx_accum, my_accum;
 
-static bool restore_spi;
-static int originalmouseparms[3], newmouseparms[3] = { 0, 0, 1 };
-
-unsigned int uiWheelMessage;
-bool mouseactive;
-bool mouseinitialized;
-static bool mouseparmsvalid, mouseactivatetoggle;
 static bool mouseshowtoggle = 1;
-static bool dinput_acquired;
 
 static unsigned int mstate_di;
 
@@ -116,15 +102,6 @@ int joy_id;
 DWORD joy_flags;
 DWORD joy_numbuttons;
 
-static LPDIRECTINPUT g_pdi;
-static LPDIRECTINPUTDEVICE g_pMouse;
-
-static JOYINFOEX ji;
-
-static HINSTANCE hInstDI;
-
-static bool dinput;
-
 typedef struct MYDATA
 {
 	LONG lX;       // X axis goes here
@@ -136,39 +113,15 @@ typedef struct MYDATA
 	BYTE bButtonD; // Another button goes here
 } MYDATA;
 
-static DIOBJECTDATAFORMAT rgodf[] = {
-	{
-	&GUID_XAxis, FIELD_OFFSET(MYDATA, lX), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0,
-	},
-	{
-	&GUID_YAxis, FIELD_OFFSET(MYDATA, lY), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0,
-	},
-	{
-	&GUID_ZAxis, FIELD_OFFSET(MYDATA, lZ), 0x80000000 | DIDFT_AXIS | DIDFT_ANYINSTANCE, 0,
-	},
-	{
-	0, FIELD_OFFSET(MYDATA, bButtonA), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,
-	},
-	{
-	0, FIELD_OFFSET(MYDATA, bButtonB), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,
-	},
-	{
-	0, FIELD_OFFSET(MYDATA, bButtonC), 0x80000000 | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,
-	},
-	{
-	0, FIELD_OFFSET(MYDATA, bButtonD), 0x80000000 | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,
-	},
-};
-
-#define NUM_OBJECTS (sizeof(rgodf) / sizeof(rgodf[0]))
-
-static DIDATAFORMAT df = {
-	sizeof(DIDATAFORMAT),       // this structure
-	sizeof(DIOBJECTDATAFORMAT), // size of object data format
-	DIDF_RELAXIS,               // absolute axis coordinates
-	sizeof(MYDATA),             // device data size
-	NUM_OBJECTS,                // number of objects
-	rgodf,                      // and here they are
+static DIOBJECTDATAFORMAT rgodf[] =
+{
+	{&GUID_XAxis, FIELD_OFFSET(MYDATA, lX), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0,},
+	{&GUID_YAxis, FIELD_OFFSET(MYDATA, lY), DIDFT_AXIS | DIDFT_ANYINSTANCE, 0,},
+	{&GUID_ZAxis, FIELD_OFFSET(MYDATA, lZ), 0x80000000 | DIDFT_AXIS | DIDFT_ANYINSTANCE, 0,},
+	{0, FIELD_OFFSET(MYDATA, bButtonA), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,},
+	{0, FIELD_OFFSET(MYDATA, bButtonB), DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,},
+	{0, FIELD_OFFSET(MYDATA, bButtonC), 0x80000000 | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,},
+	{0, FIELD_OFFSET(MYDATA, bButtonD), 0x80000000 | DIDFT_BUTTON | DIDFT_ANYINSTANCE, 0,},
 };
 
 // forward-referenced functions
@@ -229,46 +182,6 @@ void IN_HideMouse()
 
 /*
 ===========
-IN_ActivateMouse
-===========
-*/
-void IN_ActivateMouse()
-{
-	mouseactivatetoggle = true;
-
-	if(mouseinitialized)
-	{
-		if(dinput)
-		{
-			if(g_pMouse)
-			{
-				if(!dinput_acquired)
-				{
-					IDirectInputDevice_Acquire(g_pMouse);
-					dinput_acquired = true;
-				}
-			}
-			else
-			{
-				return;
-			}
-		}
-		else
-		{
-			if(mouseparmsvalid)
-				restore_spi = SystemParametersInfo(SPI_SETMOUSE, 0, newmouseparms, 0);
-
-			SetCursorPos(window_center_x, window_center_y);
-			SetCapture(mainwindow);
-			ClipCursor(&window_rect);
-		}
-
-		mouseactive = true;
-	}
-}
-
-/*
-===========
 IN_SetQuakeMouseState
 ===========
 */
@@ -276,41 +189,6 @@ void IN_SetQuakeMouseState()
 {
 	if(mouseactivatetoggle)
 		IN_ActivateMouse();
-}
-
-/*
-===========
-IN_DeactivateMouse
-===========
-*/
-void IN_DeactivateMouse()
-{
-	mouseactivatetoggle = false;
-
-	if(mouseinitialized)
-	{
-		if(dinput)
-		{
-			if(g_pMouse)
-			{
-				if(dinput_acquired)
-				{
-					IDirectInputDevice_Unacquire(g_pMouse);
-					dinput_acquired = false;
-				}
-			}
-		}
-		else
-		{
-			if(restore_spi)
-				SystemParametersInfo(SPI_SETMOUSE, 0, originalmouseparms, 0);
-
-			ClipCursor(nullptr);
-			ReleaseCapture();
-		}
-
-		mouseactive = false;
-	}
 }
 
 /*
@@ -330,155 +208,6 @@ void IN_RestoreOriginalMouseState()
 	// has garbage after the mode switch
 	ShowCursor(TRUE);
 	ShowCursor(FALSE);
-}
-
-/*
-===========
-IN_InitDInput
-===========
-*/
-bool IN_InitDInput()
-{
-	HRESULT hr;
-	DIPROPDWORD dipdw = {
-		{
-		sizeof(DIPROPDWORD),  // diph.dwSize
-		sizeof(DIPROPHEADER), // diph.dwHeaderSize
-		0,                    // diph.dwObj
-		DIPH_DEVICE,          // diph.dwHow
-		},
-		DINPUT_BUFFERSIZE, // dwData
-	};
-
-	if(!hInstDI)
-	{
-		hInstDI = LoadLibrary("dinput.dll");
-
-		if(hInstDI == nullptr)
-		{
-			Con_SafePrintf("Couldn't load dinput.dll\n");
-			return false;
-		}
-	}
-
-	if(!pDirectInputCreate)
-	{
-		pDirectInputCreate = (void *)GetProcAddress(hInstDI, "DirectInputCreateA");
-
-		if(!pDirectInputCreate)
-		{
-			Con_SafePrintf("Couldn't get DI proc addr\n");
-			return false;
-		}
-	}
-
-	// register with DirectInput and get an IDirectInput to play with.
-	hr = iDirectInputCreate(global_hInstance, DIRECTINPUT_VERSION, &g_pdi, nullptr);
-
-	if(FAILED(hr))
-	{
-		return false;
-	}
-
-	// obtain an interface to the system mouse device.
-	hr = IDirectInput_CreateDevice(g_pdi, &GUID_SysMouse, &g_pMouse, nullptr);
-
-	if(FAILED(hr))
-	{
-		Con_SafePrintf("Couldn't open DI mouse device\n");
-		return false;
-	}
-
-	// set the data format to "mouse format".
-	hr = IDirectInputDevice_SetDataFormat(g_pMouse, &df);
-
-	if(FAILED(hr))
-	{
-		Con_SafePrintf("Couldn't set DI mouse format\n");
-		return false;
-	}
-
-	// set the cooperativity level.
-	hr = IDirectInputDevice_SetCooperativeLevel(g_pMouse, mainwindow,
-	                                            DISCL_EXCLUSIVE | DISCL_FOREGROUND);
-
-	if(FAILED(hr))
-	{
-		Con_SafePrintf("Couldn't set DI coop level\n");
-		return false;
-	}
-
-	// set the buffer size to DINPUT_BUFFERSIZE elements.
-	// the buffer size is a DWORD property associated with the device
-	hr = IDirectInputDevice_SetProperty(g_pMouse, DIPROP_BUFFERSIZE, &dipdw.diph);
-
-	if(FAILED(hr))
-	{
-		Con_SafePrintf("Couldn't set DI buffersize\n");
-		return false;
-	}
-
-	return true;
-}
-
-/*
-===========
-IN_StartupMouse
-===========
-*/
-void IN_StartupMouse()
-{
-	HDC hdc;
-
-	if(COM_CheckParm("-nomouse"))
-		return;
-
-	mouseinitialized = true;
-
-	if(COM_CheckParm("-dinput"))
-	{
-		dinput = IN_InitDInput();
-
-		if(dinput)
-		{
-			Con_SafePrintf("DirectInput initialized\n");
-		}
-		else
-		{
-			Con_SafePrintf("DirectInput not initialized\n");
-		}
-	}
-
-	if(!dinput)
-	{
-		mouseparmsvalid = SystemParametersInfo(SPI_GETMOUSE, 0, originalmouseparms, 0);
-
-		if(mouseparmsvalid)
-		{
-			if(COM_CheckParm("-noforcemspd"))
-				newmouseparms[2] = originalmouseparms[2];
-
-			if(COM_CheckParm("-noforcemaccel"))
-			{
-				newmouseparms[0] = originalmouseparms[0];
-				newmouseparms[1] = originalmouseparms[1];
-			}
-
-			if(COM_CheckParm("-noforcemparms"))
-			{
-				newmouseparms[0] = originalmouseparms[0];
-				newmouseparms[1] = originalmouseparms[1];
-				newmouseparms[2] = originalmouseparms[2];
-			}
-		}
-	}
-
-	mouse_buttons = 3;
-
-	// if a fullscreen video mode was set before the mouse was initialized,
-	// set the mouse state appropriately
-	if(mouseactivatetoggle)
-		IN_ActivateMouse();
 }
 
 /*
@@ -514,34 +243,6 @@ void IN_Init()
 
 	Cmd_AddCommand("force_centerview", Force_CenterView_f);
 	Cmd_AddCommand("joyadvancedupdate", Joy_AdvancedUpdate_f);
-
-	uiWheelMessage = RegisterWindowMessage("MSWHEEL_ROLLMSG");
-
-	IN_StartupMouse();
-	IN_StartupJoystick();
-}
-
-/*
-===========
-IN_Shutdown
-===========
-*/
-void IN_Shutdown()
-{
-	IN_DeactivateMouse();
-	IN_ShowMouse();
-
-	if(g_pMouse)
-	{
-		IDirectInputDevice_Release(g_pMouse);
-		g_pMouse = nullptr;
-	}
-
-	if(g_pdi)
-	{
-		IDirectInput_Release(g_pdi);
-		g_pdi = nullptr;
-	}
 }
 
 /*
@@ -785,74 +486,6 @@ void IN_ClearStates()
 	}
 }
 
-/* 
-=============== 
-IN_StartupJoystick 
-=============== 
-*/
-void IN_StartupJoystick()
-{
-	int i, numdevs;
-	JOYCAPS jc;
-	MMRESULT mmr;
-
-	// assume no joystick
-	joy_avail = false;
-
-	// abort startup if user requests no joystick
-	if(COM_CheckParm("-nojoy"))
-		return;
-
-	// verify joystick driver is present
-	if((numdevs = joyGetNumDevs()) == 0)
-	{
-		Con_Printf("\njoystick not found -- driver not present\n\n");
-		return;
-	}
-
-	// cycle through the joystick ids for the first valid one
-	for(joy_id = 0; joy_id < numdevs; joy_id++)
-	{
-		memset(&ji, 0, sizeof(ji));
-		ji.dwSize = sizeof(ji);
-		ji.dwFlags = JOY_RETURNCENTERED;
-
-		if((mmr = joyGetPosEx(joy_id, &ji)) == JOYERR_NOERROR)
-			break;
-	}
-
-	// abort startup if we didn't find a valid joystick
-	if(mmr != JOYERR_NOERROR)
-	{
-		Con_Printf("\njoystick not found -- no valid joysticks (%x)\n\n", mmr);
-		return;
-	}
-
-	// get the capabilities of the selected joystick
-	// abort startup if command fails
-	memset(&jc, 0, sizeof(jc));
-	if((mmr = joyGetDevCaps(joy_id, &jc, sizeof(jc))) != JOYERR_NOERROR)
-	{
-		Con_Printf("\njoystick not found -- invalid joystick capabilities (%x)\n\n", mmr);
-		return;
-	}
-
-	// save the joystick's number of buttons and POV status
-	joy_numbuttons = jc.wNumButtons;
-	joy_haspov = jc.wCaps & JOYCAPS_HASPOV;
-
-	// old button and POV states default to no buttons pressed
-	joy_oldbuttonstate = joy_oldpovstate = 0;
-
-	// mark the joystick as available and advanced initialization not completed
-	// this is needed as cvars are not available during initialization
-
-	joy_avail = true;
-	joy_advancedinit = false;
-
-	Con_Printf("\njoystick detected\n\n");
-}
-
 /*
 ===========
 RawValuePointer
@@ -1012,39 +645,6 @@ void IN_Commands()
 			}
 		}
 		joy_oldpovstate = povstate;
-	}
-}
-
-/* 
-=============== 
-IN_ReadJoystick
-=============== 
-*/
-bool IN_ReadJoystick()
-{
-	memset(&ji, 0, sizeof(ji));
-	ji.dwSize = sizeof(ji);
-	ji.dwFlags = joy_flags;
-
-	if(joyGetPosEx(joy_id, &ji) == JOYERR_NOERROR)
-	{
-		// this is a hack -- there is a bug in the Logitech WingMan Warrior DirectInput Driver
-		// rather than having 32768 be the zero point, they have the zero point at 32668
-		// go figure -- anyway, now we get the full resolution out of the device
-		if(joy_wwhack1.value != 0.0)
-		{
-			ji.dwUpos += 100;
-		}
-		return true;
-	}
-	else
-	{
-		// read error occurred
-		// turning off the joystick seems too harsh for 1 read error,\
-		// but what should be done?
-		// Con_Printf ("IN_ReadJoystick: no response\n");
-		// joy_avail = false;
-		return false;
 	}
 }
 
