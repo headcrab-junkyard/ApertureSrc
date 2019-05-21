@@ -2,7 +2,7 @@
 *	This file is part of Magenta Engine
 *
 *	Copyright (C) 1996-1997 Id Software, Inc.
-*	Copyright (C) 2018 BlackPhrase
+*	Copyright (C) 2018-2019 BlackPhrase
 *
 *	Magenta Engine is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -168,6 +168,10 @@ typedef struct client_s
 	int chokecount;
 	int delta_sequence; // -1 = no compression
 	netchan_t netchan;
+	
+	// MGT
+	
+	int protocol{0};
 } client_t;
 
 //=============================================================================
