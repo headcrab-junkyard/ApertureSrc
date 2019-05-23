@@ -5,7 +5,8 @@
 #include "network/INetwork.hpp"
 
 struct ISystem;
-struct IConsole;
+struct ICvarRegistry;
+struct IConVarController;
 
 class CNetwork final : public INetwork
 {
@@ -25,5 +26,6 @@ private:
 	void GetLocalAddress();
 	
 	ISystem *mpSystem{nullptr};
-	IConsole *mpConsole{nullptr};
+	ICvarRegistry *mpCvarRegistry{nullptr};
+	IConVarController *mpCvarController{nullptr};
 };

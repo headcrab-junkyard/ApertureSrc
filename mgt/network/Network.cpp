@@ -23,6 +23,9 @@
 #include <cstdio>
 #include "Network.hpp"
 #include "engine/ISystem.hpp"
+#include "engine/ICvarRegistry.hpp"
+#include "engine/IConVarController.hpp"
+#include "cvardef.h"
 
 #ifdef _WIN32
 #include "winquake.h"
@@ -157,6 +160,22 @@ bool CNetwork::Init(CreateInterfaceFn afnEngineFactory /*, int port*/)
 		return false;
 	};
 	
+	mpCvarRegistry = (ICvarRegistry*)afnEngineFactory(MGT_CVARREGISTRY_INTERFACE_VERSION, nullptr);
+	
+	if(!mpCvarRegistry)
+	{
+		printf("ICvarRegistry query failed!\n");
+		return false;
+	};
+	
+	mpCvarController = (IConVarController*)afnEngineFactory(MGT_CONVARCONTROLLER_INTERFACE_VERSION, nullptr);
+	
+	if(!mpCvarController)
+	{
+		printf("IConVarController query failed!\n");
+		return false;
+	};
+	
 #ifdef _WIN32
 	auto wVersionRequested{MAKEWORD(1, 1)};
 
@@ -195,7 +214,7 @@ bool CNetwork::Init(CreateInterfaceFn afnEngineFactory /*, int port*/)
 	mpCvarRegistry->Register(&net_showdrop);
 	mpCvarRegistry->Register(&qport);
 	
-	Cvar_SetValue("qport", port);
+	mpCvarController->SetFloat("qport", port);
 	
 	mpSystem->Printf("UDP Initialized\n");
 	return true;
