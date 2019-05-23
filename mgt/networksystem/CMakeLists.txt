@@ -1,4 +1,4 @@
-project(mgt-network)
+project(mgt-networksystem)
 
 # Sources list
 file(GLOB MGT_NETWORK_SOURCES
@@ -10,7 +10,7 @@ add_library(${PROJECT_NAME} MODULE ${MGT_NETWORK_SOURCES})
 
 # Set properties
 set_target_properties(${PROJECT_NAME} PROPERTIES
-	OUTPUT_NAME "network"
+	OUTPUT_NAME "networksystem"
 )
 
 target_link_libraries(${PROJECT_NAME} ogs-interface)
