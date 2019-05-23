@@ -1,6 +1,6 @@
 /*
  * This file is part of OGS Engine
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * OGS Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 /// @file
 
 #include "pm_shared/pm_shared.h"
-#include "mathlib.h"
+#include "mathlib/mathlib.h"
 
 void PM_ViewEntity()
 {
