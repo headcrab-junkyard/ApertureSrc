@@ -1,4 +1,4 @@
-project(ogs-pm_shared)
+project(mgt-pm_shared)
 
 file(GLOB PROJECT_SOURCES
 	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
