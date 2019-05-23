@@ -1,6 +1,7 @@
 /*
 *	This file is part of Magenta Engine
 *
+*	Copyright (C) 1996-1997 Id Software, Inc.
 *	Copyright (C) 2018 BlackPhrase
 *
 *	Magenta Engine is free software: you can redistribute it and/or modify
@@ -27,9 +28,16 @@
 #include "linux/LinuxApplication.hpp"
 #endif
 
+#ifdef _WIN32
 //HINSTANCE global_hInstance;
 //int global_nCmdShow;
+#endif
 
+/*
+==================
+WinMain
+==================
+*/
 #ifdef _WIN32
 int CALLBACK WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, LPSTR lpCmdLine, int nCmdShow)
 #else

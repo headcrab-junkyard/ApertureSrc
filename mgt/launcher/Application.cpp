@@ -47,6 +47,7 @@ int CApplication::Run()
 		
 		bool bRunning{true};
 		
+		// main loop
 		while(bRunning)
 			bRunning = mpEngine->Frame();
 		
@@ -113,11 +114,10 @@ bool CApplication::LoadFileSystemModule(const char *name)
 	if(!mpFSLib)
 		return false;
 	
-	mfnFSFactory = Sys_GetFactory(mpFSLib);
+	gfnFSFactory = Sys_GetFactory(mpFSLib);
 	
-	if(!mfnFSFactory)
+	if(!gfnFSFactory)
 		return false;
 	
-	gfnFSFactory = mfnFSFactory;
 	return true;
 };
