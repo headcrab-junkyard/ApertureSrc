@@ -265,24 +265,35 @@ void Host_GetConsoleCommands()
 	};
 };
 
-int RunServer()
+bool LoadFileSystemModule(const char *name)
 {
-	auto pFSLib{Sys_LoadModule("filesystem_stdio")};
+	auto pFSLib{Sys_LoadModule(name)};
 	
 	if(!pFSLib)
-		throw std::runtime_error(std::string("Failed to load the filesystem module!"));
+		return false;
 	
 	auto pFSFactory{Sys_GetFactory(pFSLib)};
 	
 	if(!pFSFactory)
-		return EXIT_FAILURE;
+		return false;
 	
 	gfnFSFactory = pFSFactory;
+	return true;
+};
+
+int RunServer()
+{
+	constexpr auto FILESYSTEM_MODULE_NAME{"filesystem_stdio"};
 	
-	auto pEngineLib{Sys_LoadModule("engine")};
+	if(!LoadFileSystemModule(FILESYSTEM_MODULE_NAME))
+		throw std::runtime_error(std::string("Failed to load the filesystem module(") + FILESYSTEM_MODULE_NAME + ")!");
+	
+	constexpr auto ENGINE_MODULE_NAME{"engine"};
+	
+	auto pEngineLib{Sys_LoadModule(ENGINE_MODULE_NAME)};
 	
 	if(!pEngineLib)
-		throw std::runtime_error(std::string("Failed to load the engine module!"));
+		throw std::runtime_error(std::string("Failed to load the engine module(") + ENGINE_MODULE_NAME + ")!");
 	
 	auto pEngineFactory{Sys_GetFactory(pEngineLib)};
 	
