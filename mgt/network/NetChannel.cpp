@@ -2,7 +2,7 @@
 *	This file is part of Magenta Engine
 *
 *	Copyright (C) 1996-1997 Id Software, Inc.
-*	Copyright (C) 2018 BlackPhrase
+*	Copyright (C) 2018-2019 BlackPhrase
 *
 *	Magenta Engine is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -20,7 +20,13 @@
 
 /// @file
 
+#include <cstring>
+
+#include "qlibc/qlibc.h"
 #include "NetChannel.hpp"
+#include "network/INetwork.hpp"
+#include "network/INetMsg.hpp"
+#include "engine/ISystem.hpp"
 
 #ifdef _WIN32
 #include "winquake.h"
@@ -50,7 +56,7 @@ the retransmit has been acknowledged and the reliable still failed to get there.
 if the sequence number is -1, the packet should be handled without a netcon
 
 The reliable message can be added to at any time by doing
-MSG_Write* (&netchan->message, <data>).
+netchan->message->Write* (<data>).
 
 If the message buffer is overflowed, either by a single message, or by
 multiple frames worth piling up while the last reliable transmit goes
@@ -79,7 +85,7 @@ to the new value before sending out any replies.
 
 int net_drop;
 
-CNetChannel::CNetChannel(INetwork *apNetwork) : mpNetwork(apNetwork){}
+CNetChannel::CNetChannel(ISystem *apSystem, INetwork *apNetwork) : mpSystem(apSystem), mpNetwork(apNetwork){}
 CNetChannel::~CNetChannel() = default;
 
 /*
@@ -91,18 +97,22 @@ called to open a channel to a remote system
 */
 void CNetChannel::Setup(netsrc_t sock, netchan_t *chan, netadr_t adr, int qport)
 {
-	memset(chan, 0, sizeof(*chan));
+	Q_memset(chan, 0, sizeof(*chan));
 
+	chan->sock = sock;
 	chan->remote_address = adr;
-	chan->last_received = realtime;
+	chan->last_received = mpSystem->GetRealTime(); // TODO: not present in q3
 
-	chan->message.data = chan->message_buf;
-	chan->message.allowoverflow = true;
-	chan->message.maxsize = sizeof(chan->message_buf);
+	chan->message.data = chan->message_buf; // TODO: not present in q3
+	chan->message.allowoverflow = true; // TODO: not present in q3
+	chan->message.maxsize = sizeof(chan->message_buf); // TODO: not present in q3
 
 	chan->qport = qport;
 
-	chan->rate = 1.0 / 2500;
+	chan->rate = 1.0 / 2500; // TODO: not present in q3
+	
+	//chan->incomingSequence = 0; // TODO: q3
+	//chan->outgoingSequence = 1; // TODO: q3
 };
 
 #ifdef SWDS // TODO
@@ -131,7 +141,7 @@ void CNetChannel::Transmit(int length, byte *data)
 	if(mpData->message.overflowed)
 	{
 		mpData->fatal_error = true;
-		gpSystem->Printf("%s:Outgoing message overflow\n", mpNetwork->AdrToString(mpData->remote_address));
+		mpSystem->Printf("%s:Outgoing message overflow\n", mpData->remote_address.ToString());
 		return;
 	};
 
@@ -161,12 +171,12 @@ void CNetChannel::Transmit(int length, byte *data)
 
 	mpData->outgoing_sequence++;
 
-	MSG_WriteLong(&send, w1);
-	MSG_WriteLong(&send, w2);
+	send.WriteLong(w1);
+	send.WriteLong(w2);
 
 	// send the qport if we are a client
 	//if (mpData->sock == NS_CLIENT) // TODO
-		//MSG_WriteShort (&send, cls.qport);
+		//send.WriteShort (cls.qport);
 
 	// copy the reliable message to the packet first
 	if(send_reliable)
@@ -182,7 +192,7 @@ void CNetChannel::Transmit(int length, byte *data)
 	// send the datagram
 	i = mpData->outgoing_sequence & (MAX_LATENT - 1);
 	mpData->outgoing_size[i] = send.cursize;
-	mpData->outgoing_time[i] = realtime;
+	mpData->outgoing_time[i] = mpSystem->GetRealTime();
 
 //#ifndef SWDS // TODO
 	//zoid, no input in demo playback mode
@@ -190,18 +200,22 @@ void CNetChannel::Transmit(int length, byte *data)
 //#endif
 	mpNetwork->SendPacket(mpData->sock, send.cursize, send.data, mpData->remote_address);
 
-	if(mpData->cleartime < realtime)
-		mpData->cleartime = realtime + send.cursize * mpData->rate;
+	if(mpData->cleartime < mpSystem->GetRealTime())
+		mpData->cleartime = mpSystem->GetRealTime() + send.cursize * mpData->rate;
 	else
 		mpData->cleartime += send.cursize * mpData->rate;
 
 #ifdef SWDS // TODO
 	if(ServerPaused())
-		mpData->cleartime = realtime;
+		mpData->cleartime = mpSystem->GetRealTime();
 #endif
 
 	if(net_showpackets.value)
-		gpSystem->Printf("--> s=%i(%i) a=%i(%i) %i\n", mpData->outgoing_sequence, send_reliable, mpData->incoming_sequence, mpData->incoming_reliable_sequence, send.cursize);
+		mpSystem->Printf("--> s=%i(%i) a=%i(%i) %i\n", mpData->outgoing_sequence, send_reliable, mpData->incoming_sequence, mpData->incoming_reliable_sequence, send.cursize);
+};
+
+void CNetChannel::SendMsg(const INetMsg &apMsg)
+{
 };
 
 /*
@@ -212,7 +226,7 @@ called when the current net_message is from remote_address
 modifies net_message so that it points to the packet payload
 =================
 */
-bool CNetChannel::Process(INetMessage *net_message)
+bool CNetChannel::ProcessMsg(INetMsg *net_message)
 {
 	unsigned sequence, sequence_ack;
 	unsigned reliable_ack, reliable_message;
@@ -225,17 +239,20 @@ bool CNetChannel::Process(INetMessage *net_message)
 //#ifndef SWDS // TODO
 	// !cls.demoplayback &&
 //#endif
-	!mpNetwork->CompareAdr(net_from, mpData->remote_address))
+	net_from != mpData->remote_address)
 		return false;
+
+	// XOR unscramble all data in the packet after the header
+	//Netchan_UnScramblePacket( msg );
 
 	// get sequence numbers
 	MSG_BeginReading();
-	sequence = MSG_ReadLong(net_message);
-	sequence_ack = MSG_ReadLong(net_message);
+	sequence = net_message->ReadLong();
+	sequence_ack = net_message->ReadLong();
 
 	// read the qport if we are a server
 	if(mpData->sock == NS_SERVER)
-		qport = MSG_ReadShort(net_message);
+		qport = net_message->ReadShort();
 
 	reliable_message = sequence >> 31;
 	reliable_ack = sequence_ack >> 31;
@@ -244,7 +261,7 @@ bool CNetChannel::Process(INetMessage *net_message)
 	sequence_ack &= ~(1 << 31);
 
 	if(net_showpackets.value)
-		gpSystem->Printf("<-- s=%i(%i) a=%i(%i) %i\n", sequence, reliable_message, sequence_ack, reliable_ack, net_message->cursize);
+		mpSystem->Printf("<-- s=%i(%i) a=%i(%i) %i\n", sequence, reliable_message, sequence_ack, reliable_ack, net_message->cursize);
 
 // get a rate estimation
 #if 0
@@ -254,7 +271,7 @@ bool CNetChannel::Process(INetMessage *net_message)
 		double			time, rate;
 	
 		i = sequence_ack & (MAX_LATENT - 1);
-		time = realtime - mpData->outgoing_time[i];
+		time = mpSystem->GetRealTime() - mpData->outgoing_time[i];
 		time -= 0.1;	// subtract 100 ms
 		if (time <= 0)
 		{	// gotta be a digital link for <100 ms ping
@@ -282,7 +299,7 @@ bool CNetChannel::Process(INetMessage *net_message)
 	if(sequence <= (unsigned)mpData->incoming_sequence)
 	{
 		if(net_showdrop.value)
-			gpSystem->Printf("%s:Out of order packet %i at %i\n", mpNetwork->AdrToString(mpData->remote_address), sequence, mpData->incoming_sequence);
+			mpSystem->Printf("%s:Out of order packet %i at %i\n", mpData->remote_address->ToString(), sequence, mpData->incoming_sequence);
 		return false;
 	};
 
@@ -295,7 +312,7 @@ bool CNetChannel::Process(INetMessage *net_message)
 		mpData->drop_count += 1;
 
 		if(net_showdrop.value)
-			gpSystem->Printf("%s:Dropped %i packets at %i\n", mpNetwork->AdrToString(mpData->remote_address), sequence - (mpData->incoming_sequence + 1), sequence);
+			mpSystem->Printf("%s:Dropped %i packets at %i\n", mpData->remote_address.ToString(), sequence - (mpData->incoming_sequence + 1), sequence);
 	};
 
 	//
@@ -319,10 +336,10 @@ bool CNetChannel::Process(INetMessage *net_message)
 	// update statistics counters
 	//
 	mpData->frame_latency = mpData->frame_latency * OLD_AVG + (mpData->outgoing_sequence - sequence_ack) * (1.0 - OLD_AVG);
-	mpData->frame_rate = mpData->frame_rate * OLD_AVG + (realtime - mpData->last_received) * (1.0 - OLD_AVG);
+	mpData->frame_rate = mpData->frame_rate * OLD_AVG + (mpSystem->GetRealTime() - mpData->last_received) * (1.0 - OLD_AVG);
 	mpData->good_count += 1;
 
-	mpData->last_received = realtime;
+	mpData->last_received = mpSystem->GetRealTime();
 
 	return true;
 };
@@ -337,7 +354,7 @@ Returns true if the bandwidth choke isn't active
 #define MAX_BACKUP 200
 bool CNetChannel::CanPacket() const
 {
-	if(mpData->cleartime < realtime + MAX_BACKUP * mpData->rate)
+	if(mpData->cleartime < mpSystem->GetRealTime() + MAX_BACKUP * mpData->rate)
 		return true;
 	return false;
 };

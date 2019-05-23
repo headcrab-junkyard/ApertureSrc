@@ -22,12 +22,13 @@
 
 #include "network/INetChannel.hpp"
 
+struct ISystem;
 struct INetwork;
 
 class CNetChannel final : public INetChannel
 {
 public:
-	CNetChannel(INetwork *apNetwork);
+	CNetChannel(ISystem *apSystem, INetwork *apNetwork);
 	~CNetChannel();
 	
 	void Setup(netsrc_t sock, netchan_t *chan, netadr_t adr, int qport) override;
@@ -37,11 +38,13 @@ public:
 	//void OutOfBand(netadr_t adr, int length, byte *data) override;
 	//void OutOfBandPrint(netadr_t adr, const char *format, ...) override;
 	
-	bool Process(INetMessage *net_message) override;
+	void SendMsg(const INetMsg &apMsg) override;
+	bool ProcessMsg(INetMsg *net_message) override;
 
 	bool CanPacket() const override;
 	bool CanReliable() const override;
 private:
+	ISystem *mpSystem{nullptr};
 	INetwork *mpNetwork{nullptr};
 	netchan_t *mpData{nullptr};
 };
