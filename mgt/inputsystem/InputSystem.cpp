@@ -19,7 +19,7 @@
 
 /// @file
 
-#include "Input.hpp"
+#include "InputSystem.hpp"
 #include "InputEventDispatcher.hpp"
 #include "public/keydefs.h"
 
