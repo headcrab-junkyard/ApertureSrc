@@ -26,7 +26,23 @@
 #include "Interface.hpp"
 //#include "input/IInputDevice.hpp"
 
+#ifdef _WIN32
+#include <windef.h>
+#endif
+
 constexpr auto MGT_INPUT_INTERFACE_VERSION{"MGTInput001Alpha"};
+
+interface IInputEventListener;
+
+struct SOSMessage
+{
+#ifdef _WIN32
+	UINT mnMsg{0};
+	LPARAM mnParam{0};
+#else
+	// TODO
+#endif
+};
 
 interface IInput : public IBaseInterface
 {
@@ -42,12 +58,19 @@ interface IInput : public IBaseInterface
 	///
 	//virtual void Frame() = 0;
 	//virtual void Update(float afTimeStep) = 0;
+	virtual void HandleOSMessage(const SOSMessage &apMsg) = 0; // TODO: IWindowMessageHandler
 	
 	///
 	//virtual void SetActive(bool abActive) = 0;
 	
 	///
 	//virtual bool IsActive() const = 0;
+	
+	///
+	virtual void AddEventListener(IInputEventListener *apListener) = 0;
+	
+	///
+	virtual void RemoveEventListener(IInputEventListener *apListener) = 0;
 	
 	///
 	//virtual bool AddDevice(IInputDevice *apDevice) = 0;
