@@ -21,7 +21,10 @@
 
 #pragma once
 
+#include <memory>
 #include "input/IInput.hpp"
+
+class CInputEventDispatcher;
 
 class CInput final : public IInput
 {
@@ -31,4 +34,16 @@ public:
 	
 	bool Init() override;
 	void Shutdown() override;
+	
+	//void Frame() override;
+	void HandleOSMessage(const SOSMessage &apMsg) override;
+	
+	void AddEventListener(IInputEventListener *apListener) override;
+	void RemoveEventListener(IInputEventListener *apListener) override;
+private:
+#ifdef _WIN32
+	int MapKey(int key);
+#endif
+
+	std::unique_ptr<CInputEventDispatcher> mpEventDispatcher;
 };
