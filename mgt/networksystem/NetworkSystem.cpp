@@ -21,7 +21,7 @@
 /// @file
 
 #include <cstdio>
-#include "Network.hpp"
+#include "NetworkSystem.hpp"
 #include "engine/ISystem.hpp"
 #include "engine/ICvarRegistry.hpp"
 #include "engine/IConVarController.hpp"
@@ -140,17 +140,17 @@ void SockadrToNetadr(struct sockaddr_in *s, netadr_t *a)
 
 //=============================================================================
 
-EXPOSE_SINGLE_INTERFACE(CNetwork, INetwork, MGT_NETWORK_INTERFACE_VERSION);
+EXPOSE_SINGLE_INTERFACE(CNetworkSystem, INetworkSystem, MGT_NETWORKSYSTEM_INTERFACE_VERSION);
 
-CNetwork::CNetwork() = default;
-CNetwork::~CNetwork() = default;
+CNetworkSystem::CNetworkSystem() = default;
+CNetworkSystem::~CNetworkSystem() = default;
 
 /*
 ====================
 NET_Init
 ====================
 */
-bool CNetwork::Init(CreateInterfaceFn afnEngineFactory /*, int port*/)
+bool CNetworkSystem::Init(CreateInterfaceFn afnEngineFactory /*, int port*/)
 {
 	mpSystem = (ISystem*)afnEngineFactory(MGT_SYSTEM_INTERFACE_VERSION, nullptr);
 	
@@ -225,7 +225,7 @@ bool CNetwork::Init(CreateInterfaceFn afnEngineFactory /*, int port*/)
 NET_Shutdown
 ====================
 */
-void CNetwork::Shutdown()
+void CNetworkSystem::Shutdown()
 {
 #ifdef _WIN32
 	closesocket(net_socket);
@@ -237,7 +237,7 @@ void CNetwork::Shutdown()
 
 //=============================================================================
 
-bool CNetwork::GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message)
+bool CNetworkSystem::GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message)
 {
 	int ret;
 	struct sockaddr_in from;
@@ -293,7 +293,7 @@ bool CNetwork::GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_messa
 
 //=============================================================================
 
-void CNetwork::SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
+void CNetworkSystem::SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
 {
 	int ret;
 	struct sockaddr_in addr;
@@ -311,7 +311,7 @@ void CNetwork::SendPacket(netsrc_t sock, int length, void *data, netadr_t to)
 		if(err == WSAEWOULDBLOCK)
 			return;
 
-#ifndef SERVERONLY
+#ifndef SWDS
 		if(err == WSAEADDRNOTAVAIL)
 			mpSystem->DevPrintf("NET_SendPacket Warning: %i\n", err);
 		else
@@ -337,7 +337,7 @@ idnewt:28000
 192.246.40.70:28000
 =============
 */
-bool CNetwork::StringToAdr(const char *s, netadr_t *a)
+bool CNetworkSystem::StringToAdr(const char *s, netadr_t *a)
 {
 	struct hostent *h;
 	struct sockaddr_in sadr;
@@ -378,7 +378,7 @@ bool CNetwork::StringToAdr(const char *s, netadr_t *a)
 	return true;
 };
 
-int CNetwork::UDP_OpenSocket(int port)
+int CNetworkSystem::UDP_OpenSocket(int port)
 {
 	int newsocket;
 	struct sockaddr_in address;
@@ -429,7 +429,7 @@ int CNetwork::UDP_OpenSocket(int port)
 #endif
 };
 
-void CNetwork::GetLocalAddress()
+void CNetworkSystem::GetLocalAddress()
 {
 #ifdef _WIN32
 	char buff[512];

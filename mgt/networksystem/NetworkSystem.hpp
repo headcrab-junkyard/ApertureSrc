@@ -2,17 +2,17 @@
 
 #pragma once
 
-#include "network/INetwork.hpp"
+#include "networksystem/INetworkSystem.hpp"
 
 struct ISystem;
 struct ICvarRegistry;
 struct IConVarController;
 
-class CNetwork final : public INetwork
+class CNetworkSystem final : public INetworkSystem
 {
 public:
-	CNetwork();
-	~CNetwork();
+	CNetworkSystem();
+	~CNetworkSystem();
 	
 	bool Init(CreateInterfaceFn afnEngineFactory) override;
 	void Shutdown() override;
