@@ -26,17 +26,16 @@
 
 class CInputEventDispatcher;
 
-class CInput final : public IInputSystem
+class CInputSystem final : public IInputSystem
 {
 public:
-	CInput();
-	~CInput();
+	CInputSystem();
+	~CInputSystem();
 	
 	bool Init() override;
 	void Shutdown() override;
 	
-	//void Frame() override;
-	void HandleOSMessage(const SOSMessage &apMsg) override;
+	void Frame() override;
 	
 	void AddEventListener(IInputEventListener *apListener) override;
 	void RemoveEventListener(IInputEventListener *apListener) override;
@@ -44,6 +43,10 @@ private:
 #ifdef _WIN32
 	int MapKey(int key);
 #endif
+
+	void AttachToWindow(void *apWindow);
+	
+	void Poll();
 
 	std::unique_ptr<CInputEventDispatcher> mpEventDispatcher;
 };
