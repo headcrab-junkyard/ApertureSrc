@@ -1,7 +1,7 @@
 /*
 *	This file is part of Magenta Engine
 *
-*	Copyright (C) 2016-2018 Headcrab Garage
+*	Copyright (C) 2016-2019 BlackPhrase
 *
 *	Magenta Engine is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -10,7 +10,7 @@
 *
 *	Magenta Engine is distributed in the hope that it will be useful,
 *	but WITHOUT ANY WARRANTY; without even the implied warranty of
-*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
 *	GNU General Public License for more details.
 *
 *	You should have received a copy of the GNU General Public License
@@ -28,19 +28,19 @@ interface IPhysicsBody
 {
 	/**
 	*/
-	virtual void MoveToOrigin(const Vector3 &avGoal, float afDist, int anMoveType) = 0;
+	//virtual void MoveToOrigin(const Vector3 &avGoal, float afDist, int anMoveType) = 0;
 	
 	/**
 	*/
-	virtual int WalkMove(float afYaw, float afDist, int anMode) = 0;
+	//virtual int WalkMove(float afYaw, float afDist, int anMode) = 0;
 	
 	/**
 	*/
-	virtual int IsOnFloor() const = 0;
+	//virtual int IsOnFloor() const = 0;
 	
 	/**
 	*/
-	virtual int DropToFloor() = 0;
+	//virtual int DropToFloor() = 0;
 	
 	///
 	virtual void ApplyForce(const Vector3 &avForce) = 0;
@@ -50,6 +50,4 @@ interface IPhysicsBody
 	
 	///
 	virtual float GetMass() const = 0;
-protected:
-	virtual ~IPhysicsBody() = default;
 };

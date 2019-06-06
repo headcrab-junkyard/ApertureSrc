@@ -1,7 +1,7 @@
 /*
  * This file is part of Magenta Engine
  *
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,7 +24,27 @@
 
 #include "CommonTypes.hpp"
 
+class idVec3;
+interface IPhysicsBody;
+
 interface IPhysicsWorld
 {
+	///
+	virtual void Simulate(float afTime, float afTimeStep) = 0;
+	
+	///
+	virtual IPhysicsBody *CreateBody() = 0;
+	
+	///
+	virtual void DestroyBody(IPhysicsBody *apBody) = 0;
+	
+	///
+	virtual void SetGravity(const idVec3 &avGravity) = 0;
+	
+	
+	///
+	virtual const idVec3 &GetGravity() const = 0;
+	
+	///
 	virtual struct pmtrace_s *TraceLine(float *start, float *end, int flags, int usehull, int ignore_pe) // PM_TraceLine
 };
