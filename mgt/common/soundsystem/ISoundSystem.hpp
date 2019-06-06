@@ -18,20 +18,20 @@
 */
 
 /// @file
-/// @brief sound module interface
+/// @brief sound system module low-level interface
 
 #pragma once
 
 #include "CommonTypes.hpp"
 #include "Interface.hpp"
 
-constexpr auto MGT_SOUND_INTERFACE_VERSION{"MGTSound001Alpha"};
+constexpr auto MGT_SOUNDSYSTEM_INTERFACE_VERSION{"MGTSoundSystem001Alpha"};
 
 struct ISoundWorld;
 
 typedef struct sfx_s sfx_t;
 
-interface ISound : public IBaseInterface
+interface ISoundSystem : public IBaseInterface
 {
 	/// All non-hardware initialization
 	virtual bool Init(CreateInterfaceFn afnEngineFactory, void *apWindow) = 0; // TODO
