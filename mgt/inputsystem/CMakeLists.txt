@@ -1,16 +1,18 @@
-project(mgt-input)
-
-# Sources list
-file(GLOB PROJECT_SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
-)
+project(mgt-inputsystem)
 
 # Build as shared library
-add_library(${PROJECT_NAME} MODULE ${PROJECT_SOURCES})
+add_library(${PROJECT_NAME} MODULE)
+
+# Sources list
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} PROJECT_SOURCES)
+
+target_sources(${PROJECT_NAME}
+	PRIVATE ${PROJECT_SOURCES}
+)
 
 # Set properties
 set_target_properties(${PROJECT_NAME} PROPERTIES
-	OUTPUT_NAME "input" #inputsystem?
+	OUTPUT_NAME "inputsystem"
 )
 
 # Link with dependencies

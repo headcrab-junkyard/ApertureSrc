@@ -1,12 +1,14 @@
 project(mgt-networksystem)
 
-# Sources list
-file(GLOB MGT_NETWORK_SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
-)
-
 # Build as shared library
-add_library(${PROJECT_NAME} MODULE ${MGT_NETWORK_SOURCES})
+add_library(${PROJECT_NAME} MODULE)
+
+# Sources list
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} PROJECT_SOURCES)
+
+target_sources(${PROJECT_NAME}
+	PRIVATE ${PROJECT_SOURCES}
+)
 
 # Set properties
 set_target_properties(${PROJECT_NAME} PROPERTIES

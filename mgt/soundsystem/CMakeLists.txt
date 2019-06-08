@@ -1,28 +1,29 @@
-project(mgt-sound)
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-# Build the sources list
-file(GLOB PROJECT_SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
-)
-
-if(WIN32)
-	file(GLOB PROJECT_PLATFORM_SOURCES
-		${CMAKE_CURRENT_SOURCE_DIR}/win/*.cpp
-	)
-else()
-	file(GLOB PROJECT_PLATFORM_SOURCES
-		${CMAKE_CURRENT_SOURCE_DIR}/linux/*.cpp
-	)
-endif()
+project(mgt-soundsystem)
 
 # Build as shared library
-add_library(${PROJECT_NAME} MODULE ${PROJECT_SOURCES} ${PROJECT_PLATFORM_SOURCES})
+add_library(${PROJECT_NAME} MODULE)
+
+target_include_directories(${PROJECT_NAME}
+	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+# Build the sources list
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} PROJECT_SOURCES)
+
+if(WIN32)
+	aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/win PROJECT_PLATFORM_SOURCES)
+else()
+	aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/linux PROJECT_PLATFORM_SOURCES)
+endif()
+
+target_sources(${PROJECT_NAME}
+	PRIVATE ${PROJECT_SOURCES}
+	PRIVATE ${PROJECT_PLATFORM_SOURCES}
+)
 
 # Set properties
 set_target_properties(${PROJECT_NAME} PROPERTIES
-	OUTPUT_NAME "sound" # soundsystem?
+	OUTPUT_NAME "soundsystem"
 )
 
 # Link with dependencies

@@ -1,26 +1,25 @@
 project(mgt-launcher)
 
-include_directories(
+add_executable(${PROJECT_NAME})
+
+target_include_directories(${PROJECT_NAME}
 	${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-file(GLOB PROJECT_SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
-)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} PROJECT_SOURCES)
 
 if(WIN32)
-	set(PROJECT_TARGET_PLATFORM win)
+	aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/win PROJECT_PLATFORM_SOURCES)
 elseif(UNIX)
-	set(PROJECT_TARGET_PLATFORM linux)
+	aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/linux PROJECT_PLATFORM_SOURCES)
 else()
 	message(FATAL_ERROR "Unsupported platform!")
 endif()
 
-file(GLOB PROJECT_PLATFORM_SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/${PROJECT_TARGET_PLATFORM}/*.cpp
+target_sources(${PROJECT_NAME}
+	PRIVATE ${PROJECT_SOURCES}
+	PRIVATE ${PROJECT_PLATFORM_SOURCES}
 )
-
-add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${PROJECT_PLATFORM_SOURCES})
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	OUTPUT_NAME "launcher"

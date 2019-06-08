@@ -1,18 +1,22 @@
 project(mgt-engine)
 
-#enable_language(ASM)
+add_library(${PROJECT_NAME} MODULE)
 
-add_definitions(-DGLQUAKE) # TODO
-
-include_directories(${CMAKE_CURRENT_SOURCE_DIR})
-
-file(GLOB PROJECT_SOURCES
-	#${CMAKE_CURRENT_SOURCE_DIR}/*.S
-	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/null/*.cpp
+target_compile_definitions(${PROJECT_NAME}
+	PRIVATE GLQUAKE # TODO: shouldn't be defined, we should be independent from the renderer impl
 )
 
-add_library(${PROJECT_NAME} MODULE ${PROJECT_SOURCES})
+target_include_directories(${PROJECT_NAME}
+	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
+)
+
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} PROJECT_SOURCES)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/null PROJECT_SOURCES_PLATFORM)
+
+target_sources(${PROJECT_NAME}
+	PRIVATE ${PROJECT_SOURCES}
+	PRIVATE ${PROJECT_SOURCES_PLATFORM}
+)
 
 target_link_libraries(${PROJECT_NAME} ogs-interface mgt-qlibc mgt-mathlib)
 

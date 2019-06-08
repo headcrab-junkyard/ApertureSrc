@@ -1,14 +1,24 @@
 project(mgt-engineclient)
 
-add_definitions(-DGLQUAKE) # TODO
+# Build as dynamic library
+add_library(${PROJECT_NAME} MODULE)
 
-# Sources list
-file(GLOB PROJECT_SOURCES
-	${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+target_include_directories(${PROJECT_SOURCES}
+	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
-# Build as dynamic library
-add_library(${PROJECT_NAME} MODULE ${PROJECT_SOURCES})
+target_compile_definitions(${PROJECT_NAME}
+	PRIVATE GLQUAKE # TODO: remove
+)
+
+# Sources list
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} PROJECT_SOURCES)
+aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR}/null PROJECT_SOURCES_PLATFORM)
+
+target_sources(${PROJECT_NAME}
+	PRIVATE ${PROJECT_SOURCES}
+	PRIVATE ${PROJECT_SOURCES_PLATFORM}
+)
 
 # Set properties
 set_target_properties(${PROJECT_NAME} PROPERTIES
