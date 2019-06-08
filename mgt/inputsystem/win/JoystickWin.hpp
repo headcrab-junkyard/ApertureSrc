@@ -22,35 +22,13 @@
 
 #pragma once
 
-#include "IInputImpl.hpp"
-
-#include <windows.h>
-
-class CInputWin final : public IInputImpl
+class CJoystickWin
 {
 public:
-	CInputWin();
-	~CInputWin();
+	CJoystickWin();
+	~CJoystickWin();
 	
-	void Init() override;
-	void Shutdown() override;
-	
-	void ActivateMouse();
-	void DeactivateMouse();
+	bool Read();
 private:
-	bool InitDInput();
-	
-	void StartupMouse();
-	void StartupJoystick();
-	
-	LPDIRECTINPUT g_pdi{nullptr};
-
-	HINSTANCE hInstDI;
-	
-	unsigned int uiWheelMessage{0};
-	
-	bool dinput{false};
-	bool dinput_acquired{false};
-	
-	bool restore_spi{false};
+	JOYINFOEX ji;
 };

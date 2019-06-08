@@ -356,7 +356,7 @@ IN_StartupJoystick
 */
 void CInputWin::StartupJoystick()
 {
-	int i, numdevs;
+	int i;
 	JOYCAPS jc;
 	MMRESULT mmr;
 
@@ -367,6 +367,8 @@ void CInputWin::StartupJoystick()
 	if(COM_CheckParm("-nojoy"))
 		return;
 
+	int numdevs;
+	
 	// verify joystick driver is present
 	if((numdevs = joyGetNumDevs()) == 0)
 	{
@@ -376,14 +378,8 @@ void CInputWin::StartupJoystick()
 
 	// cycle through the joystick ids for the first valid one
 	for(joy_id = 0; joy_id < numdevs; joy_id++)
-	{
-		memset(&ji, 0, sizeof(ji));
-		ji.dwSize = sizeof(ji);
-		ji.dwFlags = JOY_RETURNCENTERED;
-
-		if((mmr = joyGetPosEx(joy_id, &ji)) == JOYERR_NOERROR)
+		if(mJoystick[joy_id].Startup())
 			break;
-	};
 
 	// abort startup if we didn't find a valid joystick
 	if(mmr != JOYERR_NOERROR)
@@ -415,36 +411,4 @@ void CInputWin::StartupJoystick()
 	joy_advancedinit = false;
 
 	Con_Printf("\njoystick detected\n\n");
-};
-
-/* 
-=============== 
-IN_ReadJoystick
-=============== 
-*/
-bool CInputWin::ReadJoystick()
-{
-	memset(&ji, 0, sizeof(ji));
-	ji.dwSize = sizeof(ji);
-	ji.dwFlags = joy_flags;
-
-	if(joyGetPosEx(joy_id, &ji) == JOYERR_NOERROR)
-	{
-		// this is a hack -- there is a bug in the Logitech WingMan Warrior DirectInput Driver
-		// rather than having 32768 be the zero point, they have the zero point at 32668
-		// go figure -- anyway, now we get the full resolution out of the device
-		if(joy_wwhack1.value != 0.0)
-			ji.dwUpos += 100;
-
-		return true;
-	}
-	else
-	{
-		// read error occurred
-		// turning off the joystick seems too harsh for 1 read error,\
-		// but what should be done?
-		// Con_Printf ("IN_ReadJoystick: no response\n");
-		// joy_avail = false;
-		return false;
-	};
 };

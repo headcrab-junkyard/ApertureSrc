@@ -1,7 +1,6 @@
 /*
  * This file is part of Magenta Engine
  *
- * Copyright (C) 1996-1997 Id Software, Inc.
  * Copyright (C) 2019 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
@@ -22,35 +21,39 @@
 
 #pragma once
 
-#include "IInputImpl.hpp"
+#include "inputsystem/IInputSystemImpl.hpp"
+#include "MouseWin.hpp"
+#include "JoystickWin.hpp"
 
-#include <windows.h>
-
-class CInputWin final : public IInputImpl
+class CInputSystemWin final : public IInputSystemImpl
 {
 public:
-	CInputWin();
-	~CInputWin();
+	CInputSystemWin();
+	~CInputSystemWin();
 	
-	void Init() override;
-	void Shutdown() override;
+	void Poll() override;
 	
-	void ActivateMouse();
-	void DeactivateMouse();
+	void AttachToWindow(void *apWindow) override;
+	void DetachFromWindow() override;
+	
+	int GetGamepadCount() const override;
+	void SetGamepadActive(int anGamepad, bool abActive) override;
 private:
-	bool InitDInput();
+	static LRESULT CALLBACK InputWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
 	
-	void StartupMouse();
-	void StartupJoystick();
+	int MapKey(int anKey);
 	
-	LPDIRECTINPUT g_pdi{nullptr};
-
-	HINSTANCE hInstDI;
+	void PumpInputEvents();
+	void PollGamepadStates();
 	
-	unsigned int uiWheelMessage{0};
+	CMouseWin mMouse{};
+	CJoystickWin mJoystick[4]{};
 	
-	bool dinput{false};
-	bool dinput_acquired{false};
+	struct GamepadState
+	{
+		XINPUT_STATE mState{};
+		bool mbActive{false};
+	};
 	
-	bool restore_spi{false};
+	GamepadState mvGamepads[XUSER_MAX_COUNT];
 };

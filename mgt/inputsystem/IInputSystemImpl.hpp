@@ -1,7 +1,6 @@
 /*
  * This file is part of Magenta Engine
  *
- * Copyright (C) 1996-1997 Id Software, Inc.
  * Copyright (C) 2019 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
@@ -22,35 +21,25 @@
 
 #pragma once
 
-#include "IInputImpl.hpp"
+#include "CommonTypes.hpp"
 
-#include <windows.h>
-
-class CInputWin final : public IInputImpl
+interface IInputSystemImpl
 {
-public:
-	CInputWin();
-	~CInputWin();
+	///
+	virtual void Reset(){}
 	
-	void Init() override;
-	void Shutdown() override;
+	///
+	virtual void Poll(){}
 	
-	void ActivateMouse();
-	void DeactivateMouse();
-private:
-	bool InitDInput();
+	///
+	virtual void AttachToWindow(void *apWindow){}
 	
-	void StartupMouse();
-	void StartupJoystick();
+	///
+	virtual void DetachFromWindow(){}
 	
-	LPDIRECTINPUT g_pdi{nullptr};
-
-	HINSTANCE hInstDI;
+	///
+	virtual int GetGamepadCount() const {}
 	
-	unsigned int uiWheelMessage{0};
-	
-	bool dinput{false};
-	bool dinput_acquired{false};
-	
-	bool restore_spi{false};
+	///
+	virtual void SetGamepadActive(int anGamepad, bool abActive){}
 };

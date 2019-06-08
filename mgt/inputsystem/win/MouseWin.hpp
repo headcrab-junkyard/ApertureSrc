@@ -22,35 +22,33 @@
 
 #pragma once
 
-#include "IInputImpl.hpp"
-
-#include <windows.h>
-
-class CInputWin final : public IInputImpl
+class CMouseWin
 {
 public:
-	CInputWin();
-	~CInputWin();
+	CMouseWin();
+	~CMouseWin();
 	
-	void Init() override;
-	void Shutdown() override;
+	void ClearStates();
 	
-	void ActivateMouse();
-	void DeactivateMouse();
+	void Show();
+	void Hide();
 private:
-	bool InitDInput();
+	LPDIRECTINPUTDEVICE g_pMouse{nullptr};
 	
-	void StartupMouse();
-	void StartupJoystick();
+	POINT current_pos{};
 	
-	LPDIRECTINPUT g_pdi{nullptr};
-
-	HINSTANCE hInstDI;
+	int newmouseparms[3] = {0, 0, 1};
+	int originalmouseparms[3]{};
 	
-	unsigned int uiWheelMessage{0};
+	int mouse_buttons{};
+	int mouse_oldbuttonstate{};
 	
-	bool dinput{false};
-	bool dinput_acquired{false};
+	int mouse_x{}, mouse_y{};
+	int old_mouse_x{}, old_mouse_y{};
+	int mx_accum{}, my_accum{};
 	
-	bool restore_spi{false};
+	bool mouseinitialized{false};
+	bool mouseactive{false};
+	bool mouseactivatetoggle{false};
+	bool mouseparmsvalid{false};
 };

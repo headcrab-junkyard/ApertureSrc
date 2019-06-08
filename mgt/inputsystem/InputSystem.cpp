@@ -20,33 +20,55 @@
 /// @file
 
 #include "InputSystem.hpp"
+#include "IInputSystemImpl.hpp"
 #include "InputEventDispatcher.hpp"
-#include "public/keydefs.h"
 
-EXPOSE_SINGLE_INTERFACE(CInputSystem, IInputSystem, MGT_INPUTSYSTEM_INTERFACE_VERSION);
+extern IInputSystem *GetInputSystem();
 
-CInputSystem::CInputSystem() = default;
+EXPOSE_SINGLE_INTERFACE_FUNCTION(CInputSystem, IInputSystem, MGT_INPUTSYSTEM_INTERFACE_VERSION, GetInputSystem);
+
+CInputSystem::CInputSystem(IInputSystemImpl &aImpl) : mImpl(aImpl){}
+
 CInputSystem::~CInputSystem() = default;
 
-bool CInputSystem::Init(void *apWindow)
+bool CInputSystem::Init(bool abConsoleTextMode)
 {
 	mpEventDispatcher = std::make_unique<CInputEventDispatcher>();
 	
-	mpImpl->Init();
+	//mImpl.Init();
 	
-	AttachToWindow(apWindow);
+	// TODO: handle abConsoleTextMode
 	return true;
 };
 
 void CInputSystem::Shutdown()
 {
 	DetachFromWindow();
-	mpImpl->Shutdown();
+	//mImpl.Shutdown();
 };
 
-void CInputSystem::Frame()
+void CInputSystem::Reset()
 {
-	Poll();
+	mvKeyStates.fill(0);
+	mvOldKeyStates.fill(0);
+	
+	mImpl.Reset();
+};
+
+void CInputSystem::Poll()
+{
+	mvOldKeyStates = mvKeyStates;
+	mImpl.Poll();
+};
+
+void CInputSystem::AttachToWindow(void *apWindow)
+{
+	mImpl.AttachToWindow(apWindow);
+};
+
+void CInputSystem::DetachFromWindow()
+{
+	mImpl.DetachFromWindow();
 };
 
 void CInputSystem::AddEventListener(IInputEventListener *apListener)
@@ -59,6 +81,22 @@ void CInputSystem::RemoveEventListener(IInputEventListener *apListener)
 	mpEventDispatcher->RemoveListener(apListener);
 };
 
-void CInputSystem::AttachToWindow(void *apWindow)
+bool CInputSystem::IsKeyDown(eInputKey aeKey) const
 {
+	return mvKeyStates[aeKey];
+};
+
+int CInputSystem::GetAnalogValue(AnalogCode aeCode) const
+{
+	return 0; // TODO
+};
+
+int CInputSystem::GetGamepadCount() const
+{
+	return mImpl.GetGamepadCount();
+};
+
+void CInputSystem::SetGamepadActive(int anGamepad, bool abActive)
+{
+	mImpl.SetGamepadActive(anGamepad, abActive);
 };

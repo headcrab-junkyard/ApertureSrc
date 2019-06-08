@@ -29,24 +29,33 @@ class CInputEventDispatcher;
 class CInputSystem final : public IInputSystem
 {
 public:
-	CInputSystem();
+	CInputSystem(IInputSystemImpl *apImpl);
 	~CInputSystem();
 	
-	bool Init() override;
+	bool Init(bool abConsoleTextMode) override;
 	void Shutdown() override;
 	
-	void Frame() override;
+	void Reset() override;
+	
+	void Poll() override;
+	
+	void AttachToWindow(void *apWindow) override;
+	void DetachFromWindow() override;
 	
 	void AddEventListener(IInputEventListener *apListener) override;
 	void RemoveEventListener(IInputEventListener *apListener) override;
-private:
-#ifdef _WIN32
-	int MapKey(int key);
-#endif
-
-	void AttachToWindow(void *apWindow);
 	
-	void Poll();
-
+	bool IsKeyDown(eInputKey aeKey) const override;
+	
+	int GetAnalogValue(AnalogCode aeCode) const override;
+	
+	int GetGamepadCount() const override;
+	void SetGamepadActive(int anGamepad, bool abActive) override;
+protected:
 	std::unique_ptr<CInputEventDispatcher> mpEventDispatcher;
+	
+	std::array<bool, eInputKey::SizeOf> mvKeyStates{};
+	std::array<bool, eInputKey::SizeOf> mvOldKeyStates{};
+private:
+	IInputSystemImpl &mImpl;
 };
