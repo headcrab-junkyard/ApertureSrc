@@ -26,7 +26,6 @@
 #include "Interface.hpp"
 #include "netadr.h"
 #include "enums.h"
-#include "sizebuf.h"
 
 #define PORT_ANY -1
 
@@ -40,11 +39,15 @@ interface INetwork : public IBaseInterface
 	/// Shuts down network, closes all UPD/TCP channels
 	virtual void Shutdown() = 0;
 	
+	///
+	virtual void Config(bool abEnableNetworking) = 0;
+	
 	// TODO
 	
 	virtual bool GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message) = 0;
 	virtual void SendPacket(netsrc_t sock, int length, void *data, netadr_t to) = 0;
 	
+	virtual bool StringToAdr(const char *s, netadr_t &a) = 0;
 	
 	//
 	
