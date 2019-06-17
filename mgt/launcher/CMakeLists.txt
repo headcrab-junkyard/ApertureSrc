@@ -3,7 +3,7 @@ project(mgt-launcher)
 add_executable(${PROJECT_NAME})
 
 target_include_directories(${PROJECT_NAME}
-	${CMAKE_CURRENT_SOURCE_DIR}
+	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} PROJECT_SOURCES)
