@@ -3,7 +3,7 @@ project(mgt-engineclient)
 # Build as dynamic library
 add_library(${PROJECT_NAME} MODULE)
 
-target_include_directories(${PROJECT_SOURCES}
+target_include_directories(${PROJECT_NAME}
 	PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
