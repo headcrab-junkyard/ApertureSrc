@@ -2,7 +2,7 @@
 *	This file is part of Magenta Engine
 *
 *	Copyright (C) 1996-1997 Id Software, Inc.
-*	Copyright (C) 2018 BlackPhrase
+*	Copyright (C) 2018-2019 BlackPhrase
 *
 *	Magenta Engine is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -24,8 +24,8 @@
 #include "quakedef.h"
 #include "engine/ICmdArgs.hpp"
 
-#include "network/INetwork.hpp"
-extern INetwork *gpNetwork;
+#include "network/INetworkSystem.hpp"
+extern INetworkSystem *gpNetwork;
 
 void CL_FinishTimeDemo();
 
