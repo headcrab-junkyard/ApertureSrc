@@ -130,6 +130,9 @@ typedef struct
 	int surfheight;     // in mipmapped texels
 } drawsurf_t;
 
+#include "particledef.h"
+
+/*
 typedef enum {
 	pt_static,
 	pt_grav,
@@ -154,6 +157,7 @@ typedef struct particle_s
 	float die;
 	ptype_t type;
 } particle_t;
+*/
 
 //====================================================
 
