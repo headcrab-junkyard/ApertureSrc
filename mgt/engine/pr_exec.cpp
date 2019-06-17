@@ -2,7 +2,7 @@
 *	This file is part of Magenta Engine
 *
 *	Copyright (C) 1996-1997 Id Software, Inc.
-*	Copyright (C) 2018 BlackPhrase
+*	Copyright (C) 2018-2019 BlackPhrase
 *
 *	Magenta Engine is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -19,13 +19,12 @@
 */
 
 /// @file
-/// @brief
 
 #include "quakedef.h"
 
-qboolean pr_trace;
+//qboolean pr_trace; // TODO: unused?
 
-int pr_argc;
+//int pr_argc; // TODO: unused?
 
 //=============================================================================
 
