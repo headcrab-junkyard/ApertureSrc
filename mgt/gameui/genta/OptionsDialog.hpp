@@ -1,7 +1,7 @@
 /*
  * This file is part of Magenta Engine
  *
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,4 +26,21 @@ class COptionsDialog
 public:
 	COptionsDialog();
 	~COptionsDialog();
+private:
+	struct optionsmenu_t
+	{
+		menuframework_s menu{};
+
+		Text banner{};
+		Bitmap framel{};
+		Bitmap framer{};
+
+		Text graphics{};
+		Text display{};
+		Text sound{};
+		Text network{};
+		Bitmap back{};
+	};
+	
+	optionsmenu_t s_options{};
 };
