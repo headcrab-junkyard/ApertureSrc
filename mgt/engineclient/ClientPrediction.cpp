@@ -60,7 +60,7 @@ void CL_CheckPredictionError()
 	else
 	{
 		if(cl_showmiss->value && (delta[0] || delta[1] || delta[2]))
-			Com_Printf("prediction miss on %i: %i\n", cl.frame.serverframe,
+			gpSystem->Printf("prediction miss on %i: %i\n", cl.frame.serverframe,
 			           delta[0] + delta[1] + delta[2]);
 
 		VectorCopy(cl.frame.playerstate.pmove.origin, cl.predicted_origins[frame]);
@@ -99,7 +99,7 @@ void CL_NudgePosition()
 				return;
 		}
 	}
-	Con_DPrintf("CL_NudgePosition: stuck\n");
+	gpSystem->DevPrintf("CL_NudgePosition: stuck\n");
 }
 
 /*
