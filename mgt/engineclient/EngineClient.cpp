@@ -43,6 +43,9 @@ ISystem *gpSystem{nullptr};
 IFileSystem *gpFileSystem{nullptr};
 IMemory *gpMemory{nullptr};
 
+byte *host_basepal; // TODO: unsigned short
+byte *host_colormap;
+
 extern void Con_Init();
 extern void Con_Print(const char *msg);
 
@@ -110,6 +113,16 @@ bool CEngineClient::Init(CreateInterfaceFn afnEngineFactory /*, tWinHandle ahWin
 	
 	cls.state = ca_disconnected;
 
+	host_basepal = (byte *)COM_LoadHunkFile("gfx/palette.lmp");
+	
+	if(!host_basepal)
+		gpSystem->Error("Couldn't load gfx/palette.lmp");
+	
+	host_colormap = (byte *)COM_LoadHunkFile("gfx/colormap.lmp");
+	
+	if(!host_colormap)
+		gpSystem->Error("Couldn't load gfx/colormap.lmp");
+	
 	W_LoadWadFile("gfx.wad");
 	W_LoadWadFile("fonts.wad");
 	
