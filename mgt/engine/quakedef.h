@@ -188,28 +188,24 @@ void VID_UnlockBuffer();
 
 #define SOUND_CHANNELS 8
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 #include "common.h"
 #include "bspfile.h"
-#include "sys.h"
+#include "Sys.hpp"
 #include "filesystem_internal.h"
-#include "zone.h"
+#include "Zone.hpp"
 #include "mathlib.h"
-#include "info.h"
+#include "Info.hpp"
 #include "crc.h"
 
 #include "entity_state.h"
 
 //#include "wad.h"
-#include "cvar.h"
-#include "net.h"
+#include "Cvar.hpp"
+#include "Net.hpp"
 #include "protocol.h"
-#include "cmd.h"
+#include "Cmd.hpp"
 #include "progs.h"
-#include "server.h"
+#include "Server.hpp"
 //#include "eiface.h"
 
 #include "com_model.h"
@@ -217,21 +213,17 @@ extern "C" {
 #ifdef GLQUAKE
 //#include "gl_model.h"
 #else
-#include "model.h"
+#include "Model.hpp"
 #include "d_iface.h"
 #endif
 
-#include "world.h"
+#include "World.hpp"
 #include "pmove.h"
-#include "console.h"
+#include "Console.hpp"
 #include "crc.h"
 
 //=============================================================================
 
 extern qboolean noclip_anglehack;
 
-#include "host.h"
-
-#ifdef __cplusplus
-};
-#endif
+#include "Host.hpp"
