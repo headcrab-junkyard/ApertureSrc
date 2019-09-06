@@ -138,3 +138,8 @@ double CSystem::GetFloatTime() const
 {
 	return Sys_FloatTime();
 };
+
+double CSystem::GetRealTime() const
+{
+	return realtime;
+};

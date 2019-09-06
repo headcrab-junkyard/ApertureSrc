@@ -48,6 +48,7 @@ public:
 	void Quit() override;
 
 	double GetFloatTime() const override;
+	double GetRealTime() const override;
 private:
 	std::unique_ptr<CSystemEventDispatcher> mpEventDispatcher;
 };
