@@ -40,7 +40,7 @@ if(NOT MGT_DEDICATED)
 	add_subdirectory(inputsystem)
 	#add_subdirectory(graphics)
 	#add_subdirectory(render)
-	add_subdirectory(sound)
+	add_subdirectory(soundsystem)
 	add_subdirectory(vgui3) #broken
 	#add_subdirectory(voice)
 	
