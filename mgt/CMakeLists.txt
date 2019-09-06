@@ -37,8 +37,8 @@ add_subdirectory(dedicated)
 # If not building as dedicated server then build client-side modules too
 if(NOT MGT_DEDICATED)
 	add_subdirectory(gameui)
+	add_subdirectory(inputsystem)
 	#add_subdirectory(graphics)
-	add_subdirectory(input)
 	#add_subdirectory(render)
 	add_subdirectory(sound)
 	add_subdirectory(vgui3) #broken
