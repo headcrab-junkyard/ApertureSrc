@@ -57,4 +57,8 @@ interface ISystem : public IBaseInterface
 	
 	///
 	virtual double GetFloatTime() const = 0;
+	
+	///
+	virtual double GetRealTime() const = 0;
+	
 };
