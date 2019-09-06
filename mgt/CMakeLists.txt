@@ -22,13 +22,13 @@ add_subdirectory(interface)
 
 #add_subdirectory(optional)
 
-add_subdirectory(filesystem)
+add_subdirectory(filesystem) #broken
 add_subdirectory(network)
 #add_subdirectory(physics)
 add_subdirectory(script)
 
 #add_subdirectory(core)
-##add_subdirectory(engine)
+add_subdirectory(engine) #broken
 
 #add_subdirectory(game) #game/server
 
@@ -41,7 +41,7 @@ if(NOT MGT_DEDICATED)
 	add_subdirectory(input)
 	#add_subdirectory(render)
 	add_subdirectory(sound)
-	##add_subdirectory(vgui3)
+	add_subdirectory(vgui3) #broken
 	#add_subdirectory(voice)
 	
 	add_subdirectory(engineclient)
