@@ -23,7 +23,7 @@ add_subdirectory(interface)
 #add_subdirectory(optional)
 
 add_subdirectory(filesystem) #broken
-add_subdirectory(network)
+add_subdirectory(networksystem)
 #add_subdirectory(physics)
 add_subdirectory(script)
 
