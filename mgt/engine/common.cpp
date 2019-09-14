@@ -620,10 +620,10 @@ byte *COM_LoadFile(const char *path, int usehunk)
 			buf = loadbuf;
 	}
 	else
-		Sys_Error("COM_LoadFile: bad usehunk");
+		gpSystem->Error("COM_LoadFile: bad usehunk");
 
 	if(!buf)
-		Sys_Error("COM_LoadFile: not enough space for %s", path);
+		gpSystem->Error("COM_LoadFile: not enough space for %s", path);
 
 	((byte *)buf)[len] = 0;
 

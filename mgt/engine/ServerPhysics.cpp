@@ -264,7 +264,7 @@ int SV_FlyMove(edict_t *ent, float time, trace_t *steptrace)
 			break; // moved the entire distance
 
 		if(!trace.ent)
-			Sys_Error("SV_FlyMove: !trace.ent");
+			gpSystem->Error("SV_FlyMove: !trace.ent");
 
 		if(trace.plane.normal[2] > 0.7)
 		{
@@ -1089,7 +1089,7 @@ void SV_Physics_Client(edict_t *ent, int num)
 		break;
 
 	default:
-		Sys_Error("SV_Physics_client: bad movetype %i", (int)ent->v.movetype);
+		gpSystem->Error("SV_Physics_client: bad movetype %i", (int)ent->v.movetype);
 	}
 
 	//
@@ -1516,7 +1516,7 @@ void SV_Physics()
 		        || ent->v.movetype == MOVETYPE_FLY || ent->v.movetype == MOVETYPE_FLYMISSILE)
 			SV_Physics_Toss(ent);
 		else
-			Sys_Error("SV_Physics: bad movetype %i", (int)ent->v.movetype);
+			gpSystem->Error("SV_Physics: bad movetype %i", (int)ent->v.movetype);
 	}
 
 	if(gGlobalVariables.force_retouch)

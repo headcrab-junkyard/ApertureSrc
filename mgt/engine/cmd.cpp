@@ -645,7 +645,7 @@ int Cmd_CheckParm(const char *parm)
 	int i;
 
 	if(!parm)
-		Sys_Error("Cmd_CheckParm: NULL");
+		gpSystem->Error("Cmd_CheckParm: NULL");
 
 	for(i = 1; i < Cmd_Argc(); i++)
 		if(!Q_strcasecmp(parm, Cmd_Argv(i)))
