@@ -36,7 +36,7 @@ is not a staircase.
 */
 int c_yes, c_no;
 
-qboolean SV_CheckBottom(edict_t *ent)
+bool SV_CheckBottom(edict_t *ent)
 {
 	vec3_t mins, maxs, start, stop;
 	trace_t trace;
@@ -57,7 +57,7 @@ qboolean SV_CheckBottom(edict_t *ent)
 			start[1] = y ? maxs[1] : mins[1];
 			if(SV_PointContents(start) != CONTENTS_SOLID)
 				goto realcheck;
-		}
+		};
 
 	c_yes++;
 	return true; // we got out easy
@@ -92,11 +92,11 @@ realcheck:
 				bottom = trace.endpos[2];
 			if(trace.fraction == 1.0 || mid - trace.endpos[2] > STEPSIZE)
 				return false;
-		}
+		};
 
 	c_yes++;
 	return true;
-}
+};
 
 /*
 =============
@@ -108,7 +108,7 @@ possible, no move is done, false is returned, and
 gGlobalVariables.trace_normal is set to the normal of the blocking wall
 =============
 */
-qboolean SV_movestep(edict_t *ent, vec3_t move, qboolean relink)
+bool SV_movestep(edict_t *ent, vec3_t move, bool relink)
 {
 	float dz;
 	vec3_t oldorg, neworg, end;
@@ -135,7 +135,7 @@ qboolean SV_movestep(edict_t *ent, vec3_t move, qboolean relink)
 					neworg[2] -= 8;
 				if(dz < 30)
 					neworg[2] += 8;
-			}
+			};
 			trace = SV_Move(ent->v.origin, ent->v.mins, ent->v.maxs, neworg, false, ent);
 
 			if(trace.fraction == 1)
@@ -147,14 +147,14 @@ qboolean SV_movestep(edict_t *ent, vec3_t move, qboolean relink)
 				if(relink)
 					SV_LinkEdict(ent, true);
 				return true;
-			}
+			};
 
 			if(enemy == sv.edicts)
 				break;
-		}
+		};
 
 		return false;
-	}
+	};
 
 	// push down from a step height above the wished position
 	neworg[2] += STEPSIZE;
@@ -172,7 +172,7 @@ qboolean SV_movestep(edict_t *ent, vec3_t move, qboolean relink)
 		trace = SV_Move(neworg, ent->v.mins, ent->v.maxs, end, false, ent);
 		if(trace.allsolid || trace.startsolid)
 			return false;
-	}
+	};
 	if(trace.fraction == 1)
 	{
 		// if monster had the ground pulled out, go ahead and fall
@@ -184,10 +184,10 @@ qboolean SV_movestep(edict_t *ent, vec3_t move, qboolean relink)
 			ent->v.flags = (int)ent->v.flags & ~FL_ONGROUND;
 			//	gpSystem->Printf ("fall down\n");
 			return true;
-		}
+		};
 
 		return false; // walked off an edge
-	}
+	};
 
 	// check point traces down for dangling corners
 	VectorCopy(trace.endpos, ent->v.origin);
@@ -200,23 +200,23 @@ qboolean SV_movestep(edict_t *ent, vec3_t move, qboolean relink)
 			if(relink)
 				SV_LinkEdict(ent, true);
 			return true;
-		}
+		};
 		VectorCopy(oldorg, ent->v.origin);
 		return false;
-	}
+	};
 
 	if((int)ent->v.flags & FL_PARTIALGROUND)
 	{
 		//		gpSystem->Printf ("back on ground\n");
 		ent->v.flags = (int)ent->v.flags & ~FL_PARTIALGROUND;
-	}
+	};
 	ent->v.groundentity = EDICT_TO_PROG(trace.ent);
 
 	// the move is ok
 	if(relink)
 		SV_LinkEdict(ent, true);
 	return true;
-}
+};
 
 //============================================================================
 
@@ -230,7 +230,7 @@ facing it.
 ======================
 */
 void PF_changeyaw(edict_t *ent);
-qboolean SV_StepDirection(edict_t *ent, float yaw, float dist)
+bool SV_StepDirection(edict_t *ent, float yaw, float dist)
 {
 	vec3_t move, oldorigin;
 	float delta;
@@ -248,16 +248,17 @@ qboolean SV_StepDirection(edict_t *ent, float yaw, float dist)
 	{
 		delta = ent->v.angles[YAW] - ent->v.ideal_yaw;
 		if(delta > 45 && delta < 315)
-		{ // not turned far enough, so don't take the step
+		{
+			// not turned far enough, so don't take the step
 			VectorCopy(oldorigin, ent->v.origin);
-		}
+		};
 		SV_LinkEdict(ent, true);
 		return true;
-	}
+	};
 	SV_LinkEdict(ent, true);
 
 	return false;
-}
+};
 
 /*
 ======================
