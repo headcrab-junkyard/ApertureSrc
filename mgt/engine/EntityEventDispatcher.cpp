@@ -55,84 +55,84 @@ void CEntityEventDispatcher::RemoveListener(IEntityEventListener *apListener)
 	//mlstListeners.erase(apListener);
 };
 
-int CEntityEventDispatcher::DispatchSpawn(edict_t *pent)
+int CEntityEventDispatcher::DispatchSpawn(edict_t *apEntity)
 {
 	// TODO: Pre
 	
 	for(auto It : mlstListeners)
-		It->OnEntitySpawn(pent);
+		It->OnEntitySpawn(apEntity);
 	
 	// TODO: Post
 	
 	return -1; // TODO
 };
 
-void CEntityEventDispatcher::DispatchThink(edict_t *pent)
+void CEntityEventDispatcher::DispatchThink(edict_t *apEntity)
 {
 	// TODO: Pre
 	
 	for(auto It : mlstListeners)
-		It->OnEntityThink(pent);
+		It->OnEntityThink(apEntity);
 	
 	// TODO: Post
 };
 
-void CEntityEventDispatcher::DispatchUse(edict_t *pent, edict_t *pother)
+void CEntityEventDispatcher::DispatchUse(edict_t *apEntity, edict_t *pother)
 {
 	// TODO: Pre
 	
 	for(auto It : mlstListeners)
-		It->OnEntityUse(pent, pother);
+		It->OnEntityUse(apEntity, pother);
 	
 	// TODO: Post
 };
 
-void CEntityEventDispatcher::DispatchTouch(edict_t *pent, edict_t *pother)
+void CEntityEventDispatcher::DispatchTouch(edict_t *apEntity, edict_t *pother)
 {
 	// TODO: Pre
 	
 	for(auto It : mlstListeners)
-		It->OnEntityTouch(pent, pother);
+		It->OnEntityTouch(apEntity, pother);
 	
 	// TODO: Post
 };
 
-void CEntityEventDispatcher::DispatchBlocked(edict_t *pent, edict_t *pother)
+void CEntityEventDispatcher::DispatchBlocked(edict_t *apEntity, edict_t *pother)
 {
 	// TODO: Pre
 	
 	for(auto It : mlstListeners)
-		It->OnEntityBlocked(pent, pother);
+		It->OnEntityBlocked(apEntity, pother);
 	
 	// TODO: Post
 };
 
-void CEntityEventDispatcher::DispatchSave(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData)
+void CEntityEventDispatcher::DispatchSave(edict_t *apEntity, SAVERESTOREDATA *pSaveRestoreData)
 {
 	// TODO: Pre
 	
 	for(auto It : mlstListeners)
-		It->OnEntitySave(pent, pSaveRestoreData);
+		It->OnEntitySave(apEntity, pSaveRestoreData);
 	
 	// TODO: Post
 };
 
-int CEntityEventDispatcher::DispatchRestore(edict_t *pent, SAVERESTOREDATA *pSaveRestoreData, int globalentity)
+int CEntityEventDispatcher::DispatchRestore(edict_t *apEntity, SAVERESTOREDATA *pSaveRestoreData, int globalentity)
 {
 	// TODO: Pre
 	
 	for(auto It : mlstListeners)
-		It->OnEntityRestore(pent, pSaveRestoreData, globalentity);
+		It->OnEntityRestore(apEntity, pSaveRestoreData, globalentity);
 	
 	// TODO: Post
 };
 
-void CEntityEventDispatcher::DispatchFreePrivateData(edict_t *pent)
+void CEntityEventDispatcher::DispatchFreePrivateData(edict_t *apEntity)
 {
-	// TODO: OnEntityFreePrivateData_Pre(pent);
+	// TODO: OnEntityFreePrivateData_Pre(apEntity);
 	
 	for(auto It : mlstListeners)
-		It->OnFreeEntPrivateData(pent); // TODO: OnEntityFreePrivateData(pent);
+		It->OnFreeEntPrivateData(apEntity); // TODO: OnEntityFreePrivateData(apEntity);
 	
-	// TODO: OnEntityFreePrivateData_Post(pent);
+	// TODO: OnEntityFreePrivateData_Post(apEntity);
 };

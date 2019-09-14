@@ -86,8 +86,8 @@ void SV_CheckAllEnts()
 
 		if(SV_TestEntityPosition(check))
 			gpSystem->Printf("entity in invalid position\n");
-	}
-}
+	};
+};
 
 /*
 ================
@@ -107,18 +107,18 @@ void SV_CheckVelocity(edict_t *ent)
 		{
 			gpSystem->Printf("Got a NaN velocity on %s\n", pr_strings + ent->v.classname);
 			ent->v.velocity[i] = 0;
-		}
+		};
 		if(IS_NAN(ent->v.origin[i]))
 		{
 			gpSystem->Printf("Got a NaN origin on %s\n", pr_strings + ent->v.classname);
 			ent->v.origin[i] = 0;
-		}
+		};
 		if(ent->v.velocity[i] > sv_maxvelocity.GetValue())
 			ent->v.velocity[i] = sv_maxvelocity.GetValue();
 		else if(ent->v.velocity[i] < -sv_maxvelocity.GetValue())
 			ent->v.velocity[i] = -sv_maxvelocity.GetValue();
-	}
-}
+	};
+};
 
 /*
 =============
@@ -130,7 +130,7 @@ in a frame.  Not used for pushmove objects, because they must be exact.
 Returns false if the entity removed itself.
 =============
 */
-qboolean SV_RunThink(edict_t *ent)
+bool SV_RunThink(edict_t *ent)
 {
 	float thinktime;
 
@@ -146,7 +146,7 @@ qboolean SV_RunThink(edict_t *ent)
 	gGlobalVariables.time = thinktime;
 	gpEntityEventDispatcher->DispatchThink(ent);
 	return !ent->free;
-}
+};
 
 /*
 ==================
@@ -164,7 +164,7 @@ void SV_Impact(edict_t *e1, edict_t *e2)
 
 	if(/*e2->v.touch &&*/ e2->v.solid != SOLID_NOT) // TODO
 		gpEntityEventDispatcher->DispatchTouch(e2, e1);
-}
+};
 
 /*
 ==================
@@ -196,10 +196,10 @@ int ClipVelocity(vec3_t in, vec3_t normal, vec3_t out, float overbounce)
 		out[i] = in[i] - change;
 		if(out[i] > -STOP_EPSILON && out[i] < STOP_EPSILON)
 			out[i] = 0;
-	}
+	};
 
 	return blocked;
-}
+};
 
 /*
 ============
@@ -248,17 +248,19 @@ int SV_FlyMove(edict_t *ent, float time, trace_t *steptrace)
 		trace = SV_Move(ent->v.origin, ent->v.mins, ent->v.maxs, end, false, ent);
 
 		if(trace.allsolid)
-		{ // entity is trapped in another solid
+		{
+			// entity is trapped in another solid
 			VectorCopy(vec3_origin, ent->v.velocity);
 			return 3;
-		}
+		};
 
 		if(trace.fraction > 0)
-		{ // actually covered some distance
+		{
+			// actually covered some distance
 			VectorCopy(trace.endpos, ent->v.origin);
 			VectorCopy(ent->v.velocity, original_velocity);
 			numplanes = 0;
-		}
+		};
 
 		if(trace.fraction == 1)
 			break; // moved the entire distance
@@ -273,14 +275,14 @@ int SV_FlyMove(edict_t *ent, float time, trace_t *steptrace)
 			{
 				ent->v.flags = (int)ent->v.flags | FL_ONGROUND;
 				ent->v.groundentity = EDICT_TO_PROG(trace.ent);
-			}
-		}
+			};
+		};
 		if(!trace.plane.normal[2])
 		{
 			blocked |= 2; // step
 			if(steptrace)
 				*steptrace = trace; // save for player extrafriction
-		}
+		};
 
 		//
 		// run the impact function
@@ -296,7 +298,7 @@ int SV_FlyMove(edict_t *ent, float time, trace_t *steptrace)
 		{ // this shouldn't really happen
 			VectorCopy(vec3_origin, ent->v.velocity);
 			return 3;
-		}
+		};
 
 		VectorCopy(trace.plane.normal, planes[numplanes]);
 		numplanes++;
@@ -312,27 +314,29 @@ int SV_FlyMove(edict_t *ent, float time, trace_t *steptrace)
 				{
 					if(DotProduct(new_velocity, planes[j]) < 0)
 						break; // not ok
-				}
+				};
 			if(j == numplanes)
 				break;
-		}
+		};
 
 		if(i != numplanes)
-		{ // go along this plane
+		{
+			// go along this plane
 			VectorCopy(new_velocity, ent->v.velocity);
 		}
 		else
-		{ // go along the crease
+		{
+			// go along the crease
 			if(numplanes != 2)
 			{
 				//				gpSystem->Printf ("clip velocity, numplanes == %i\n",numplanes);
 				VectorCopy(vec3_origin, ent->v.velocity);
 				return 7;
-			}
+			};
 			CrossProduct(planes[0], planes[1], dir);
 			d = DotProduct(dir, ent->v.velocity);
 			VectorScale(dir, d, ent->v.velocity);
-		}
+		};
 
 		//
 		// if original velocity is against the original velocity, stop dead
@@ -342,11 +346,11 @@ int SV_FlyMove(edict_t *ent, float time, trace_t *steptrace)
 		{
 			VectorCopy(vec3_origin, ent->v.velocity);
 			return blocked;
-		}
-	}
+		};
+	};
 
 	return blocked;
-}
+};
 
 /*
 ============
@@ -364,7 +368,7 @@ void SV_AddGravity(edict_t *ent)
 		ent_gravity = 1.0;
 
 	ent->v.velocity[2] -= ent_gravity * sv_gravity.GetValue() * host_frametime;
-}
+};
 
 /*
 ===============================================================================
@@ -403,7 +407,7 @@ trace_t SV_PushEntity(edict_t *ent, vec3_t push)
 		SV_Impact(ent, trace.ent);
 
 	return trace;
-}
+};
 
 /*
 ============
@@ -425,14 +429,14 @@ void SV_PushMove(edict_t *pusher, float movetime)
 	{
 		pusher->v.ltime += movetime;
 		return;
-	}
+	};
 
 	for(i = 0; i < 3; i++)
 	{
 		move[i] = pusher->v.velocity[i] * movetime;
 		mins[i] = pusher->v.absmin[i] + move[i];
 		maxs[i] = pusher->v.absmax[i] + move[i];
-	}
+	};
 
 	VectorCopy(pusher->v.origin, pushorig);
 
@@ -470,7 +474,7 @@ void SV_PushMove(edict_t *pusher, float movetime)
 			// see if the ent's bbox is inside the pusher's final position
 			if(!SV_TestEntityPosition(check))
 				continue;
-		}
+		};
 
 		// remove the onground flag for non-players
 		if(check->v.movetype != MOVETYPE_WALK)
@@ -489,15 +493,17 @@ void SV_PushMove(edict_t *pusher, float movetime)
 		// if it is still inside the pusher, block
 		block = SV_TestEntityPosition(check);
 		if(block)
-		{ // fail the move
+		{
+			// fail the move
 			if(check->v.mins[0] == check->v.maxs[0])
 				continue;
 			if(check->v.solid == SOLID_NOT || check->v.solid == SOLID_TRIGGER)
-			{ // corpse
+			{
+				// corpse
 				check->v.mins[0] = check->v.mins[1] = 0;
 				VectorCopy(check->v.mins, check->v.maxs);
 				continue;
-			}
+			};
 
 			VectorCopy(entorig, check->v.origin);
 			SV_LinkEdict(check, true);
@@ -515,11 +521,11 @@ void SV_PushMove(edict_t *pusher, float movetime)
 			{
 				VectorCopy(moved_from[i], moved_edict[i]->v.origin);
 				SV_LinkEdict(moved_edict[i], false);
-			}
+			};
 			return;
-		}
-	}
-}
+		};
+	};
+};
 
 #ifdef QUAKE2
 /*
@@ -544,7 +550,7 @@ void SV_PushRotate(edict_t *pusher, float movetime)
 	{
 		pusher->v.ltime += movetime;
 		return;
-	}
+	};
 
 	for(i = 0; i < 3; i++)
 		amove[i] = pusher->v.avelocity[i] * movetime;
@@ -588,7 +594,7 @@ void SV_PushRotate(edict_t *pusher, float movetime)
 			// see if the ent's bbox is inside the pusher's final position
 			if(!SV_TestEntityPosition(check))
 				continue;
-		}
+		};
 
 		// remove the onground flag for non-players
 		if(check->v.movetype != MOVETYPE_WALK)
@@ -614,15 +620,17 @@ void SV_PushRotate(edict_t *pusher, float movetime)
 		// if it is still inside the pusher, block
 		block = SV_TestEntityPosition(check);
 		if(block)
-		{ // fail the move
+		{
+			// fail the move
 			if(check->v.mins[0] == check->v.maxs[0])
 				continue;
 			if(check->v.solid == SOLID_NOT || check->v.solid == SOLID_TRIGGER)
-			{ // corpse
+			{
+				// corpse
 				check->v.mins[0] = check->v.mins[1] = 0;
 				VectorCopy(check->v.mins, check->v.maxs);
 				continue;
-			}
+			};
 
 			VectorCopy(entorig, check->v.origin);
 			SV_LinkEdict(check, true);
@@ -641,15 +649,13 @@ void SV_PushRotate(edict_t *pusher, float movetime)
 				VectorCopy(moved_from[i], moved_edict[i]->v.origin);
 				VectorSubtract(moved_edict[i]->v.angles, amove, moved_edict[i]->v.angles);
 				SV_LinkEdict(moved_edict[i], false);
-			}
+			};
 			return;
 		}
 		else
-		{
 			VectorAdd(check->v.angles, amove, check->v.angles);
-		}
-	}
-}
+	};
+};
 #endif
 
 /*
@@ -684,7 +690,7 @@ void SV_Physics_Pusher(edict_t *ent)
 		else
 #endif
 			SV_PushMove(ent, movetime); // advances ent->v.ltime if not blocked
-	}
+	};
 
 	if(thinktime > oldltime && thinktime <= ent->v.ltime)
 	{
@@ -693,8 +699,8 @@ void SV_Physics_Pusher(edict_t *ent)
 		gpEntityEventDispatcher->DispatchThink(ent);
 		if(ent->free)
 			return;
-	}
-}
+	};
+};
 
 /*
 ===============================================================================
@@ -722,7 +728,7 @@ void SV_CheckStuck(edict_t *ent)
 	{
 		VectorCopy(ent->v.origin, ent->v.oldorigin);
 		return;
-	}
+	};
 
 	VectorCopy(ent->v.origin, org);
 	VectorCopy(ent->v.oldorigin, ent->v.origin);
@@ -731,7 +737,7 @@ void SV_CheckStuck(edict_t *ent)
 		gpSystem->DevPrintf("Unstuck.\n");
 		SV_LinkEdict(ent, true);
 		return;
-	}
+	};
 
 	for(z = 0; z < 18; z++)
 		for(i = -1; i <= 1; i++)
@@ -745,19 +751,19 @@ void SV_CheckStuck(edict_t *ent)
 					gpSystem->DevPrintf("Unstuck.\n");
 					SV_LinkEdict(ent, true);
 					return;
-				}
-			}
+				};
+			};
 
 	VectorCopy(org, ent->v.origin);
 	gpSystem->DevPrintf("player is stuck.\n");
-}
+};
 
 /*
 =============
 SV_CheckWater
 =============
 */
-qboolean SV_CheckWater(edict_t *ent)
+bool SV_CheckWater(edict_t *ent)
 {
 	vec3_t point;
 	int cont;
@@ -788,7 +794,7 @@ qboolean SV_CheckWater(edict_t *ent)
 			cont = SV_PointContents(point);
 			if(cont <= CONTENTS_WATER)
 				ent->v.waterlevel = 3;
-		}
+		};
 #ifdef QUAKE2
 		if(truecont <= CONTENTS_CURRENT_0 && truecont >= CONTENTS_CURRENT_DOWN)
 		{
@@ -803,12 +809,12 @@ qboolean SV_CheckWater(edict_t *ent)
 			};
 
 			VectorMA(ent->v.basevelocity, 150.0 * ent->v.waterlevel / 3.0, current_table[CONTENTS_CURRENT_0 - truecont], ent->v.basevelocity);
-		}
+		};
 #endif
-	}
+	};
 
 	return ent->v.waterlevel > 1;
-}
+};
 
 /*
 ============
@@ -836,7 +842,7 @@ void SV_WallFriction(edict_t *ent, trace_t *trace)
 
 	ent->v.velocity[0] = side[0] * (1 + d);
 	ent->v.velocity[1] = side[1] * (1 + d);
-}
+};
 
 /*
 =====================
@@ -898,7 +904,7 @@ int SV_TryUnstick(edict_t *ent, vec3_t oldvel)
 			dir[0] = -2;
 			dir[1] = -2;
 			break;
-		}
+		};
 
 		SV_PushEntity(ent, dir);
 
@@ -912,15 +918,15 @@ int SV_TryUnstick(edict_t *ent, vec3_t oldvel)
 		{
 			//gpSystem->DevPrintf ("unstuck!\n");
 			return clip;
-		}
+		};
 
 		// go back to the original pos and try again
 		VectorCopy(oldorg, ent->v.origin);
-	}
+	};
 
 	VectorCopy(vec3_origin, ent->v.velocity);
 	return 7; // still not moving
-}
+};
 
 /*
 =====================
@@ -992,10 +998,11 @@ void SV_WalkMove(edict_t *ent)
 	if(clip)
 	{
 		if(fabs(oldorg[1] - ent->v.origin[1]) < 0.03125 && fabs(oldorg[0] - ent->v.origin[0]) < 0.03125)
-		{ // stepping up didn't make any progress
+		{
+			// stepping up didn't make any progress
 			clip = SV_TryUnstick(ent, oldvel);
-		}
-	}
+		};
+	};
 
 	// extra friction based on view angle
 	if(clip & 2)
@@ -1010,7 +1017,7 @@ void SV_WalkMove(edict_t *ent)
 		{
 			ent->v.flags = (int)ent->v.flags | FL_ONGROUND;
 			ent->v.groundentity = EDICT_TO_PROG(downtrace.ent);
-		}
+		};
 	}
 	else
 	{
@@ -1019,8 +1026,8 @@ void SV_WalkMove(edict_t *ent)
 		// cause the player to hop up higher on a slope too steep to climb
 		VectorCopy(nosteporg, ent->v.origin);
 		VectorCopy(nostepvel, ent->v.velocity);
-	}
-}
+	};
+};
 
 /*
 ================
@@ -1090,7 +1097,7 @@ void SV_Physics_Client(edict_t *ent, int num)
 
 	default:
 		gpSystem->Error("SV_Physics_client: bad movetype %i", (int)ent->v.movetype);
-	}
+	};
 
 	//
 	// call standard player post-think
@@ -1099,7 +1106,7 @@ void SV_Physics_Client(edict_t *ent, int num)
 
 	gGlobalVariables.time = sv.time;
 	//gEntityInterface.pfnPlayerPostThink(ent); // TODO
-}
+};
 
 //============================================================================
 
@@ -1114,7 +1121,7 @@ void SV_Physics_None(edict_t *ent)
 {
 	// regular thinking
 	SV_RunThink(ent);
-}
+};
 
 #ifdef QUAKE2
 /*
@@ -1130,7 +1137,7 @@ void SV_Physics_Follow(edict_t *ent)
 	SV_RunThink(ent);
 	VectorAdd(PROG_TO_EDICT(ent->v.aiment)->v.origin, ent->v.v_angle, ent->v.origin);
 	SV_LinkEdict(ent, true);
-}
+};
 #endif
 
 /*
@@ -1150,7 +1157,7 @@ void SV_Physics_Noclip(edict_t *ent)
 	VectorMA(ent->v.origin, host_frametime, ent->v.velocity, ent->v.origin);
 
 	SV_LinkEdict(ent, false);
-}
+};
 
 /*
 ==============================================================================
@@ -1180,31 +1187,34 @@ void SV_CheckWaterTransition(edict_t *ent)
 	cont = SV_PointContents(ent->v.origin);
 #endif
 	if(!ent->v.watertype)
-	{ // just spawned here
+	{
+		// just spawned here
 		ent->v.watertype = cont;
 		ent->v.waterlevel = 1;
 		return;
-	}
+	};
 
 	if(cont <= CONTENTS_WATER)
 	{
 		if(ent->v.watertype == CONTENTS_EMPTY)
-		{ // just crossed into water
+		{
+			// just crossed into water
 			SV_StartSound(ent, 0, "misc/h2ohit1.wav", 255, 1);
-		}
+		};
 		ent->v.watertype = cont;
 		ent->v.waterlevel = 1;
 	}
 	else
 	{
 		if(ent->v.watertype != CONTENTS_EMPTY)
-		{ // just crossed into water
+		{
+			// just crossed into water
 			SV_StartSound(ent, 0, "misc/h2ohit1.wav", 255, 1);
-		}
+		};
 		ent->v.watertype = CONTENTS_EMPTY;
 		ent->v.waterlevel = cont;
-	}
-}
+	};
+};
 
 /*
 =============
@@ -1300,12 +1310,12 @@ void SV_Physics_Toss(edict_t *ent)
 			ent->v.groundentity = EDICT_TO_PROG(trace.ent);
 			VectorCopy(vec3_origin, ent->v.velocity);
 			VectorCopy(vec3_origin, ent->v.avelocity);
-		}
-	}
+		};
+	};
 
 	// check for in water
 	SV_CheckWaterTransition(ent);
-}
+};
 
 /*
 ===============================================================================
@@ -1329,9 +1339,9 @@ will fall if the floor is pulled out from under them.
 #ifdef QUAKE2
 void SV_Physics_Step(edict_t *ent)
 {
-	qboolean wasonground;
-	qboolean inwater;
-	qboolean hitsound = false;
+	bool wasonground;
+	bool inwater;
+	bool hitsound = false;
 	float *vel;
 	float speed, newspeed, control;
 	float friction;
@@ -1364,7 +1374,7 @@ void SV_Physics_Step(edict_t *ent)
 					hitsound = true;
 				if(!inwater)
 					SV_AddGravity(ent);
-			}
+			};
 
 	if(!VectorCompare(ent->v.velocity, vec_origin) || !VectorCompare(ent->v.basevelocity, vec_origin))
 	{
@@ -1389,8 +1399,8 @@ void SV_Physics_Step(edict_t *ent)
 
 					vel[0] = vel[0] * newspeed;
 					vel[1] = vel[1] * newspeed;
-				}
-			}
+				};
+			};
 
 		VectorAdd(ent->v.velocity, ent->v.basevelocity, ent->v.velocity);
 		SV_FlyMove(ent, host_frametime, nullptr);
@@ -1414,9 +1424,9 @@ void SV_Physics_Step(edict_t *ent)
 					{
 						ent->v.flags = (int)ent->v.flags | FL_ONGROUND;
 						break;
-					}
-				}
-		}
+					};
+				};
+		};
 
 		SV_LinkEdict(ent, true);
 
@@ -1424,16 +1434,16 @@ void SV_Physics_Step(edict_t *ent)
 			if(!wasonground)
 				if(hitsound)
 					SV_StartSound(ent, 0, "demon/dland2.wav", 255, 1);
-	}
+	};
 
 	// regular thinking
 	SV_RunThink(ent);
 	SV_CheckWaterTransition(ent);
-}
+};
 #else
 void SV_Physics_Step(edict_t *ent)
 {
-	qboolean hitsound;
+	bool hitsound;
 
 	// freefall if not onground
 	if(!((int)ent->v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM)))
@@ -1452,14 +1462,14 @@ void SV_Physics_Step(edict_t *ent)
 		{
 			if(hitsound)
 				SV_StartSound(ent, 0, "demon/dland2.wav", 255, 1);
-		}
-	}
+		};
+	};
 
 	// regular thinking
 	SV_RunThink(ent);
 
 	SV_CheckWaterTransition(ent);
-}
+};
 #endif
 
 //============================================================================
@@ -1491,9 +1501,7 @@ void SV_Physics()
 			continue;
 
 		if(gGlobalVariables.force_retouch)
-		{
 			SV_LinkEdict(ent, true); // force retouch even for stationary
-		}
 
 		if(i > 0 && i <= svs.maxclients)
 			SV_Physics_Client(ent, i);
@@ -1517,13 +1525,13 @@ void SV_Physics()
 			SV_Physics_Toss(ent);
 		else
 			gpSystem->Error("SV_Physics: bad movetype %i", (int)ent->v.movetype);
-	}
+	};
 
 	if(gGlobalVariables.force_retouch)
 		gGlobalVariables.force_retouch--;
 
 	sv.time += host_frametime;
-}
+};
 
 #ifdef QUAKE2
 trace_t SV_Trace_Toss(edict_t *ent, edict_t *ignore)
@@ -1564,14 +1572,14 @@ trace_t SV_Trace_Toss(edict_t *ent, edict_t *ignore)
 		//			p->type = pt_static;
 		//			VectorCopy (vec3_origin, p->vel);
 		//			VectorCopy (tent->v.origin, p->org);
-		//		}
+		//		};
 
 		if(trace.ent)
 			if(trace.ent != ignore)
 				break;
-	}
+	};
 	//	p->color = 224;
 	host_frametime = save_frametime;
 	return trace;
-}
+};
 #endif

@@ -223,13 +223,12 @@ Sys_PageIn
 */
 void Sys_PageIn(void *ptr, int size)
 {
-	byte *x;
 	int j, m, n;
 
 	// touch all the memory to make sure it's there. The 16-page skip is to
 	// keep Win 95 from thinking we're trying to page ourselves in (we are
 	// doing that, of course, but there's no reason we shouldn't)
-	x = (byte *)ptr;
+	byte *x = (byte *)ptr;
 
 	for(n = 0; n < 4; n++)
 	{

@@ -29,7 +29,7 @@
 /// normalizing factor so player model works out to about 1 pixel per triangle
 #define ALIAS_BASE_SIZE_RATIO (1.0 / 11.0)
 
-#define MAX_LBM_HEIGHT 480
+constexpr auto MAX_LBM_HEIGHT{480};
 
 // TODO: mostly unused, legacy from software render
 int r_pixbytes{1};
@@ -98,10 +98,10 @@ mleaf_t *Mod_PointInLeaf (vec3_t p, model_t *model)
 			node = node->children[0];
 		else
 			node = node->children[1];
-	}
+	};
 	
 	return nullptr;	// never reached
-}
+};
 
 /*
 ===================
@@ -346,7 +346,7 @@ void Mod_LoadTextures (lump_t *l)
 	{
 		loadmodel->textures = NULL;
 		return;
-	}
+	};
 	m = (dmiptexlump_t *)(mod_base + l->fileofs);
 	
 	m->nummiptex = LittleLong (m->nummiptex);
@@ -382,7 +382,7 @@ void Mod_LoadTextures (lump_t *l)
 		// TODO: client-side only?
 		//if (!Q_strncmp(mt->name,"sky",3))
 			//R_InitSky (tx);
-	}
+	};
 
 //
 // sequence the animations

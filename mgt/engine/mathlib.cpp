@@ -47,7 +47,7 @@ void ProjectPointOnPlane(vec3_t dst, const vec3_t p, const vec3_t normal)
 	dst[0] = p[0] - d * n[0];
 	dst[1] = p[1] - d * n[1];
 	dst[2] = p[2] - d * n[2];
-}
+};
 
 /*
 ** assumes "src" is normalized
@@ -68,8 +68,8 @@ void PerpendicularVector(vec3_t dst, const vec3_t src)
 		{
 			pos = i;
 			minelem = fabs(src[i]);
-		}
-	}
+		};
+	};
 	tempvec[0] = tempvec[1] = tempvec[2] = 0.0F;
 	tempvec[pos] = 1.0F;
 
@@ -138,10 +138,8 @@ void RotatePointAroundVector(vec3_t dst, const vec3_t dir, const vec3_t point, f
 	R_ConcatRotations(tmpmat, im, rot);
 
 	for(i = 0; i < 3; i++)
-	{
 		dst[i] = rot[i][0] * point[0] + rot[i][1] * point[1] + rot[i][2] * point[2];
-	}
-}
+};
 
 #ifdef _WIN32
 #pragma optimize("", on)
@@ -162,7 +160,7 @@ Split out like this for ASM to call.
 /*extern "C"*/ void BOPS_Error()
 {
 	Sys_Error("BoxOnPlaneSide:  Bad signbits");
-}
+};
 
 //#if !id386 // TODO: check for non-Intel?
 
@@ -230,7 +228,7 @@ int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p)
 		dist1 = dist2 = 0; // shut up compiler
 		BOPS_Error();
 		break;
-	}
+	};
 
 #if 0
 	int		i;
@@ -247,8 +245,8 @@ int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p)
 		{
 			corners[1][i] = emins[i];
 			corners[0][i] = emaxs[i];
-		}
-	}
+		};
+	};
 	dist = DotProduct (plane->normal, corners[0]) - plane->dist;
 	dist2 = DotProduct (plane->normal, corners[1]) - plane->dist;
 	sides = 0;
@@ -387,7 +385,7 @@ void R_ConcatRotations(float in1[3][3], float in2[3][3], float out[3][3])
 	in1[2][2] * in2[2][1];
 	out[2][2] = in1[2][0] * in2[0][2] + in1[2][1] * in2[1][2] +
 	in1[2][2] * in2[2][2];
-}
+};
 
 /*
 ================
@@ -420,7 +418,7 @@ void R_ConcatTransforms(float in1[3][4], float in2[3][4], float out[3][4])
 	in1[2][2] * in2[2][2];
 	out[2][3] = in1[2][0] * in2[0][3] + in1[2][1] * in2[1][3] +
 	in1[2][2] * in2[2][3] + in1[2][3];
-}
+};
 
 /*
 ===================
@@ -465,12 +463,12 @@ void FloorDivMod(double numer, double denom, int *quotient,
 		{
 			q--;
 			r = (int)denom - r;
-		}
-	}
+		};
+	};
 
 	*quotient = q;
 	*rem = r;
-}
+};
 
 /*
 ===================
@@ -490,8 +488,8 @@ int GreatestCommonDivisor(int i1, int i2)
 		if(i1 == 0)
 			return (i2);
 		return GreatestCommonDivisor(i1, i2 % i1);
-	}
-}
+	};
+};
 
 #if !id386
 
@@ -511,6 +509,6 @@ fixed16_t Invert24To16(fixed16_t val)
 		return (0xFFFFFFFF);
 
 	return (fixed16_t)(((double)0x10000 * (double)0x1000000 / (double)val) + 0.5);
-}
+};
 
 #endif

@@ -119,7 +119,7 @@ void Z_Free(void *ptr)
 		if(block == mainzone->rover)
 			mainzone->rover = other;
 		block = other;
-	}
+	};
 
 	other = block->next;
 	if(!other->tag)
@@ -129,8 +129,8 @@ void Z_Free(void *ptr)
 		block->next->prev = block;
 		if(other == mainzone->rover)
 			mainzone->rover = block;
-	}
-}
+	};
+};
 
 /*
 ========================
@@ -148,7 +148,7 @@ void *Z_Malloc(int size)
 	Q_memset(buf, 0, size);
 
 	return buf;
-}
+};
 
 void *Z_TagMalloc(int size, int tag)
 {
@@ -177,7 +177,8 @@ void *Z_TagMalloc(int size, int tag)
 			base = rover = rover->next;
 		else
 			rover = rover->next;
-	} while(base->tag || base->size < size);
+	}
+	while(base->tag || base->size < size);
 
 	//
 	// found a block big enough
@@ -194,7 +195,7 @@ void *Z_TagMalloc(int size, int tag)
 		pnew->next->prev = pnew;
 		base->next = pnew;
 		base->size = size;
-	}
+	};
 
 	base->tag = tag; // no longer a free block
 
@@ -206,7 +207,7 @@ void *Z_TagMalloc(int size, int tag)
 	*(int *)((byte *)base + base->size - 4) = ZONEID;
 
 	return (void *)((byte *)base + sizeof(memblock_t));
-}
+};
 
 /*
 ========================
@@ -232,8 +233,8 @@ void Z_Print(memzone_t *zone)
 			gpSystem->Printf("ERROR: next block doesn't have proper back link\n");
 		if(!block->tag && !block->next->tag)
 			gpSystem->Printf("ERROR: two consecutive free blocks\n");
-	}
-}
+	};
+};
 
 /*
 ========================
@@ -254,19 +255,19 @@ void Z_CheckHeap()
 			gpSystem->Error("Z_CheckHeap: next block doesn't have proper back link\n");
 		if(!block->tag && !block->next->tag)
 			gpSystem->Error("Z_CheckHeap: two consecutive free blocks\n");
-	}
-}
+	};
+};
 
 //============================================================================
 
 #define HUNK_SENTINAL 0x1df001ed
 
-typedef struct
+struct hunk_t
 {
 	int sentinal;
 	int size; // including sizeof(hunk_t), -1 = not allocated
 	char name[8];
-} hunk_t;
+};
 
 byte *hunk_base;
 int hunk_size;
@@ -274,7 +275,7 @@ int hunk_size;
 int hunk_low_used;
 int hunk_high_used;
 
-qboolean hunk_tempactive;
+bool hunk_tempactive;
 int hunk_tempmark;
 
 void R_FreeTextures();
@@ -297,8 +298,8 @@ void Hunk_Check()
 		if(h->size < 16 || h->size + (byte *)h - hunk_base > hunk_size)
 			gpSystem->Error("Hunk_Check: bad size");
 		h = (hunk_t *)((byte *)h + h->size);
-	}
-}
+	};
+};
 
 /*
 ==============
@@ -308,7 +309,7 @@ If "all" is specified, every single allocation is printed.
 Otherwise, allocations with the same name will be totaled up before printing.
 ==============
 */
-void Hunk_Print(qboolean all)
+void Hunk_Print(bool all)
 {
 	hunk_t *h, *next, *endlow, *starthigh, *endhigh;
 	int count, sum;
@@ -339,7 +340,7 @@ void Hunk_Print(qboolean all)
 			gpSystem->Printf("          :%8i REMAINING\n", hunk_size - hunk_low_used - hunk_high_used);
 			gpSystem->Printf("-------------------------\n");
 			h = starthigh;
-		}
+		};
 
 		//
 		// if totally done, break
@@ -377,14 +378,14 @@ void Hunk_Print(qboolean all)
 				gpSystem->Printf("          :%8i %8s (TOTAL)\n", sum, name);
 			count = 0;
 			sum = 0;
-		}
+		};
 
 		h = next;
-	}
+	};
 
 	gpSystem->Printf("-------------------------\n");
 	gpSystem->Printf("%8i total blocks\n", totalblocks);
-}
+};
 
 /*
 ===================
@@ -419,7 +420,7 @@ void *Hunk_AllocName(int size, const char *name)
 	Q_strncpy(h->name, name, 8);
 
 	return (void *)(h + 1);
-}
+};
 
 /*
 ===================
@@ -429,12 +430,12 @@ Hunk_Alloc
 void *Hunk_Alloc(int size)
 {
 	return Hunk_AllocName(size, "unknown");
-}
+};
 
 int Hunk_LowMark()
 {
 	return hunk_low_used;
-}
+};
 
 void Hunk_FreeToLowMark(int mark)
 {
@@ -442,7 +443,7 @@ void Hunk_FreeToLowMark(int mark)
 		gpSystem->Error("Hunk_FreeToLowMark: bad mark %i", mark);
 	memset(hunk_base + mark, 0, hunk_low_used - mark);
 	hunk_low_used = mark;
-}
+};
 
 int Hunk_HighMark()
 {
@@ -450,10 +451,10 @@ int Hunk_HighMark()
 	{
 		hunk_tempactive = false;
 		Hunk_FreeToHighMark(hunk_tempmark);
-	}
+	};
 
 	return hunk_high_used;
-}
+};
 
 void Hunk_FreeToHighMark(int mark)
 {
@@ -461,12 +462,12 @@ void Hunk_FreeToHighMark(int mark)
 	{
 		hunk_tempactive = false;
 		Hunk_FreeToHighMark(hunk_tempmark);
-	}
+	};
 	if(mark < 0 || mark > hunk_high_used)
 		gpSystem->Error("Hunk_FreeToHighMark: bad mark %i", mark);
 	memset(hunk_base + hunk_size - hunk_high_used, 0, hunk_high_used - mark);
 	hunk_high_used = mark;
-}
+};
 
 /*
 ===================
@@ -484,7 +485,7 @@ void *Hunk_HighAllocName(int size, const char *name)
 	{
 		Hunk_FreeToHighMark(hunk_tempmark);
 		hunk_tempactive = false;
-	}
+	};
 
 #ifdef PARANOID
 	Hunk_Check();
@@ -496,7 +497,7 @@ void *Hunk_HighAllocName(int size, const char *name)
 	{
 		gpSystem->Printf("Hunk_HighAlloc: failed on %i bytes\n", size);
 		return nullptr;
-	}
+	};
 
 	hunk_high_used += size;
 	Cache_FreeHigh(hunk_high_used);
@@ -509,7 +510,7 @@ void *Hunk_HighAllocName(int size, const char *name)
 	Q_strncpy(h->name, name, 8);
 
 	return (void *)(h + 1);
-}
+};
 
 /*
 =================
@@ -528,7 +529,7 @@ void *Hunk_TempAlloc(int size)
 	{
 		Hunk_FreeToHighMark(hunk_tempmark);
 		hunk_tempactive = false;
-	}
+	};
 
 	hunk_tempmark = Hunk_HighMark();
 
@@ -537,7 +538,7 @@ void *Hunk_TempAlloc(int size)
 	hunk_tempactive = true;
 
 	return buf;
-}
+};
 
 /*
 ===============================================================================
@@ -586,8 +587,8 @@ void Cache_Move(cache_system_t *c)
 		//		gpSystem->Printf ("cache_move failed\n");
 
 		Cache_Free(c->user); // tough luck...
-	}
-}
+	};
+};
 
 /*
 ============
@@ -608,8 +609,8 @@ void Cache_FreeLow(int new_low_hunk)
 		if((byte *)c >= hunk_base + new_low_hunk)
 			return;    // there is space to grow the hunk
 		Cache_Move(c); // reclaim the space
-	}
-}
+	};
+};
 
 /*
 ============
@@ -636,9 +637,9 @@ void Cache_FreeHigh(int new_high_hunk)
 		{
 			Cache_Move(c); // try to move it
 			prev = c;
-		}
-	}
-}
+		};
+	};
+};
 
 void Cache_UnlinkLRU(cache_system_t *cs)
 {
@@ -649,7 +650,7 @@ void Cache_UnlinkLRU(cache_system_t *cs)
 	cs->lru_prev->lru_next = cs->lru_next;
 
 	cs->lru_prev = cs->lru_next = nullptr;
-}
+};
 
 void Cache_MakeLRU(cache_system_t *cs)
 {
@@ -660,7 +661,7 @@ void Cache_MakeLRU(cache_system_t *cs)
 	cs->lru_next = cache_head.lru_next;
 	cs->lru_prev = &cache_head;
 	cache_head.lru_next = cs;
-}
+};
 
 /*
 ============
@@ -690,7 +691,7 @@ cache_system_t *Cache_TryAlloc(int size, qboolean nobottom)
 
 		Cache_MakeLRU(pnew);
 		return pnew;
-	}
+	};
 
 	// search from the bottom up for space
 
@@ -702,7 +703,8 @@ cache_system_t *Cache_TryAlloc(int size, qboolean nobottom)
 		if(!nobottom || cs != cache_head.next)
 		{
 			if((byte *)cs - (byte *)pnew >= size)
-			{ // found space
+			{
+				// found space
 				memset(pnew, 0, sizeof(*pnew));
 				pnew->size = size;
 
@@ -714,14 +716,14 @@ cache_system_t *Cache_TryAlloc(int size, qboolean nobottom)
 				Cache_MakeLRU(pnew);
 
 				return pnew;
-			}
-		}
+			};
+		};
 
 		// continue looking
 		pnew = (cache_system_t *)((byte *)cs + cs->size);
 		cs = cs->next;
-
-	} while(cs != &cache_head);
+	}
+	while(cs != &cache_head);
 
 	// try to allocate one at the very end
 	if(hunk_base + hunk_size - hunk_high_used - (byte *)pnew >= size)
@@ -737,10 +739,10 @@ cache_system_t *Cache_TryAlloc(int size, qboolean nobottom)
 		Cache_MakeLRU(pnew);
 
 		return pnew;
-	}
+	};
 
 	return nullptr; // couldn't allocate
-}
+};
 
 /*
 ============
@@ -753,7 +755,7 @@ void Cache_Flush(const ICmdArgs &apArgs)
 {
 	while(cache_head.next != &cache_head)
 		Cache_Free(cache_head.next->user); // reclaim the space
-}
+};
 
 /*
 ============
@@ -766,10 +768,8 @@ void Cache_Print()
 	cache_system_t *cd;
 
 	for(cd = cache_head.next; cd != &cache_head; cd = cd->next)
-	{
 		gpSystem->Printf("%8i : %s\n", cd->size, cd->name);
-	}
-}
+};
 
 /*
 ============
@@ -780,7 +780,7 @@ Cache_Report
 void Cache_Report()
 {
 	gpSystem->DevPrintf("%4.1f megabyte data cache\n", (hunk_size - hunk_high_used - hunk_low_used) / (float)(1024 * 1024));
-}
+};
 
 /*
 ============
@@ -790,7 +790,7 @@ Cache_Compact
 */
 void Cache_Compact()
 {
-}
+};
 
 /*
 ============
@@ -804,7 +804,7 @@ void Cache_Init()
 	cache_head.lru_next = cache_head.lru_prev = &cache_head;
 
 	Cmd_AddCommand("flush", Cache_Flush);
-}
+};
 
 /*
 ==============
@@ -829,7 +829,7 @@ void Cache_Free(cache_user_t *c)
 	c->data = nullptr;
 
 	Cache_UnlinkLRU(cs);
-}
+};
 
 /*
 ==============
@@ -850,7 +850,7 @@ void *Cache_Check(cache_user_t *c)
 	Cache_MakeLRU(cs);
 
 	return c->data;
-}
+};
 
 /*
 ==============
@@ -879,17 +879,17 @@ void *Cache_Alloc(cache_user_t *c, int size, const char *name)
 			c->data = (void *)(cs + 1);
 			cs->user = c;
 			break;
-		}
+		};
 
 		// free the least recently used cahedat
 		if(cache_head.lru_prev == &cache_head)
 			gpSystem->Error("Cache_Alloc: out of memory");
 		// not enough memory at all
 		Cache_Free(cache_head.lru_prev->user);
-	}
+	};
 
 	return Cache_Check(c);
-}
+};
 
 //============================================================================
 
@@ -916,7 +916,7 @@ void Memory_Init(void *buf, int size)
 			zonesize = Q_atoi(com_argv[p + 1]) * 1024;
 		else
 			gpSystem->Error("Memory_Init: you must specify a size in KB after -zone");
-	}
+	};
 	mainzone = (memzone_t*)Hunk_AllocName(zonesize, "zone");
 	Z_ClearZone(mainzone, zonesize);
-}
+};
