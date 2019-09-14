@@ -21,7 +21,7 @@
 /// @file
 /// @brief monster movement
 
-#include "quakedef.h"
+//#include "quakedef.h"
 
 #define STEPSIZE 18
 
