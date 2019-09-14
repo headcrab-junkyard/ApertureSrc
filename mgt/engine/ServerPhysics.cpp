@@ -58,7 +58,7 @@ SV_Physics
 
 ================
 */
-void SV_Physics()
+void SV_Physics(double host_frametime)
 {
 	// let the game know that a new frame has started
 	gGlobalVariables.time = sv.time;

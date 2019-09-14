@@ -836,7 +836,7 @@ void _SV_Frame()
 	// move things around and think
 	// always pause in single player if in console or menus
 	if(!sv.paused && (svs.maxclients > 1 || key_dest == key_game))
-		SV_Physics();
+		SV_Physics(host_frametime);
 }
 
 void SV_Frame()
@@ -888,7 +888,7 @@ void SV_Frame()
 	// move things around and think
 	// always pause in single player if in console or menus
 	if(!sv.paused && (svs.maxclients > 1 /*|| key_dest == key_game*/)) // TODO
-		SV_Physics();
+		SV_Physics(host_frametime);
 
 	// get packets
 	SV_ReadPackets();
@@ -2786,8 +2786,8 @@ void SV_SpawnServer(const char *server, const char *startspot)
 
 	// run two frames to allow everything to settle
 	host_frametime = 0.1;
-	SV_Physics();
-	SV_Physics();
+	SV_Physics(host_frametime);
+	SV_Physics(host_frametime);
 
 	// save movement vars
 	//SV_SetMoveVars();

@@ -243,7 +243,7 @@ void SV_BroadcastCommand(const char *fmt, ...);
 
 void SV_Frame();
 
-void SV_Physics();
+void SV_Physics(double frametime);
 bool SV_RunThink(edict_t *ent);
 
 bool SV_CheckBottom(edict_t *ent);
