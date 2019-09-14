@@ -51,3 +51,21 @@ static vec3_t vec_origin = { 0.0, 0.0, 0.0 };
 #endif
 
 #define MOVE_EPSILON 0.01
+
+/*
+================
+SV_Physics
+
+================
+*/
+void SV_Physics()
+{
+	// let the game know that a new frame has started
+	gGlobalVariables.time = sv.time;
+	gpGame->StartFrame();
+	
+	if(gGlobalVariables.force_retouch)
+		gGlobalVariables.force_retouch--;
+
+	sv.time += host_frametime;
+};
