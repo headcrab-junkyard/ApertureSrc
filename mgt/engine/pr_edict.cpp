@@ -25,10 +25,10 @@
 #include "game/server/IGame.hpp"
 //#include "Progs.hpp"
 
-char *pr_strings;
-globalvars_t gGlobalVariables;
+char *pr_strings{nullptr};
+globalvars_t gGlobalVariables{};
 
-//cvar_t nomonsters = {"nomonsters", "0"}; // TODO
+//cvar_t nomonsters = {"nomonsters", "0"}; // TODO: unused?
 
 /*
 =================
@@ -56,10 +56,11 @@ angles and bad trails.
 */
 edict_t *ED_Alloc()
 {
-	int i;
-	edict_t *e;
 
-	for(i = svs.maxclients + 1; i < sv.num_edicts; i++)
+	int i{0};
+	edict_t *e{nullptr};
+
+	for(i = svs.maxclients + 1; i < sv.num_edicts; ++i)
 	{
 		e = EDICT_NUM(i);
 		// the first couple seconds of server time can involve a lot of
@@ -68,8 +69,8 @@ edict_t *ED_Alloc()
 		{
 			ED_ClearEdict(e);
 			return e;
-		}
-	}
+		};
+	};
 
 	if(i == MAX_EDICTS)
 		Sys_Error("ED_Alloc: no free edicts");
@@ -79,7 +80,7 @@ edict_t *ED_Alloc()
 	ED_ClearEdict(e);
 
 	return e;
-}
+};
 
 /*
 =================
@@ -106,7 +107,7 @@ void ED_Free(edict_t *ed)
 	ed->v.solid = 0;
 
 	ed->freetime = sv.time;
-}
+};
 
 //===========================================================================
 
@@ -365,7 +366,7 @@ void ED_PrintEdicts ()
 	gpSystem->Printf ("%i entities\n", sv.num_edicts);
 	for (i=0 ; i<sv.num_edicts ; i++)
 		ED_PrintNum (i);
-}
+};
 */
 
 // TODO: unused?
@@ -401,12 +402,11 @@ For debugging
 */
 void ED_Count()
 {
-	int i;
-	edict_t *ent;
+	edict_t *ent{nullptr};
 	int active, models, solid, step;
 
 	active = models = solid = step = 0;
-	for(i = 0; i < sv.num_edicts; i++)
+	for(int i = 0; i < sv.num_edicts; ++i)
 	{
 		ent = EDICT_NUM(i);
 		if(ent->free)
@@ -418,14 +418,14 @@ void ED_Count()
 			models++;
 		if(ent->v.movetype == MOVETYPE_STEP)
 			step++;
-	}
+	};
 
 	gpSystem->Printf("num_edicts:%3i\n", sv.num_edicts);
 	gpSystem->Printf("active    :%3i\n", active);
 	gpSystem->Printf("view      :%3i\n", models);
 	gpSystem->Printf("touch     :%3i\n", solid);
 	gpSystem->Printf("step      :%3i\n", step);
-}
+};
 
 /*
 ==============================================================================
@@ -507,12 +507,12 @@ void ED_ParseGlobals (char *data)
 		{
 			gpSystem->Printf ("'%s' is not a global\n", keyname);
 			continue;
-		}
+		};
 
 		//if (!ED_ParseEpair ((void *)pr_globals, key, com_token))
 			//Host_Error ("ED_ParseGlobals: parse error");
-	}
-}
+	};
+};
 */
 
 //============================================================================
@@ -543,10 +543,10 @@ char *ED_NewString(char *string)
 		}
 		else
 			*new_p++ = string[i];
-	}
+	};
 
 	return pnew;
-}
+};
 
 /*
 ====================
@@ -560,12 +560,10 @@ Used for initial level load and for savegames.
 char *ED_ParseEdict(char *data, edict_t *ent)
 {
 	//ddef_t		*key;
-	qboolean anglehack;
-	qboolean init;
-	char keyname[256];
+	bool anglehack{false};
+	bool init{false};
+	char keyname[256]{};
 	int n;
-
-	init = false;
 
 	// clear it
 	if(ent != sv.edicts) // hack
@@ -603,7 +601,7 @@ char *ED_ParseEdict(char *data, edict_t *ent)
 		{
 			keyname[n - 1] = 0;
 			n--;
-		}
+		};
 
 		// parse value
 		data = (char*)COM_Parse(data);
@@ -624,14 +622,14 @@ char *ED_ParseEdict(char *data, edict_t *ent)
 		{
 			//gpSystem->Printf ("'%s' is not a field\n", keyname);
 			//continue;
-		}
+		};
 
 		if(anglehack)
 		{
 			char temp[32];
 			strcpy(temp, com_token);
 			sprintf(com_token, "0 %s 0", temp);
-		}
+		};
 
 		//if (!ED_ParseEpair ((void *)&ent->v, key, com_token))
 		//Host_Error ("ED_ParseEdict: parse error");
@@ -641,7 +639,7 @@ char *ED_ParseEdict(char *data, edict_t *ent)
 		ent->free = true;
 
 	return data;
-}
+};
 
 /*
 ================
@@ -660,12 +658,10 @@ to call ED_CallSpawnFunctions () to let the objects initialize themselves.
 */
 void ED_LoadFromFile(char *data)
 {
-	edict_t *ent;
-	int inhibit;
+	edict_t *ent{nullptr};
+	int inhibit{0};
 	//dfunction_t	*func;
 
-	ent = nullptr;
-	inhibit = 0;
 	gGlobalVariables.time = sv.time;
 
 	// parse ents
@@ -692,14 +688,14 @@ void ED_LoadFromFile(char *data)
 				ED_Free(ent);
 				inhibit++;
 				continue;
-			}
+			};
 		}
 		else if((current_skill == 0 && ((int)ent->v.spawnflags & SPAWNFLAG_NOT_EASY)) || (current_skill == 1 && ((int)ent->v.spawnflags & SPAWNFLAG_NOT_MEDIUM)) || (current_skill >= 2 && ((int)ent->v.spawnflags & SPAWNFLAG_NOT_HARD)))
 		{
 			ED_Free(ent);
 			inhibit++;
 			continue;
-		}
+		};
 
 		//
 		// immediately call spawn function
@@ -710,7 +706,7 @@ void ED_LoadFromFile(char *data)
 			//ED_Print(ent); // TODO: actually unused in gs, should i fix it?
 			ED_Free(ent);
 			continue;
-		}
+		};
 
 		// look for the spawn function
 		//func = ED_FindFunction ( PR_GetString(ent->v.classname) ); // TODO
@@ -721,14 +717,14 @@ void ED_LoadFromFile(char *data)
 			//ED_Print(ent); // TODO: actually unused in gs, should i fix it?
 			ED_Free(ent);
 			continue;
-		}
+		};
 
 		//gGlobalVariables.self = EDICT_TO_PROG(ent);
 		//PR_ExecuteProgram (func - pr_functions); // TODO
-	}
+	};
 
 	gpSystem->DevPrintf("%i entities inhibited\n", inhibit);
-}
+};
 
 //typedef void (*pfnGiveFnptrsToDll)(enginefuncs_t *apEngFuncs, globalvars_t *apGlobals);
 
@@ -764,7 +760,7 @@ void PR_LoadProgs() // our temporary LoadEntityDLLs
 	
 	//fnGiveFnptrsToDll = (pfnGiveFnptrsToDll)Sys_GetExport(gamedll, "GiveFnptrsToDll");
 	//fnGiveFnptrsToDll(&gEngFuncs, &gGlobalVariables); // TODO
-}
+};
 
 /*
 ===============
@@ -787,19 +783,17 @@ edict_t *EDICT_NUM(int n)
 	if(n < 0 || n >= sv.max_edicts)
 		Sys_Error("EDICT_NUM: bad number %i", n);
 	return (edict_t *)((byte *)sv.edicts + (n) * sizeof(edict_t));
-}
+};
 
 int NUM_FOR_EDICT(edict_t *e)
 {
-	int b;
-
-	b = (byte *)e - (byte *)sv.edicts;
+	int b = (byte *)e - (byte *)sv.edicts;
 	b = b / sizeof(edict_t);
 
 	if(b < 0 || b >= sv.num_edicts)
 		Sys_Error("NUM_FOR_EDICT: bad pointer");
 	return b;
-}
+};
 
 void SuckOutClassname(char *data, edict_t *ent)
 {

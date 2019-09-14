@@ -22,7 +22,7 @@
 
 #include "usercmd.h"
 
-typedef struct
+struct svstats_t
 {
 	double active;
 	double idle;
@@ -32,21 +32,21 @@ typedef struct
 	double latched_active;
 	double latched_idle;
 	int latched_packets;
-} svstats_t;
+};
 
 // MAX_CHALLENGES is made large to prevent a denial
 // of service attack that could cycle all of them
 // out before legitimate users connected
 #define MAX_CHALLENGES 1024
 
-typedef struct
+struct challenge_t
 {
 	netadr_t adr;
 	int challenge;
 	int time;
-} challenge_t;
+};
 
-typedef struct
+struct server_static_t
 {
 	int spawncount; // number of servers spawned since start, used to check late spawns
 
@@ -61,13 +61,17 @@ typedef struct
 	challenge_t challenges[MAX_CHALLENGES]; // to prevent invalid IPs from connecting
 	
 	char info[MAX_SERVERINFO_STRING]; // TODO
-} server_static_t;
+};
 
 //=============================================================================
 
-typedef enum { ss_loading, ss_active } server_state_t;
+enum server_state_t
+{
+	ss_loading,
+	ss_active
+};
 
-typedef struct
+struct server_t
 {
 	bool active; // false if only a net client
 
@@ -102,7 +106,7 @@ typedef struct
 
 	sizebuf_t signon;
 	byte signon_buf[8192];
-} server_t;
+};
 
 #define NUM_PING_TIMES 16
 #define NUM_SPAWN_PARMS 16
@@ -112,7 +116,7 @@ typedef struct
 #define MAX_INFO_STRING 256
 #endif
 
-typedef struct
+struct client_frame_t
 {
 	// received from client
 
@@ -120,7 +124,7 @@ typedef struct
 	double				senttime;
 	float				ping_time;
 	packet_entities_t	entities;
-} client_frame_t;
+};
 
 typedef struct client_s
 {
@@ -240,10 +244,10 @@ void SV_BroadcastCommand(const char *fmt, ...);
 void SV_Frame();
 
 void SV_Physics();
-qboolean SV_RunThink(edict_t *ent);
+bool SV_RunThink(edict_t *ent);
 
-qboolean SV_CheckBottom(edict_t *ent);
-qboolean SV_movestep(edict_t *ent, vec3_t move, qboolean relink);
+bool SV_CheckBottom(edict_t *ent);
+bool SV_movestep(edict_t *ent, vec3_t move, bool relink);
 
 void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg);
 
@@ -260,12 +264,12 @@ void SV_SpawnServer(const char *server, const char *startspot);
 
 void SV_ExecuteClientMessage(client_t *cl);
 
-typedef enum
+enum redirect_t
 {
 	RD_NONE,
 	RD_CLIENT,
 	RD_PACKET
-} redirect_t;
+};
 
 void SV_BeginRedirect(redirect_t rd);
 void SV_EndRedirect();

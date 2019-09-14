@@ -35,7 +35,7 @@ Set up the planes and clipnodes so that the six floats of a bounding box
 can just be stored out and get a proper hull_t structure.
 ===================
 */
-void PM_InitBoxHull(void)
+void PM_InitBoxHull()
 {
 	int i;
 	int side;
@@ -59,8 +59,8 @@ void PM_InitBoxHull(void)
 
 		box_planes[i].type = i >> 1;
 		box_planes[i].normal[i >> 1] = 1;
-	}
-}
+	};
+};
 
 /*
 ===================
@@ -80,7 +80,7 @@ hull_t *PM_HullForBox(vec3_t mins, vec3_t maxs)
 	box_planes[5].dist = mins[2];
 
 	return &box_hull;
-}
+};
 
 /*
 ==================
@@ -110,10 +110,10 @@ int PM_HullPointContents(hull_t *hull, int num, vec3_t p)
 			num = node->children[1];
 		else
 			num = node->children[0];
-	}
+	};
 
 	return num;
-}
+};
 
 /*
 ==================
@@ -149,10 +149,11 @@ int PM_PointContents(vec3_t p)
 			num = node->children[1];
 		else
 			num = node->children[0];
-	}
+	};
+
 
 	return num;
-}
+};
 
 /*
 ===============================================================================
@@ -196,7 +197,7 @@ qboolean PM_RecursiveHullCheck(hull_t *hull, int num, float p1f, float p2f, vec3
 		else
 			trace->startsolid = true;
 		return true; // empty
-	}
+	};
 
 	if(num < hull->firstclipnode || num > hull->lastclipnode)
 		Sys_Error("PM_RecursiveHullCheck: bad node number");
@@ -216,7 +217,7 @@ qboolean PM_RecursiveHullCheck(hull_t *hull, int num, float p1f, float p2f, vec3
 	{
 		t1 = DotProduct(plane->normal, p1) - plane->dist;
 		t2 = DotProduct(plane->normal, p2) - plane->dist;
-	}
+	};
 
 #if 1
 	if(t1 >= 0 && t2 >= 0)
@@ -255,7 +256,7 @@ qboolean PM_RecursiveHullCheck(hull_t *hull, int num, float p1f, float p2f, vec3
 	{
 		gpSystem->Printf("mid PointInHullSolid\n");
 		return false;
-	}
+	};
 #endif
 
 	if(PM_HullPointContents(hull, node->children[side ^ 1], mid) != CONTENTS_SOLID)
@@ -277,10 +278,11 @@ qboolean PM_RecursiveHullCheck(hull_t *hull, int num, float p1f, float p2f, vec3
 	{
 		VectorSubtract(vec3_origin, plane->normal, trace->plane.normal);
 		trace->plane.dist = -plane->dist;
-	}
+	};
 
 	while(PM_HullPointContents(hull, hull->firstclipnode, mid) == CONTENTS_SOLID)
-	{ // shouldn't really happen, but does occasionally
+	{
+		// shouldn't really happen, but does occasionally
 		frac -= 0.1;
 		if(frac < 0)
 		{
@@ -288,17 +290,17 @@ qboolean PM_RecursiveHullCheck(hull_t *hull, int num, float p1f, float p2f, vec3
 			VectorCopy(mid, trace->endpos);
 			gpSystem->DevPrintf("backup past 0\n");
 			return false;
-		}
+		};
 		midf = p1f + (p2f - p1f) * frac;
 		for(i = 0; i < 3; i++)
 			mid[i] = p1[i] + frac * (p2[i] - p1[i]);
-	}
+	};
 
 	trace->fraction = midf;
 	VectorCopy(mid, trace->endpos);
 
 	return false;
-}
+};
 
 /*
 ================
@@ -325,16 +327,16 @@ qboolean PM_TestPlayerPosition(vec3_t pos)
 			VectorSubtract(pe->mins, player_maxs, mins);
 			VectorSubtract(pe->maxs, player_mins, maxs);
 			hull = PM_HullForBox(mins, maxs);
-		}
+		};
 
 		VectorSubtract(pos, pe->origin, test);
 
 		if(PM_HullPointContents(hull, hull->firstclipnode, test) == CONTENTS_SOLID)
 			return false;
-	}
+	};
 
 	return true;
-}
+};
 
 /*
 ================
@@ -368,7 +370,7 @@ pmtrace_t PM_PlayerMove(vec3_t start, vec3_t end)
 			VectorSubtract(pe->mins, player_maxs, mins);
 			VectorSubtract(pe->maxs, player_mins, maxs);
 			hull = PM_HullForBox(mins, maxs);
-		}
+		};
 
 		// PM_HullForEntity (ent, mins, maxs, offset);
 		VectorCopy(pe->origin, offset);
@@ -398,8 +400,8 @@ pmtrace_t PM_PlayerMove(vec3_t start, vec3_t end)
 			VectorAdd(trace.endpos, offset, trace.endpos);
 			total = trace;
 			total.ent = i;
-		}
-	}
+		};
+	};
 
 	return total;
-}
+};

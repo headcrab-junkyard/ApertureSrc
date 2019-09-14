@@ -51,27 +51,12 @@ extern CConVar sys_ticrate;
 extern CConVar sys_nostdout;
 extern CConVar developer;
 
-extern bool host_initialized; // true if into command execution
-extern double host_frametime;
-//extern byte *host_basepal;
-//extern byte *host_colormap;
-extern int host_framecount; // incremented every frame, never reset
 extern double realtime;     // not bounded in any way, changed at
                             // start of every frame, never reset
 
 void Host_Quit_f();
 
-void Host_ClearMemory();
-
-void Host_InitCommands();
-
-void Host_Init(quakeparms_t *parms);
-void Host_Shutdown();
-
 void Host_Error(const char *error, ...);
-void Host_EndGame(const char *message, ...);
-
-void Host_Frame(float time); // TODO: state, stateinfo
 
 void Host_ClientCommands(client_t *host_client, const char *fmt, ...);
 void Host_ShutdownServer(bool crash);
@@ -86,7 +71,7 @@ public:
 	void Init(quakeparms_t *parms);
 	void Shutdown();
 	
-	void Frame(float time);
+	void Frame(float time); // TODO: state, stateinfo
 	
 	void EndGame(const char *message, ...) override;
 	
@@ -102,6 +87,13 @@ public:
 private:
 	void InitLocal();
 	void InitCommands();
+private:
+	bool host_initialized{false}; ///< true if into command execution
+	double host_frametime{0.0};
+	//byte *host_basepal{nullptr};
+	//byte *host_colormap{nullptr};
+	int host_framecount{0}; ///< incremented every frame, never reset
+	int host_hunklevel{0};
 };
 
 extern bool msg_suppress_1; // suppresses resolution and cache size console output

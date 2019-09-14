@@ -44,12 +44,12 @@ int build_number()
 	if(b != 0)
 		return b;
 
-	for(m = 0; m < 11; m++)
+	for(m = 0; m < 11; ++m)
 	{
 		if(_strnicmp(&date[0], mon[m], 3) == 0)
 			break;
 		d += mond[m];
-	}
+	};
 
 	d += atoi(&date[4]) - 1;
 
@@ -58,9 +58,7 @@ int build_number()
 	b = d + (int)((y - 1) * 365.25);
 
 	if(((y % 4) == 0) && m > 1)
-	{
 		b += 1;
-	}
 
 	b -= 34995; // Oct 24 1996 // TODO
 

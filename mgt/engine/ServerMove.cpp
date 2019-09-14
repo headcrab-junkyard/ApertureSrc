@@ -270,7 +270,7 @@ void SV_FixCheckBottom(edict_t *ent)
 	//	gpSystem->Printf ("SV_FixCheckBottom\n");
 
 	ent->v.flags = (int)ent->v.flags | FL_PARTIALGROUND;
-}
+};
 
 /*
 ================
@@ -313,7 +313,7 @@ void SV_NewChaseDir(edict_t *actor, edict_t *enemy, float dist)
 
 		if(tdir != turnaround && SV_StepDirection(actor, tdir, dist))
 			return;
-	}
+	};
 
 	// try other directions
 	if(((rand() & 3) & 1) || abs(deltay) > abs(deltax))
@@ -321,7 +321,7 @@ void SV_NewChaseDir(edict_t *actor, edict_t *enemy, float dist)
 		tdir = d[1];
 		d[1] = d[2];
 		d[2] = tdir;
-	}
+	};
 
 	if(d[1] != DI_NODIR && d[1] != turnaround && SV_StepDirection(actor, d[1], dist))
 		return;
@@ -345,7 +345,7 @@ void SV_NewChaseDir(edict_t *actor, edict_t *enemy, float dist)
 		for(tdir = 315; tdir >= 0; tdir -= 45)
 			if(tdir != turnaround && SV_StepDirection(actor, tdir, dist))
 				return;
-	}
+	};
 
 	if(turnaround != DI_NODIR && SV_StepDirection(actor, turnaround, dist))
 		return;
@@ -357,7 +357,7 @@ void SV_NewChaseDir(edict_t *actor, edict_t *enemy, float dist)
 
 	if(!SV_CheckBottom(actor))
 		SV_FixCheckBottom(actor);
-}
+};
 
 /*
 ======================
@@ -365,19 +365,17 @@ SV_CloseEnough
 
 ======================
 */
-qboolean SV_CloseEnough(edict_t *ent, edict_t *goal, float dist)
+bool SV_CloseEnough(edict_t *ent, edict_t *goal, float dist)
 {
-	int i;
-
-	for(i = 0; i < 3; i++)
+	for(int i = 0; i < 3; ++i)
 	{
 		if(goal->v.absmin[i] > ent->v.absmax[i] + dist)
 			return false;
 		if(goal->v.absmax[i] < ent->v.absmin[i] - dist)
 			return false;
-	}
+	};
 	return true;
-}
+};
 
 /*
 ======================
@@ -398,7 +396,7 @@ void SV_MoveToGoal(edict_t *ent, float dist)
 	{
 		//G_FLOAT(OFS_RETURN) = 0; // TODO
 		return;
-	}
+	};
 
 // if the next step hits the enemy, return immediately
 #ifdef QUAKE2
@@ -410,9 +408,6 @@ void SV_MoveToGoal(edict_t *ent, float dist)
 		return;
 
 	// bump around...
-	if((rand() & 3) == 1 ||
-	   !SV_StepDirection(ent, ent->v.ideal_yaw, dist))
-	{
+	if((rand() & 3) == 1 || !SV_StepDirection(ent, ent->v.ideal_yaw, dist))
 		SV_NewChaseDir(ent, goal, dist);
-	}
-}
+};

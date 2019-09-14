@@ -25,7 +25,7 @@
 //#include "CommonTypes.hpp"
 #include "game/server/IGame.hpp"
 
-//struct IGame;
+interface IGame;
 
 interface IGameLoader
 {
@@ -36,5 +36,5 @@ interface IGameLoader
 	virtual IGame *Load(const char *asPath) = 0;
 
 	///
-	virtual void Unload(IGame * apGame) = 0;
+	virtual void Unload(IGame *apGame) = 0;
 };

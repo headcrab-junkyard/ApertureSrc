@@ -18,7 +18,6 @@
 */
 
 /// @file
-/// @brief
 
 #pragma once
 

@@ -83,7 +83,7 @@ void CEntity::SetModel(const char *m)
 
 	// check to see if model was properly precached
 	for(i = 0, check = sv.model_precache; *check; i++, check++)
-		if(!strcmp(*check, m))
+		if(!Q_strcmp(*check, m))
 			break;
 
 	if(!*check)
@@ -181,16 +181,13 @@ PF_changepitch
 */
 void CEntity::ChangePitch()
 {
-	float ideal, current, move, speed;
-
-	current = anglemod(e->v.angles[0]);
-	ideal = e->v.idealpitch;
-	speed = 0.0f; // TODO: e->v.pitch_speed;
+	float current = anglemod(e->v.angles[0]);
+	float ideal = e->v.idealpitch;
 
 	if(current == ideal)
 		return;
 	
-	move = ideal - current;
+	float move = ideal - current;
 	
 	if(ideal > current)
 	{
@@ -202,6 +199,8 @@ void CEntity::ChangePitch()
 		if(move <= -180)
 			move = move + 360;
 	};
+	
+	float speed = 0.0f; // TODO: e->v.pitch_speed;
 	
 	if(move > 0)
 	{

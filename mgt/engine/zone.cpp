@@ -37,12 +37,12 @@ typedef struct memblock_s
 	int pad; // pad to 64 bit boundary
 } memblock_t;
 
-typedef struct
+struct memzone_t
 {
 	int size;             // total bytes malloced, including header
 	memblock_t blocklist; // start / end cap for linked list
 	memblock_t *rover;
-} memzone_t;
+};
 
 void Cache_FreeLow(int new_low_hunk);
 void Cache_FreeHigh(int new_high_hunk);

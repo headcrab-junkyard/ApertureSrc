@@ -29,8 +29,8 @@
 // TODO
 #include "null/NetworkNull.hpp"
 
-void *gpNetworkLib{ nullptr };
-INetwork *gpNetwork{ nullptr };
+void *gpNetworkLib{nullptr};
+INetwork *gpNetwork{nullptr};
 
 // TODO
 
@@ -75,7 +75,7 @@ bool LoadNetworkModule()
 	if(!gpNetworkLib)
 		return false;
 
-	auto pfnNetworkFactory{ Sys_GetFactory(gpNetworkLib) };
+	auto pfnNetworkFactory{Sys_GetFactory(gpNetworkLib)};
 
 	if(!pfnNetworkFactory)
 		return false;

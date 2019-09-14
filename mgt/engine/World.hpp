@@ -23,9 +23,12 @@
 
 #pragma once
 
-#define MOVE_NORMAL 0
-#define MOVE_NOMONSTERS 1
-#define MOVE_MISSILE 2
+enum
+{
+	MOVE_NORMAL = 0,
+	MOVE_NOMONSTERS,
+	MOVE_MISSILE
+};
 
 #define AREA_DEPTH 4
 #define AREA_NODES 32

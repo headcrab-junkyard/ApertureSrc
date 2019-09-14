@@ -28,8 +28,8 @@
 
 //=============================================================================
 
-char *pr_strtbl[MAX_PRSTR];
-int num_prstr;
+char *pr_strtbl[MAX_PRSTR]{};
+int num_prstr{0};
 
 char *PR_GetString(int num)
 {
@@ -37,17 +37,15 @@ char *PR_GetString(int num)
 	{
 		//Con_DPrintf("GET:%d == %s\n", num, pr_strtbl[-num]);
 		return pr_strtbl[-num];
-	}
+	};
 	return pr_strings + num;
-}
+};
 
 int PR_SetString(char *s)
 {
-	int i;
-
 	if(s - pr_strings < 0)
 	{
-		for(i = 0; i <= num_prstr; i++)
+		for(int i = 0; i <= num_prstr; i++)
 			if(pr_strtbl[i] == s)
 				break;
 		if(i < num_prstr)
@@ -58,6 +56,6 @@ int PR_SetString(char *s)
 		pr_strtbl[num_prstr] = s;
 		//Con_DPrintf("SET:%d == %s\n", -num_prstr, s);
 		return -num_prstr;
-	}
+	};
 	return (int)(s - pr_strings);
-}
+};

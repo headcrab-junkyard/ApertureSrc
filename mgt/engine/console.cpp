@@ -56,8 +56,8 @@ void Con_Init()
 	if(con_debuglog)
 	{
 		#define MAXGAMEDIRLEN 1000
-		char temp[MAXGAMEDIRLEN + 1];
-		const char *t2 = "/qconsole.log";
+		char temp[MAXGAMEDIRLEN + 1]{};
+		const char *t2{"/qconsole.log"};
 		
 		if(strlen(com_gamedir) < (MAXGAMEDIRLEN - strlen(t2)))
 		{
@@ -90,6 +90,7 @@ void Con_DebugLog(const char *file, const char *fmt, ...)
 	va_start(argptr, fmt);
 	vsprintf(data, fmt, argptr);
 	va_end(argptr);
+	
 	int fd = open(file, O_WRONLY | O_CREAT | O_APPEND, 0666);
 	write(fd, data, strlen(data));
 	close(fd);

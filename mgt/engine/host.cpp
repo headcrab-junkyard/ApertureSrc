@@ -40,22 +40,22 @@ Memory is cleared / released when a server or client begins, not when they end.
 
 */
 
-quakeparms_t host_parms;
+quakeparms_t host_parms{};
 
-bool host_initialized; // true if into command execution
+bool host_initialized{false}; // true if into command execution
 //bool	nomaster;
 
-double host_frametime;
+double host_frametime{0.0};
 //double		host_time; // TODO: used only by client-side (actually unused in gs)
 
-double realtime;    // without any filtering or bounding
-double oldrealtime; // last frame run
+double realtime{0.0};    // without any filtering or bounding
+double oldrealtime{0.0}; // last frame run
 
-int host_framecount;
+int host_framecount{0};
 
-int host_hunklevel;
+int host_hunklevel{0};
 
-int minimum_memory;
+int minimum_memory{0};
 
 client_t *host_client; // current client
 

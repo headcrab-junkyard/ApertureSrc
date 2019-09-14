@@ -23,9 +23,9 @@
 
 #include "quakedef.h"
 
-movevars_t movevars;
+movevars_t movevars{};
 
-playermove_t *pmove;
+playermove_t *pmove{nullptr};
 
 int onground;
 int waterlevel;
@@ -48,9 +48,9 @@ vec3_t player_maxs = { 16, 16, 32 };
 // #define	PM_FRICTION			6
 // #define	PM_WATERFRICTION	1
 
-void PM_InitBoxHull(void);
+void PM_InitBoxHull();
 
-void Pmove_Init(void)
+void Pmove_Init()
 {
 	PM_InitBoxHull();
 }

@@ -19,7 +19,6 @@
 */
 
 /// @file
-/// @brief
 
 #pragma once
 
@@ -209,7 +208,7 @@ typedef struct
 
 void Mod_Init();
 void Mod_ClearAll();
-model_t *Mod_ForName(const char *name, qboolean crash);
+model_t *Mod_ForName(const char *name, bool crash);
 void *Mod_Extradata(model_t *mod); // handles caching
 void Mod_TouchModel(const char *name);
 

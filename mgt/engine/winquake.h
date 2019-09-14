@@ -34,11 +34,11 @@
 extern HINSTANCE global_hInstance;
 extern int global_nCmdShow;
 
-extern qboolean ActiveApp, Minimized;
+extern bool ActiveApp, Minimized;
 
-extern qboolean WinNT;
+extern bool WinNT;
 
-extern qboolean winsock_lib_initialized;
+extern bool winsock_lib_initialized;
 
 extern HANDLE hinput, houtput;
 

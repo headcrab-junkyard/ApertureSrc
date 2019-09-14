@@ -31,7 +31,6 @@ public:
 
 	IGame *Load(const char *asPath) override;
 	void Unload(IGame *apGame) override;
-
 private:
-	void *mpGameLib{ nullptr }; // TODO: Replace with CDLLHandle
+	void *mpGameLib{nullptr}; // TODO: Replace with CDLLHandle
 };

@@ -38,14 +38,14 @@ extern sizebuf_t net_message;
 void NET_Init();
 void NET_Shutdown();
 
-void NET_Config(qboolean multiplayer);
+void NET_Config(bool multiplayer);
 
 bool NET_GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message);
-void NET_SendPacket(netsrc_t sock, int length, void *data, netadr_t to);
+void NET_SendPacket(netsrc_t sock, int length, const void *data, netadr_t to);
 
 bool NET_CompareAdr(netadr_t a, netadr_t b);
 bool NET_CompareBaseAdr(netadr_t a, netadr_t b);
-qboolean NET_IsLocalAddress(netadr_t adr);
+bool NET_IsLocalAddress(netadr_t adr);
 char *NET_AdrToString(netadr_t a);
 //char		*NET_BaseAdrToString (netadr_t a);
 bool NET_StringToAdr(char *s, netadr_t *a);
@@ -53,9 +53,9 @@ bool NET_StringToAdr(char *s, netadr_t *a);
 
 //============================================================================
 
-#define OLD_AVG 0.99 // total = oldtotal*OLD_AVG + new*(1-OLD_AVG)
-
 #include "network/INetwork.hpp"
+
+constexpr auto OLD_AVG{0.99}; // total = oldtotal*OLD_AVG + new*(1-OLD_AVG)
 
 extern int net_drop; // packets dropped before this one
 

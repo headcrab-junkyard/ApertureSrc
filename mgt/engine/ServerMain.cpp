@@ -29,14 +29,14 @@ extern CGameClientEventDispatcher *gpGameClientEventDispatcher;
 
 #define	MAX_IPFILTERS	1024
 
-typedef struct
+struct ipfilter_t
 {
 	unsigned	mask;
 	unsigned	compare;
-} ipfilter_t;
+};
 
-server_t sv;         // local server
-server_static_t svs; // persistent server info
+server_t sv{};         // local server
+server_static_t svs{}; // persistent server info
 
 ipfilter_t	ipfilters[MAX_IPFILTERS];
 int			numipfilters;
@@ -388,7 +388,7 @@ SV_SetPlayer
 Sets host_client and sv_player to the player with idnum Cmd_Argv(1)
 ==================
 */
-qboolean SV_SetPlayer ()
+bool SV_SetPlayer ()
 {
 	client_t	*cl;
 	int			i;
@@ -405,8 +405,8 @@ qboolean SV_SetPlayer ()
 			host_client = cl;
 			sv_player = host_client->edict;
 			return true;
-		}
-	}
+		};
+	};
 	gpSystem->Printf ("Userid %i is not on the server\n", idnum);
 	return false;
 };
@@ -437,7 +437,7 @@ void SV_User_f (const ICmdArgs &apArgs)
 StringToFilter
 =================
 */
-qboolean StringToFilter (const char *s, ipfilter_t *f)
+bool StringToFilter (const char *s, ipfilter_t *f)
 {
 	char	num[128];
 	int		i, j;
@@ -448,7 +448,7 @@ qboolean StringToFilter (const char *s, ipfilter_t *f)
 	{
 		b[i] = 0;
 		m[i] = 0;
-	}
+	};
 	
 	for (i=0 ; i<4 ; i++)
 	{
@@ -456,13 +456,13 @@ qboolean StringToFilter (const char *s, ipfilter_t *f)
 		{
 			gpSystem->Printf ("Bad filter address: %s\n", s);
 			return false;
-		}
+		};
 		
 		j = 0;
 		while (*s >= '0' && *s <= '9')
 		{
 			num[j++] = *s++;
-		}
+		};
 		num[j] = 0;
 		b[i] = atoi(num);
 		if (b[i] != 0)
@@ -471,7 +471,7 @@ qboolean StringToFilter (const char *s, ipfilter_t *f)
 		if (!*s)
 			break;
 		s++;
-	}
+	};
 	
 	f->mask = *(unsigned *)m;
 	f->compare = *(unsigned *)b;
@@ -497,13 +497,13 @@ void SV_AddIP_f (const ICmdArgs &apArgs)
 		{
 			gpSystem->Printf ("IP filter list is full\n");
 			return;
-		}
+		};
 		numipfilters++;
-	}
+	};
 	
 	if (!StringToFilter (Cmd_Argv(1), &ipfilters[i]))
 		ipfilters[i].compare = 0xffffffff;
-}
+};
 
 /*
 =================
@@ -526,9 +526,9 @@ void SV_RemoveIP_f (const ICmdArgs &apArgs)
 			numipfilters--;
 			gpSystem->Printf ("Removed.\n");
 			return;
-		}
+		};
 	gpSystem->Printf ("Didn't find %s.\n", Cmd_Argv(1));
-}
+};
 
 /*
 =================
@@ -545,8 +545,8 @@ void SV_ListIP_f (const ICmdArgs &apArgs)
 	{
 		*(unsigned *)b = ipfilters[i].compare;
 		gpSystem->Printf ("%3i.%3i.%3i.%3i\n", b[0], b[1], b[2], b[3]);
-	}
-}
+	};
+};
 
 /*
 =================
@@ -569,16 +569,16 @@ void SV_WriteIP_f (const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf ("Couldn't open %s\n", name);
 		return;
-	}
+	};
 	
 	for (i=0 ; i<numipfilters ; i++)
 	{
 		*(unsigned *)b = ipfilters[i].compare;
 		fprintf (f, "addip %i.%i.%i.%i\n", b[0], b[1], b[2], b[3]);
-	}
+	};
 	
 	fclose (f);
-}
+};
 
 /*
 ===============
@@ -629,7 +629,7 @@ void SV_Init()
 
 	for(i = 0; i < MAX_MODELS; i++)
 		sprintf(localmodels[i], "*%i", i);
-}
+};
 
 /*
 =================

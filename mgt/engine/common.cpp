@@ -23,22 +23,22 @@
 
 #include "quakedef.h"
 
-const int NUM_SAFE_ARGVS = 7;
+const int NUM_SAFE_ARGVS{7};
 
-static const char *largv[MAX_NUM_ARGVS + NUM_SAFE_ARGVS + 1];
-static const char *argvdummy = " ";
+static const char *largv[MAX_NUM_ARGVS + NUM_SAFE_ARGVS + 1]{};
+static const char *argvdummy{" "};
 
 static const char *safeargvs[NUM_SAFE_ARGVS] =
 { "-stdvid", "-nolan", "-nosound", "-nocdaudio", "-nojoy", "-nomouse", "-dibonly" };
 
-bool msg_suppress_1 = false;
+bool msg_suppress_1{false};
 
-char com_token[1024];
-int com_argc;
+char com_token[1024]{};
+int com_argc{0};
 char **com_argv;
 
 #define CMDLINE_LENGTH 256
-char com_cmdline[CMDLINE_LENGTH];
+char com_cmdline[CMDLINE_LENGTH]{};
 
 /*
 
@@ -67,13 +67,13 @@ The file "parms.txt" will be read out of the game directory and appended to the 
 void ClearLink(link_t *l)
 {
 	l->prev = l->next = l;
-}
+};
 
 void RemoveLink(link_t *l)
 {
 	l->next->prev = l->prev;
 	l->prev->next = l->next;
-}
+};
 
 void InsertLinkBefore(link_t *l, link_t *before)
 {
@@ -81,7 +81,8 @@ void InsertLinkBefore(link_t *l, link_t *before)
 	l->prev = before->prev;
 	l->prev->next = l;
 	l->next->prev = l;
-}
+};
+
 void InsertLinkAfter(link_t *l, link_t *after)
 {
 	l->next = after->next;
@@ -169,7 +170,7 @@ COM_SkipPath
 */
 const char *COM_SkipPath(const char *pathname)
 {
-	const char *last{pathname};
+	auto last{pathname};
 	
 	while(*pathname)
 	{
@@ -179,7 +180,7 @@ const char *COM_SkipPath(const char *pathname)
 	};
 	
 	return last;
-}
+};
 
 /*
 ============
@@ -191,7 +192,7 @@ void COM_StripExtension(const char *in, char *out)
 	while(*in && *in != '.')
 		*out++ = *in++;
 	*out = 0;
-}
+};
 
 /*
 ============
@@ -212,7 +213,7 @@ char *COM_FileExtension(const char *in)
 		exten[i] = *in;
 	exten[i] = 0;
 	return exten;
-}
+};
 
 /*
 ============
@@ -238,8 +239,8 @@ void COM_FileBase(const char *in, char *out)
 		s--;
 		strncpy(out, s2 + 1, s - s2);
 		out[s - s2] = 0;
-	}
-}
+	};
+};
 
 /*
 ==================
@@ -290,7 +291,7 @@ skipwhite:
 		if(c == 0)
 			return nullptr; // end of file;
 		data++;
-	}
+	};
 
 	// skip // comments
 	if(c == '/' && data[1] == '/')
@@ -298,7 +299,7 @@ skipwhite:
 		while(*data && *data != '\n')
 			data++;
 		goto skipwhite;
-	}
+	};
 
 	// handle quoted strings specially
 	if(c == '\"')
@@ -311,11 +312,11 @@ skipwhite:
 			{
 				com_token[len] = 0;
 				return data;
-			}
+			};
 			com_token[len] = c;
 			len++;
-		}
-	}
+		};
+	};
 
 	// parse single characters
 	if(c == '{' || c == '}' || c == ')' || c == '(' || c == '\'' || c == ':')
@@ -324,7 +325,7 @@ skipwhite:
 		len++;
 		com_token[len] = 0;
 		return data + 1;
-	}
+	};
 
 	// parse a regular word
 	do
@@ -335,11 +336,12 @@ skipwhite:
 		c = *data;
 		if(c == '{' || c == '}' || c == ')' || c == '(' || c == '\'' || c == ':')
 			break;
-	} while(c > 32);
+	}
+	while(c > 32);
 
 	com_token[len] = 0;
 	return data;
-}
+};
 
 /*
 ================
@@ -351,18 +353,16 @@ where the given parameter apears, or 0 if not present
 */
 int COM_CheckParm(const char *parm)
 {
-	int i;
-
-	for(i = 1; i < com_argc; i++)
+	for(int i = 1; i < com_argc; i++)
 	{
 		if(!com_argv[i])
 			continue; // NEXTSTEP sometimes clears appkit vars.
 		if(!Q_strcmp(parm, com_argv[i]))
 			return i;
-	}
+	};
 
 	return 0;
-}
+};
 
 /*
 ================
@@ -371,7 +371,7 @@ COM_InitArgv
 */
 void COM_InitArgv(int argc, char **argv)
 {
-	qboolean safe;
+	bool safe;
 	int i, j, n;
 
 	// reconstitute the command line for the cmdline externally visible cvar
@@ -382,15 +382,13 @@ void COM_InitArgv(int argc, char **argv)
 		i = 0;
 
 		while((n < (CMDLINE_LENGTH - 1)) && argv[j][i])
-		{
 			com_cmdline[n++] = argv[j][i++];
-		}
 
 		if(n < (CMDLINE_LENGTH - 1))
 			com_cmdline[n++] = ' ';
 		else
 			break;
-	}
+	};
 
 	com_cmdline[n] = 0;
 
@@ -402,7 +400,7 @@ void COM_InitArgv(int argc, char **argv)
 		largv[com_argc] = argv[com_argc];
 		if(!Q_strcmp("-safe", argv[com_argc]))
 			safe = true;
-	}
+	};
 
 	if(safe)
 	{
@@ -412,12 +410,12 @@ void COM_InitArgv(int argc, char **argv)
 		{
 			largv[com_argc] = safeargvs[i];
 			com_argc++;
-		}
-	}
+		};
+	};
 
 	largv[com_argc] = argvdummy;
 	com_argv = (char**)largv;
-}
+};
 
 /*
 ================
@@ -479,13 +477,11 @@ char *va(const char *format, ...)
 /// just for debugging
 int memsearch(byte *start, int count, int search)
 {
-	int i;
-
-	for(i = 0; i < count; i++)
+	for(int i = 0; i < count; i++)
 		if(start[i] == search)
 			return i;
 	return -1;
-}
+};
 
 /*
 =============================================================================
@@ -495,7 +491,7 @@ ENGINE FILESYSTEM
 =============================================================================
 */
 
-char com_gamedir[MAX_OSPATH];
+char com_gamedir[MAX_OSPATH]{};
 
 /*
 ============
