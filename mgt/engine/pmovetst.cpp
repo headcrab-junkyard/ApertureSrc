@@ -136,7 +136,7 @@ int PM_PointContents(vec3_t p)
 	while(num >= 0)
 	{
 		if(num < hull->firstclipnode || num > hull->lastclipnode)
-			Sys_Error("PM_HullPointContents: bad node number");
+			gpSystem->Error("PM_HullPointContents: bad node number");
 
 		node = hull->clipnodes + num;
 		plane = hull->planes + node->planenum;
@@ -200,7 +200,7 @@ qboolean PM_RecursiveHullCheck(hull_t *hull, int num, float p1f, float p2f, vec3
 	};
 
 	if(num < hull->firstclipnode || num > hull->lastclipnode)
-		Sys_Error("PM_RecursiveHullCheck: bad node number");
+		gpSystem->Error("PM_RecursiveHullCheck: bad node number");
 
 	//
 	// find the point distances

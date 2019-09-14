@@ -85,7 +85,7 @@ mleaf_t *Mod_PointInLeaf (vec3_t p, model_t *model)
 	mplane_t	*plane;
 	
 	if (!model || !model->nodes)
-		Sys_Error ("Mod_PointInLeaf: bad model");
+		gpSystem->Error ("Mod_PointInLeaf: bad model");
 
 	node = model->nodes;
 	while (1)
@@ -195,7 +195,7 @@ model_t *Mod_FindName(const char *name)
 	model_t	*avail = nullptr;
 
 	if (!name[0])
-		Sys_Error ("Mod_ForName: NULL name");
+		gpSystem->Error ("Mod_ForName: NULL name");
 		
 	//
 	// search the currently loaded models
@@ -221,7 +221,7 @@ model_t *Mod_FindName(const char *name)
 						Cache_Free (&mod->cache);
 			}
 			else
-				Sys_Error ("mod_numknown == MAX_KNOWN_MODELS");
+				gpSystem->Error ("mod_numknown == MAX_KNOWN_MODELS");
 		}
 		else
 			mod_numknown++;
@@ -268,7 +268,7 @@ model_t *Mod_LoadModel (model_t *mod, qboolean crash)
 	if (!buf)
 	{
 		if (crash)
-			Sys_Error ("Mod_NumForName: %s not found", mod->name);
+			gpSystem->Error ("Mod_NumForName: %s not found", mod->name);
 		return nullptr;
 	};
 	
@@ -366,7 +366,7 @@ void Mod_LoadTextures (lump_t *l)
 			mt->offsets[j] = LittleLong (mt->offsets[j]);
 		
 		if ( (mt->width & 15) || (mt->height & 15) )
-			Sys_Error ("Texture %s is not 16 aligned", mt->name);
+			gpSystem->Error ("Texture %s is not 16 aligned", mt->name);
 		pixels = mt->width*mt->height/64*85;
 		tx = (texture_t*)Hunk_AllocName (sizeof(texture_t) +pixels, loadname );
 		loadmodel->textures[i] = tx;
@@ -418,7 +418,7 @@ void Mod_LoadTextures (lump_t *l)
 			altmax++;
 		}
 		else
-			Sys_Error ("Bad animating texture %s", tx->name);
+			gpSystem->Error ("Bad animating texture %s", tx->name);
 
 		for (j=i+1 ; j<m->nummiptex ; j++)
 		{
@@ -455,7 +455,7 @@ void Mod_LoadTextures (lump_t *l)
 		{
 			tx2 = anims[j];
 			if (!tx2)
-				Sys_Error ("Missing frame %i of %s",j, tx->name);
+				gpSystem->Error ("Missing frame %i of %s",j, tx->name);
 			tx2->anim_total = max * ANIM_CYCLE;
 			tx2->anim_min = j * ANIM_CYCLE;
 			tx2->anim_max = (j+1) * ANIM_CYCLE;
@@ -467,7 +467,7 @@ void Mod_LoadTextures (lump_t *l)
 		{
 			tx2 = altanims[j];
 			if (!tx2)
-				Sys_Error ("Missing frame %i of %s",j, tx->name);
+				gpSystem->Error ("Missing frame %i of %s",j, tx->name);
 			tx2->anim_total = altmax * ANIM_CYCLE;
 			tx2->anim_min = j * ANIM_CYCLE;
 			tx2->anim_max = (j+1) * ANIM_CYCLE;
@@ -1782,7 +1782,7 @@ void Mod_LoadSpriteModel (model_t *mod, void *buffer)
 // load the frames
 //
 	if (numframes < 1)
-		Sys_Error ("Mod_LoadSpriteModel: Invalid # of frames: %d\n", numframes);
+		gpSystem->Error ("Mod_LoadSpriteModel: Invalid # of frames: %d\n", numframes);
 
 	mod->numframes = numframes;
 	mod->flags = 0;

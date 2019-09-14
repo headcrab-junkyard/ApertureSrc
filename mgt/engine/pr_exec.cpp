@@ -51,7 +51,7 @@ int PR_SetString(char *s)
 		if(i < num_prstr)
 			return -i;
 		if(num_prstr == MAX_PRSTR - 1)
-			Sys_Error("MAX_PRSTR");
+			gpSystem->Error("MAX_PRSTR");
 		num_prstr++;
 		pr_strtbl[num_prstr] = s;
 		//Con_DPrintf("SET:%d == %s\n", -num_prstr, s);

@@ -73,7 +73,7 @@ edict_t *ED_Alloc()
 	};
 
 	if(i == MAX_EDICTS)
-		Sys_Error("ED_Alloc: no free edicts");
+		gpSystem->Error("ED_Alloc: no free edicts");
 
 	sv.num_edicts++;
 	e = EDICT_NUM(i);
@@ -577,7 +577,7 @@ char *ED_ParseEdict(char *data, edict_t *ent)
 		if(com_token[0] == '}')
 			break;
 		if(!data)
-			Sys_Error("ED_ParseEntity: EOF without closing brace");
+			gpSystem->Error("ED_ParseEntity: EOF without closing brace");
 
 		// anglehack is to allow QuakeEd to write single scalar angles
 		// and allow them to be turned into vectors. (FIXME...)
@@ -606,10 +606,10 @@ char *ED_ParseEdict(char *data, edict_t *ent)
 		// parse value
 		data = (char*)COM_Parse(data);
 		if(!data)
-			Sys_Error("ED_ParseEntity: EOF without closing brace");
+			gpSystem->Error("ED_ParseEntity: EOF without closing brace");
 
 		if(com_token[0] == '}')
-			Sys_Error("ED_ParseEntity: closing brace without data");
+			gpSystem->Error("ED_ParseEntity: closing brace without data");
 
 		init = true;
 
@@ -672,7 +672,7 @@ void ED_LoadFromFile(char *data)
 		if(!data)
 			break;
 		if(com_token[0] != '{')
-			Sys_Error("ED_LoadFromFile: found %s when expecting {", com_token);
+			gpSystem->Error("ED_LoadFromFile: found %s when expecting {", com_token);
 
 		if(!ent)
 			ent = EDICT_NUM(0);
@@ -741,7 +741,7 @@ void PR_LoadProgs() // our temporary LoadEntityDLLs
 	gpGameLib = Sys_LoadModule(va("%s/bin/server", com_gamedir));
 
 	if(!gpGameLib)
-		Sys_Error("PR_LoadProgs: couldn't load game dll!");
+		gpSystem->Error("PR_LoadProgs: couldn't load game dll!");
 
 	//pr_strings = (char *)progs + progs->ofs_strings; // TODO
 
@@ -781,7 +781,7 @@ void PR_Init()
 edict_t *EDICT_NUM(int n)
 {
 	if(n < 0 || n >= sv.max_edicts)
-		Sys_Error("EDICT_NUM: bad number %i", n);
+		gpSystem->Error("EDICT_NUM: bad number %i", n);
 	return (edict_t *)((byte *)sv.edicts + (n) * sizeof(edict_t));
 };
 
@@ -791,7 +791,7 @@ int NUM_FOR_EDICT(edict_t *e)
 	b = b / sizeof(edict_t);
 
 	if(b < 0 || b >= sv.num_edicts)
-		Sys_Error("NUM_FOR_EDICT: bad pointer");
+		gpSystem->Error("NUM_FOR_EDICT: bad pointer");
 	return b;
 };
 
@@ -805,7 +805,7 @@ void SuckOutClassname(char *data, edict_t *ent)
 		if(com_token[0] == '}')
 			break;
 		if(!data)
-			Sys_Error("ED_ParseEntity: EOF without closing brace");
+			gpSystem->Error("ED_ParseEntity: EOF without closing brace");
 
 		// anglehack is to allow QuakeEd to write single scalar angles
 		// and allow them to be turned into vectors. (FIXME...)
@@ -814,10 +814,10 @@ void SuckOutClassname(char *data, edict_t *ent)
 			// parse value
 			data = COM_Parse(data);
 			if(!data)
-				Sys_Error("ED_ParseEntity: EOF without closing brace");
+				gpSystem->Error("ED_ParseEntity: EOF without closing brace");
 
 			if(com_token[0] == '}')
-				Sys_Error("ED_ParseEntity: closing brace without data");
+				gpSystem->Error("ED_ParseEntity: closing brace without data");
 			
 			break;
 		};

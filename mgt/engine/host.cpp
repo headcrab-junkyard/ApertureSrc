@@ -108,7 +108,7 @@ void Host_EndGame(const char *message, ...)
 		Host_ShutdownServer(false);
 
 	if(isDedicated) // TODO: gbDedicatedServer
-		Sys_Error("Host_EndGame: %s\n", string); // dedicated servers exit
+		gpSystem->Error("Host_EndGame: %s\n", string); // dedicated servers exit
 
 	// TODO: host event broadcaster -> notify about the game end?
 	if(gpEngineClient)
@@ -131,7 +131,7 @@ void Host_Error(const char *error, ...)
 	static bool inerror{ false };
 
 	if(inerror)
-		Sys_Error("Host_Error: recursively entered");
+		gpSystem->Error("Host_Error: recursively entered");
 
 	inerror = true;
 
@@ -149,7 +149,7 @@ void Host_Error(const char *error, ...)
 		Host_ShutdownServer(false);
 
 	if(isDedicated) // TODO: gbDedicatedServer
-		Sys_Error("Host_Error: %s\n", string); // dedicated servers exit
+		gpSystem->Error("Host_Error: %s\n", string); // dedicated servers exit
 	
 	// TODO: host event listener -> onerror
 	if(gpEngineClient)
