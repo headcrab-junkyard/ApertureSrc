@@ -229,14 +229,14 @@ facing it.
 
 ======================
 */
-void PF_changeyaw(edict_t *ent);
+void PF_changeyaw_I(edict_t *ent);
 bool SV_StepDirection(edict_t *ent, float yaw, float dist)
 {
 	vec3_t move, oldorigin;
 	float delta;
 
 	ent->v.ideal_yaw = yaw;
-	PF_changeyaw(ent);
+	PF_changeyaw_I(ent);
 
 	yaw = yaw * M_PI * 2 / 360;
 	move[0] = cos(yaw) * dist;
