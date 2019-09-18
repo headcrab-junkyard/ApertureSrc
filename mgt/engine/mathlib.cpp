@@ -82,7 +82,7 @@ void PerpendicularVector(vec3_t dst, const vec3_t src)
 	** normalize the result
 	*/
 	VectorNormalize(dst);
-}
+};
 
 #ifdef _WIN32
 #pragma optimize("", off)
@@ -186,7 +186,7 @@ int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p)
 		if (p->dist >= emaxs[p->type])
 			return 2;
 		return 3;
-	}
+	};
 #endif
 
 	// general case
@@ -269,7 +269,7 @@ int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, mplane_t *p)
 #endif
 
 	return sides;
-}
+};
 
 //#endif !id386
 
@@ -430,8 +430,7 @@ quotient must fit in 32 bits.
 ====================
 */
 
-void FloorDivMod(double numer, double denom, int *quotient,
-                 int *rem)
+void FloorDivMod(double numer, double denom, int *quotient, int *rem)
 {
 	int q, r;
 	double x;

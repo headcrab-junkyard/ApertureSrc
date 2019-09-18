@@ -151,7 +151,7 @@ void SV_RunCmd (usercmd_t *ucmd)
 		cmd.impulse = 0;
 		SV_RunCmd (&cmd);
 		return;
-	}
+	};
 
 	if (!sv_player->v.fixangle)
 		VectorCopy (ucmd->viewangles, sv_player->v.v_angle);
@@ -174,7 +174,7 @@ void SV_RunCmd (usercmd_t *ucmd)
 		};
 		
 		sv_player->v.angles[ROLL] = 0; //V_CalcRoll (sv_player->v.angles, sv_player->v.velocity)*4; // TODO
-	}
+	};
 
 	host_frametime = ucmd->msec * 0.001;
 	if (host_frametime > 0.1)
@@ -188,7 +188,7 @@ void SV_RunCmd (usercmd_t *ucmd)
 		//gEntityInterface.pfnPlayerPreThink(sv_player); // TODO
 
 		SV_RunThink (sv_player);
-	}
+	};
 
 	for (i=0 ; i<3 ; i++)
 		pmove->origin[i] = sv_player->v.origin[i] + (sv_player->v.mins[i] - player_mins[i]);
@@ -270,9 +270,9 @@ if (sv_player->v.health > 0 && before && !after )
 				continue;
 			gpEntityEventDispatcher->DispatchTouch(ent, sv_player);
 			playertouch[n/8] |= 1 << (n%8);
-		}
-	}
-}
+		};
+	};
+};
 
 /*
 ===========
@@ -295,9 +295,9 @@ void SV_PostRunCmd()
 	{
 		gGlobalVariables.time = sv.time;
 		gEntityInterface.pfnSpectatorThink(sv_player);
-	}
+	};
 	*/
-}
+};
 
 /*
 ===============
@@ -339,7 +339,7 @@ void SV_SetIdealPitch()
 			return; // near a dropoff
 
 		z[i] = top[2] + tr.fraction * (bottom[2] - top[2]);
-	}
+	};
 
 	dir = 0;
 	steps = 0;
@@ -354,18 +354,18 @@ void SV_SetIdealPitch()
 
 		steps++;
 		dir = step;
-	}
+	};
 
 	if(!dir)
 	{
 		sv_player->v.idealpitch = 0;
 		return;
-	}
+	};
 
 	if(steps < 2)
 		return;
 	sv_player->v.idealpitch = -dir * sv_idealpitchscale.GetValue();
-}
+};
 
 /*
 ==================
@@ -411,7 +411,7 @@ void SV_UserFriction()
 	vel[0] = vel[0] * newspeed;
 	vel[1] = vel[1] * newspeed;
 	vel[2] = vel[2] * newspeed;
-}
+};
 
 /*
 ==============
@@ -439,7 +439,7 @@ void SV_Accelerate (vec3_t wishvel)
 	
 	for (i=0 ; i<3 ; i++)
 		velocity[i] += accelspeed*pushvec[i];	
-}
+};
 #endif
 void SV_Accelerate()
 {
@@ -456,7 +456,7 @@ void SV_Accelerate()
 
 	for(i = 0; i < 3; i++)
 		velocity[i] += accelspeed * wishdir[i];
-}
+};
 
 void SV_AirAccelerate(vec3_t wishveloc)
 {
@@ -477,7 +477,7 @@ void SV_AirAccelerate(vec3_t wishveloc)
 
 	for(i = 0; i < 3; i++)
 		velocity[i] += accelspeed * wishveloc[i];
-}
+};
 
 void DropPunchAngle()
 {
@@ -489,7 +489,7 @@ void DropPunchAngle()
 	if(len < 0)
 		len = 0;
 	VectorScale(sv_player->v.punchangle, len, sv_player->v.punchangle);
-}
+};
 
 /*
 ===================
@@ -521,7 +521,7 @@ void SV_WaterMove()
 	{
 		VectorScale(wishvel, sv_maxspeed.GetValue() / wishspeed, wishvel);
 		wishspeed = sv_maxspeed.GetValue();
-	}
+	};
 	wishspeed *= 0.7;
 
 	//

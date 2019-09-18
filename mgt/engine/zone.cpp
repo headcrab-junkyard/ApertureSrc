@@ -88,7 +88,7 @@ void Z_ClearZone(memzone_t *zone, int size)
 	block->tag = 0; // free block
 	block->id = ZONEID;
 	block->size = size - sizeof(memzone_t);
-}
+};
 
 /*
 ========================

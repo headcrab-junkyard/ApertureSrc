@@ -73,7 +73,7 @@ void Host_Status_f(const ICmdArgs &apArgs)
 		{
 			Cmd_ForwardToServer();
 			return;
-		}
+		};
 		print = Con_Printf;
 	}
 	else
@@ -104,8 +104,8 @@ void Host_Status_f(const ICmdArgs &apArgs)
 			hours = 0;
 		print("#%-2u %-16.16s  %3i  %2i:%02i:%02i\n", j + 1, client->name, (int)client->edict->v.frags, hours, minutes, seconds);
 		print("   %s\n", client->netchan.remote_address);
-	}
-}
+	};
+};
 */
 
 /*
@@ -122,7 +122,7 @@ void Host_God_f(const ICmdArgs &apArgs)
 	{
 		Cmd_ForwardToServer();
 		return;
-	}
+	};
 
 	//if (gGlobalVariables.deathmatch && !host_client->privileged) // TODO: if cheats_active?
 		//return;
@@ -132,7 +132,7 @@ void Host_God_f(const ICmdArgs &apArgs)
 		SV_ClientPrintf(host_client, "godmode OFF\n");
 	else
 		SV_ClientPrintf(host_client, "godmode ON\n");
-}
+};
 
 void Host_Notarget_f(const ICmdArgs &apArgs)
 {
@@ -140,7 +140,7 @@ void Host_Notarget_f(const ICmdArgs &apArgs)
 	{
 		Cmd_ForwardToServer();
 		return;
-	}
+	};
 
 	//if (gGlobalVariables.deathmatch && !host_client->privileged) // TODO: if cheats_active?
 		//return;
@@ -150,7 +150,7 @@ void Host_Notarget_f(const ICmdArgs &apArgs)
 		SV_ClientPrintf(host_client, "notarget OFF\n");
 	else
 		SV_ClientPrintf(host_client, "notarget ON\n");
-}
+};
 
 qboolean noclip_anglehack;
 
@@ -160,10 +160,10 @@ void Host_Noclip_f(const ICmdArgs &apArgs)
 	{
 		Cmd_ForwardToServer();
 		return;
-	}
+	};
 
 	//if (gGlobalVariables.deathmatch && !host_client->privileged) // TODO: if cheats_active?
-	//return;
+		//return;
 
 	if(sv_player->v.movetype != MOVETYPE_NOCLIP)
 	{
@@ -176,8 +176,8 @@ void Host_Noclip_f(const ICmdArgs &apArgs)
 		noclip_anglehack = false;
 		sv_player->v.movetype = MOVETYPE_WALK;
 		SV_ClientPrintf(host_client, "noclip OFF\n");
-	}
-}
+	};
+};
 */
 
 /*
@@ -194,7 +194,7 @@ void Host_Fly_f(const ICmdArgs &apArgs)
 	{
 		Cmd_ForwardToServer();
 		return;
-	}
+	};
 
 	//if (gGlobalVariables.deathmatch && !host_client->privileged) // TODO: if cheats_active?
 	//return;
@@ -208,8 +208,8 @@ void Host_Fly_f(const ICmdArgs &apArgs)
 	{
 		sv_player->v.movetype = MOVETYPE_WALK;
 		SV_ClientPrintf(host_client, "flymode OFF\n");
-	}
-}
+	};
+};
 */
 
 /*
@@ -229,7 +229,7 @@ void Host_Ping_f(const ICmdArgs &apArgs)
 	{
 		Cmd_ForwardToServer();
 		return;
-	}
+	};
 
 	SV_ClientPrintf(host_client, "Client ping times:\n");
 	for(i = 0, client = svs.clients; i < svs.maxclients; i++, client++)
@@ -241,8 +241,8 @@ void Host_Ping_f(const ICmdArgs &apArgs)
 			total += client->ping_times[j];
 		total /= NUM_PING_TIMES;
 		SV_ClientPrintf(host_client, "%4i %s\n", (int)(total * 1000), client->name);
-	}
-}
+	};
+};
 */
 
 /*
@@ -325,7 +325,7 @@ void Host_Changelevel_f(const ICmdArgs &apArgs)
 	{
 		strcpy(_startspot, Cmd_Argv(2));
 		startspot = _startspot;
-	}
+	};
 
 	SV_SaveSpawnparms();
 	SV_SpawnServer(level, startspot);
@@ -336,17 +336,17 @@ void Host_Changelevel_f(const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf("changelevel <levelname> : continue game on a new level\n");
 		return;
-	}
+	};
 	if(!sv.active || (gpEngineClient && gpEngineClient->IsDemoPlayback()))
 	{
 		gpSystem->Printf("Only the server may changelevel\n");
 		return;
-	}
+	};
 	SV_SaveSpawnparms();
 	strcpy(level, Cmd_Argv(1));
 	SV_SpawnServer(level);
 #endif
-}
+};
 */
 
 /*
@@ -386,7 +386,7 @@ void Host_Reconnect_f(const ICmdArgs &apArgs)
 {
 	SCR_BeginLoadingPlaque();
 	cls.signon = 0; // need new connection messages
-}
+};
 */
 
 /*
@@ -422,7 +422,7 @@ void Host_SavegameComment(char *text)
 		if(text[i] == ' ')
 			text[i] = '_';
 	text[SAVEGAME_COMMENT_LENGTH] = '\0';
-}
+};
 */
 
 /*
@@ -445,7 +445,7 @@ void Host_Savegame_f(const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf("Not playing a local game.\n");
 		return;
-	}
+	};
 
 	if(gpEngineClient)
 		if(!gpEngineClient->CanSaveGame())
@@ -455,19 +455,19 @@ void Host_Savegame_f(const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf("Can't save multiplayer games.\n");
 		return;
-	}
+	};
 
 	if(Cmd_Argc() != 2)
 	{
 		gpSystem->Printf("save <savename> : save a game\n");
 		return;
-	}
+	};
 
 	if(strstr(Cmd_Argv(1), ".."))
 	{
 		gpSystem->Printf("Relative pathnames are not allowed.\n");
 		return;
-	}
+	};
 
 	for(i = 0; i < svs.maxclients; i++)
 	{
@@ -475,8 +475,8 @@ void Host_Savegame_f(const ICmdArgs &apArgs)
 		{
 			gpSystem->Printf("Can't savegame with a dead player\n");
 			return;
-		}
-	}
+		};
+	};
 
 	sprintf(name, "%s/%s", com_gamedir, Cmd_Argv(1));
 	COM_DefaultExtension(name, ".sav");
@@ -487,7 +487,7 @@ void Host_Savegame_f(const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf("ERROR: couldn't open.\n");
 		return;
-	}
+	};
 
 	fprintf(f, "%i\n", SAVEGAME_VERSION);
 	Host_SavegameComment(comment);
@@ -506,17 +506,17 @@ void Host_Savegame_f(const ICmdArgs &apArgs)
 			fprintf(f, "%s\n", sv.lightstyles[i]);
 		else
 			fprintf(f, "m\n");
-	}
+	};
 
 	ED_WriteGlobals(f);
 	for(i = 0; i < sv.num_edicts; i++)
 	{
 		ED_Write(f, EDICT_NUM(i));
 		fflush(f);
-	}
+	};
 	fclose(f);
 	gpSystem->Printf("done.\n");
-}
+};
 */
 
 /*
@@ -545,7 +545,7 @@ void Host_Loadgame_f(const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf("load <savename> : load a game\n");
 		return;
-	}
+	};
 
 	cls.demonum = -1; // stop demo loop in case this fails
 
@@ -562,7 +562,7 @@ void Host_Loadgame_f(const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf("ERROR: couldn't open.\n");
 		return;
-	}
+	};
 
 	fscanf(f, "%i\n", &version);
 	if(version != SAVEGAME_VERSION)
@@ -570,7 +570,7 @@ void Host_Loadgame_f(const ICmdArgs &apArgs)
 		fclose(f);
 		gpSystem->Printf("Savegame is version %i, not %i\n", version, SAVEGAME_VERSION);
 		return;
-	}
+	};
 	fscanf(f, "%s\n", str);
 	for(i = 0; i < NUM_SPAWN_PARMS; i++)
 		fscanf(f, "%f\n", &spawn_parms[i]);
@@ -606,7 +606,7 @@ void Host_Loadgame_f(const ICmdArgs &apArgs)
 		fscanf(f, "%s\n", str);
 		sv.lightstyles[i] = (char*)Hunk_Alloc(strlen(str) + 1);
 		strcpy(sv.lightstyles[i], str);
-	}
+	};
 
 	// load the edicts out of the savegame file
 	entnum = -1; // -1 is the globals
@@ -622,8 +622,8 @@ void Host_Loadgame_f(const ICmdArgs &apArgs)
 			{
 				i++;
 				break;
-			}
-		}
+			};
+		};
 		if(i == sizeof(str) - 1)
 			Sys_Error("Loadgame buffer overflow");
 		str[i] = 0;
@@ -650,10 +650,10 @@ void Host_Loadgame_f(const ICmdArgs &apArgs)
 			// link it into the bsp tree
 			if(!ent->free)
 				SV_LinkEdict(ent, false);
-		}
+		};
 
 		entnum++;
-	}
+	};
 
 	sv.num_edicts = entnum;
 	sv.time = time;
@@ -669,7 +669,7 @@ void Host_Loadgame_f(const ICmdArgs &apArgs)
 		//CL_EstablishConnection ("local"); // TODO
 		Host_Reconnect_f(apArgs);
 	};
-}
+};
 
 void SaveGamestate()
 {
@@ -687,7 +687,7 @@ void SaveGamestate()
 	{
 		gpSystem->Printf("ERROR: couldn't open.\n");
 		return;
-	}
+	};
 
 	fprintf(f, "%i\n", SAVEGAME_VERSION);
 	Host_SavegameComment(comment);
@@ -706,7 +706,7 @@ void SaveGamestate()
 			fprintf(f, "%s\n", sv.lightstyles[i]);
 		else
 			fprintf(f, "m\n");
-	}
+	};
 
 	for(i = svs.maxclients + 1; i < sv.num_edicts; i++)
 	{
@@ -716,10 +716,10 @@ void SaveGamestate()
 		fprintf(f, "%i\n", i);
 		ED_Write(f, ent);
 		fflush(f);
-	}
+	};
 	fclose(f);
 	gpSystem->Printf("done.\n");
-}
+};
 
 int LoadGamestate(const char *level, const char *startspot)
 {
@@ -742,7 +742,7 @@ int LoadGamestate(const char *level, const char *startspot)
 	{
 		gpSystem->Printf("ERROR: couldn't open.\n");
 		return -1;
-	}
+	};
 
 	fscanf(f, "%i\n", &version);
 	if(version != SAVEGAME_VERSION)
@@ -750,7 +750,7 @@ int LoadGamestate(const char *level, const char *startspot)
 		fclose(f);
 		gpSystem->Printf("Savegame is version %i, not %i\n", version, SAVEGAME_VERSION);
 		return -1;
-	}
+	};
 	fscanf(f, "%s\n", str);
 	//	for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
 	//		fscanf (f, "%f\n", &spawn_parms[i]);
@@ -766,7 +766,7 @@ int LoadGamestate(const char *level, const char *startspot)
 	{
 		gpSystem->Printf("Couldn't load map\n");
 		return -1;
-	}
+	};
 
 	// load the light styles
 	for(i = 0; i < MAX_LIGHTSTYLES; i++)
@@ -774,7 +774,7 @@ int LoadGamestate(const char *level, const char *startspot)
 		fscanf(f, "%s\n", str);
 		sv.lightstyles[i] = (char*)Hunk_Alloc(strlen(str) + 1);
 		strcpy(sv.lightstyles[i], str);
-	}
+	};
 
 	// load the edicts out of the savegame file
 	while(!feof(f))
@@ -790,8 +790,8 @@ int LoadGamestate(const char *level, const char *startspot)
 			{
 				i++;
 				break;
-			}
-		}
+			};
+		};
 		if(i == sizeof(str) - 1)
 			Sys_Error("Loadgame buffer overflow");
 		str[i] = 0;
@@ -812,7 +812,7 @@ int LoadGamestate(const char *level, const char *startspot)
 		// link it into the bsp tree
 		if(!ent->free)
 			SV_LinkEdict(ent, false);
-	}
+	};
 
 	//	sv.num_edicts = entnum;
 	sv.time = time;
@@ -822,7 +822,7 @@ int LoadGamestate(const char *level, const char *startspot)
 	//		svs.clients->spawn_parms[i] = spawn_parms[i];
 
 	return 0;
-}
+};
 
 // changing levels within a unit
 void Host_Changelevel2_f(const ICmdArgs &apArgs)
@@ -835,12 +835,12 @@ void Host_Changelevel2_f(const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf("changelevel2 <levelname> : continue game on a new level in the unit\n");
 		return;
-	}
+	};
 	if(!sv.active || cls.demoplayback)
 	{
 		gpSystem->Printf("Only the server may changelevel\n");
 		return;
-	}
+	};
 
 	strcpy(level, Cmd_Argv(1));
 	if(Cmd_Argc() == 2)
@@ -849,7 +849,7 @@ void Host_Changelevel2_f(const ICmdArgs &apArgs)
 	{
 		strcpy(_startspot, Cmd_Argv(2));
 		startspot = _startspot;
-	}
+	};
 
 	SV_SaveSpawnparms();
 
@@ -859,7 +859,7 @@ void Host_Changelevel2_f(const ICmdArgs &apArgs)
 	// try to restore the new level
 	if(LoadGamestate(level, startspot))
 		SV_SpawnServer(level, startspot);
-}
+};
 */
 
 //============================================================================
@@ -879,7 +879,7 @@ void Host_Name_f(const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf("\"name\" is \"%s\"\n", cl_name.string);
 		return;
-	}
+	};
 	if(Cmd_Argc() == 2)
 		newName = Cmd_Argv(1);
 	else
@@ -894,7 +894,7 @@ void Host_Name_f(const ICmdArgs &apArgs)
 		if(cls.state == ca_connected)
 			Cmd_ForwardToServer();
 		return;
-	}
+	};
 
 	if(host_client->name[0] && strcmp(host_client->name, "unconnected"))
 		if(Q_strcmp(host_client->name, newName) != 0)
@@ -920,7 +920,7 @@ void Host_Version_f(const ICmdArgs &apArgs)
 {
 	gpSystem->Printf("Version %4.2f\n", VERSION);
 	gpSystem->Printf("Exe: " __TIME__ " " __DATE__ "\n");
-}
+};
 */
 
 #ifdef HEADCRABGODS
@@ -949,7 +949,7 @@ void Host_Please_f(const ICmdArgs &apArgs)
 		}
 		else
 			cl->privileged = true;
-	}
+	};
 
 	if(Cmd_Argc() != 2)
 		return;
@@ -970,9 +970,9 @@ void Host_Please_f(const ICmdArgs &apArgs)
 			else
 				cl->privileged = true;
 			break;
-		}
-	}
-}
+		};
+	};
+};
 #endif
 
 /*
@@ -997,8 +997,8 @@ void Host_Say(const ICmdArgs &apArgs, qboolean teamonly)
 		{
 			Cmd_ForwardToServer();
 			return;
-		}
-	}
+		};
+	};
 
 	if(Cmd_Argc() < 2)
 		return;
@@ -1011,7 +1011,7 @@ void Host_Say(const ICmdArgs &apArgs, qboolean teamonly)
 	{
 		p++;
 		p[Q_strlen(p) - 1] = 0;
-	}
+	};
 
 	// turn on color set 1
 	if(!fromServer)
@@ -1034,21 +1034,21 @@ void Host_Say(const ICmdArgs &apArgs, qboolean teamonly)
 			continue;
 		host_client = client;
 		SV_ClientPrintf(host_client, "%s", text);
-	}
+	};
 	host_client = save;
 
 	Sys_Printf(true, "%s", &text[1]);
-}
+};
 
 void Host_Say_f(const ICmdArgs &apArgs)
 {
 	Host_Say(apArgs, false);
-}
+};
 
 void Host_Say_Team_f(const ICmdArgs &apArgs)
 {
 	Host_Say(apArgs, true);
-}
+};
 */
 
 /*
@@ -1064,7 +1064,7 @@ void Host_Tell_f(const ICmdArgs &apArgs)
 	{
 		Cmd_ForwardToServer();
 		return;
-	}
+	};
 
 	if(Cmd_Argc() < 3)
 		return;
@@ -1079,7 +1079,7 @@ void Host_Tell_f(const ICmdArgs &apArgs)
 	{
 		p++;
 		p[Q_strlen(p) - 1] = 0;
-	}
+	};
 
 	// check length & truncate if necessary
 	j = sizeof(text) - 2 - Q_strlen(text); // -2 for /n and null terminator
@@ -1099,9 +1099,9 @@ void Host_Tell_f(const ICmdArgs &apArgs)
 		host_client = client;
 		SV_ClientPrintf(host_client, "%s", text);
 		break;
-	}
+	};
 	host_client = save;
-}
+};
 */
 
 // TODO
@@ -1121,7 +1121,7 @@ void Host_Color_f(const ICmdArgs &apArgs)
 		gpSystem->Printf("\"color\" is \"%i %i\"\n", ((int)cl_color.value) >> 4, ((int)cl_color.value) & 0x0f);
 		gpSystem->Printf("color <0-13> [0-13]\n");
 		return;
-	}
+	};
 
 	if(Cmd_Argc() == 2)
 		top = bottom = atoi(Cmd_Argv(1));
@@ -1129,7 +1129,7 @@ void Host_Color_f(const ICmdArgs &apArgs)
 	{
 		top = atoi(Cmd_Argv(1));
 		bottom = atoi(Cmd_Argv(2));
-	}
+	};
 
 	top &= 15;
 	if(top > 13)
@@ -1146,7 +1146,7 @@ void Host_Color_f(const ICmdArgs &apArgs)
 		if(cls.state == ca_connected)
 			Cmd_ForwardToServer();
 		return;
-	}
+	};
 
 	host_client->topcolor = playercolor;
 	host_client->bottomcolor = playercolor;
@@ -1157,7 +1157,7 @@ void Host_Color_f(const ICmdArgs &apArgs)
 	MSG_WriteByte(&sv.reliable_datagram, host_client - svs.clients);
 	MSG_WriteByte(&sv.reliable_datagram, host_client->topcolor);
 	MSG_WriteByte(&sv.reliable_datagram, host_client->bottomcolor);
-}
+};
 */
 
 /*
@@ -1172,17 +1172,17 @@ void Host_Kill_f(const ICmdArgs &apArgs)
 	{
 		Cmd_ForwardToServer();
 		return;
-	}
+	};
 
 	if(sv_player->v.health <= 0)
 	{
 		SV_ClientPrintf(host_client, "Can't suicide -- already dead!\n");
 		return;
-	}
+	};
 
 	gGlobalVariables.time = sv.time;
 	gpGameClientEventDispatcher->DispatchKill(sv_player); // TODO: DispatchCmd(sv_player, "kill")
-}
+};
 */
 
 /*
@@ -1213,8 +1213,8 @@ void Host_Pause_f(const ICmdArgs &apArgs)
 		// send notification to all clients
 		MSG_WriteByte(&sv.reliable_datagram, svc_setpause);
 		MSG_WriteByte(&sv.reliable_datagram, sv.paused);
-	}
-}
+	};
+};
 */
 
 //===========================================================================
@@ -1230,19 +1230,19 @@ void Host_PreSpawn_f(const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf("prespawn is not valid from the console\n");
 		return;
-	}
+	};
 
 	if(host_client->spawned)
 	{
 		gpSystem->Printf("prespawn not valid -- already spawned\n");
 		return;
-	}
+	};
 
 	host_client->netchan.message->Write(sv.signon.data, sv.signon.cursize);
 	MSG_WriteByte(&host_client->netchan.message, svc_signonnum);
 	MSG_WriteByte(&host_client->netchan.message, 2);
 	//host_client->sendsignon = true;
-}
+};
 
 // TODO
 /*
@@ -1261,13 +1261,13 @@ void Host_Spawn_f(const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf("spawn is not valid from the console\n");
 		return;
-	}
+	};
 
 	if(host_client->spawned)
 	{
 		gpSystem->Printf("Spawn not valid -- already spawned\n");
 		return;
-	}
+	};
 
 	// run the entrance script
 	if(sv.loadgame)
@@ -1300,7 +1300,7 @@ void Host_Spawn_f(const ICmdArgs &apArgs)
 			Sys_Printf(true, "%s entered the game\n", host_client->name);
 
 		gpGameClientEventDispatcher->OnClientPutInServer(sv_player);
-	}
+	};
 
 	// send all current names, colors, and frag counts
 	host_client->netchan.message->Clear();
@@ -1321,7 +1321,7 @@ void Host_Spawn_f(const ICmdArgs &apArgs)
 		MSG_WriteByte(&host_client->netchan.message, i);
 		MSG_WriteByte(&host_client->netchan.message, client->topcolor);
 		MSG_WriteByte(&host_client->netchan.message, client->bottomcolor);
-	}
+	};
 
 	// send all current light styles
 	for(i = 0; i < MAX_LIGHTSTYLES; i++)
@@ -1329,7 +1329,7 @@ void Host_Spawn_f(const ICmdArgs &apArgs)
 		MSG_WriteByte(&host_client->netchan.message, svc_lightstyle);
 		MSG_WriteByte(&host_client->netchan.message, (char)i);
 		MSG_WriteString(&host_client->netchan.message, sv.lightstyles[i]);
-	}
+	};
 
 	//
 	// send some stats
@@ -1367,7 +1367,7 @@ void Host_Spawn_f(const ICmdArgs &apArgs)
 	MSG_WriteByte(&host_client->netchan.message, svc_signonnum);
 	MSG_WriteByte(&host_client->netchan.message, 3);
 	//host_client->sendsignon = true;
-}
+};
 */
 
 /*
@@ -1381,10 +1381,10 @@ void Host_Begin_f(const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf("begin is not valid from the console\n");
 		return;
-	}
+	};
 
 	host_client->spawned = true;
-}
+};
 
 //===========================================================================
 
@@ -1410,7 +1410,7 @@ void Host_Kick_f(const ICmdArgs &apArgs)
 		{
 			Cmd_ForwardToServer();
 			return;
-		}
+		};
 	}
 	//else if (gGlobalVariables.deathmatch && !host_client->privileged) // TODO: if cheats_active?
 		//return;
@@ -1435,8 +1435,8 @@ void Host_Kick_f(const ICmdArgs &apArgs)
 				continue;
 			if(Q_strcasecmp(host_client->name, Cmd_Argv(1)) == 0)
 				break;
-		}
-	}
+		};
+	};
 
 	if(i < svs.maxclients)
 	{
@@ -1464,15 +1464,15 @@ void Host_Kick_f(const ICmdArgs &apArgs)
 			}
 			while(*message && *message == ' ')
 				message++;
-		}
+		};
 		if(message)
 			SV_DropClient(host_client, false, "Kicked by %s: %s\n", who, message);
 		else
 			SV_DropClient(host_client, false, "Kicked by %s\n", who);
-	}
+	};
 
 	host_client = save;
-}
+};
 */
 
 /*
@@ -1498,10 +1498,10 @@ void Host_Give_f(const ICmdArgs &apArgs)
 	{
 		Cmd_ForwardToServer();
 		return;
-	}
+	};
 
 	//if (gGlobalVariables.deathmatch && !host_client->privileged) // TODO: if cheats_active?
-	//return;
+		//return;
 
 	t = Cmd_Argv(1);
 	v = atoi(Cmd_Argv(2));
@@ -1537,8 +1537,8 @@ void Host_Give_f(const ICmdArgs &apArgs)
 	case 'c':
 		sv_player->v.ammo_cells = v;
 		break;
-	}
-}
+	};
+};
 */
 
 /*
@@ -1552,10 +1552,10 @@ edict_t *FindViewthing()
 		e = EDICT_NUM(i);
 		if(!strcmp(pr_strings + e->v.classname, "viewthing"))
 			return e;
-	}
+	};
 	gpSystem->Printf("No viewthing on map\n");
 	return nullptr;
-}
+};
 */
 
 /*
@@ -1578,11 +1578,11 @@ void Host_Viewmodel_f(const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf("Can't load %s\n", Cmd_Argv(1));
 		return;
-	}
+	};
 
 	e->v.frame = 0;
 	cl.model_precache[(int)e->v.modelindex] = m;
-}
+};
 */
 
 /*
@@ -1607,7 +1607,7 @@ void Host_Viewframe_f(const ICmdArgs &apArgs)
 		f = m->numframes - 1;
 
 	e->v.frame = f;
-}
+};
 */
 
 /*
@@ -1622,7 +1622,7 @@ void PrintFrameName(model_t *m, int frame)
 	pframedesc = &hdr->frames[frame];
 
 	gpSystem->Printf("frame %i: %s\n", frame, pframedesc->name);
-}
+};
 */
 
 /*
@@ -1646,7 +1646,7 @@ void Host_Viewnext_f(const ICmdArgs &apArgs)
 		e->v.frame = m->numframes - 1;
 
 	PrintFrameName(m, e->v.frame);
-}
+};
 */
 
 /*
@@ -1671,7 +1671,7 @@ void Host_Viewprev_f(const ICmdArgs &apArgs)
 		e->v.frame = 0;
 
 	PrintFrameName(m, e->v.frame);
-}
+};
 */
 
 /*
@@ -1698,7 +1698,7 @@ void Host_Startdemos_f(const ICmdArgs &apArgs)
 		if(!sv.active)
 			Cbuf_AddText("map start\n");
 		return;
-	}
+	};
 
 	c = Cmd_Argc() - 1;
 	if(c > MAX_DEMOS)

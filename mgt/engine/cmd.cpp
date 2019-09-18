@@ -51,7 +51,7 @@ bind g "impulse 5 ; +attack ; wait ; -attack ; impulse 2"
 void Cmd_Wait_f(const ICmdArgs &apArgs)
 {
 	cmd_wait = true;
-}
+};
 
 /*
 =============================================================================
@@ -61,7 +61,7 @@ void Cmd_Wait_f(const ICmdArgs &apArgs)
 =============================================================================
 */
 
-sizebuf_t cmd_text;
+sizebuf_t cmd_text{};
 
 /*
 ============
@@ -90,10 +90,10 @@ void Cbuf_AddText(const char *text)
 	{
 		gpSystem->Printf("Cbuf_AddText: overflow\n");
 		return;
-	}
+	};
 
 	cmd_text.Write(text, Q_strlen(text));
-}
+};
 
 /*
 ============
@@ -128,8 +128,8 @@ void Cbuf_InsertText(const char *text)
 	{
 		cmd_text.Write(temp, templen);
 		Z_Free(temp);
-	}
-}
+	};
+};
 
 /*
 ============
@@ -157,7 +157,7 @@ void Cbuf_Execute()
 				break; // don't break if inside a quoted string
 			if(text[i] == '\n')
 				break;
-		}
+		};
 
 		memcpy(line, text, i);
 		line[i] = 0;
@@ -173,7 +173,7 @@ void Cbuf_Execute()
 			i++;
 			cmd_text.cursize -= i;
 			Q_memcpy(text, text + i, cmd_text.cursize);
-		}
+		};
 
 		// execute the command line
 		Cmd_ExecuteString(line, src_command);
@@ -183,9 +183,9 @@ void Cbuf_Execute()
 			// for next frame
 			cmd_wait = false;
 			break;
-		}
-	}
-}
+		};
+	};
+};
 
 /*
 ==============================================================================
@@ -215,7 +215,7 @@ void Cmd_StuffCmds_f(const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf("stuffcmds : execute command line parameters\n");
 		return;
-	}
+	};
 
 	// build the combined string to parse from
 	s = 0;
@@ -224,7 +224,8 @@ void Cmd_StuffCmds_f(const ICmdArgs &apArgs)
 		if(!com_argv[i])
 			continue; // NEXTSTEP nulls out -NXHost
 		s += Q_strlen(com_argv[i]) + 1;
-	}
+	};
+
 	if(!s)
 		return;
 
@@ -237,7 +238,7 @@ void Cmd_StuffCmds_f(const ICmdArgs &apArgs)
 		Q_strcat(text, com_argv[i]);
 		if(i != com_argc - 1)
 			Q_strcat(text, " ");
-	}
+	};
 
 	// pull out the commands
 	build = (char *)Z_Malloc(s + 1);
@@ -259,15 +260,15 @@ void Cmd_StuffCmds_f(const ICmdArgs &apArgs)
 			Q_strcat(build, "\n");
 			text[j] = c;
 			i = j - 1;
-		}
-	}
+		};
+	};
 
 	if(build[0])
 		Cbuf_InsertText(build);
 
 	Z_Free(text);
 	Z_Free(build);
-}
+};
 
 /*
 ===============
@@ -283,7 +284,7 @@ void Cmd_Exec_f(const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf("exec <filename> : execute a script file\n");
 		return;
-	}
+	};
 
 	mark = Hunk_LowMark();
 	f = (char *)COM_LoadHunkFile(apArgs.GetByIndex(1));
@@ -291,12 +292,12 @@ void Cmd_Exec_f(const ICmdArgs &apArgs)
 	{
 		gpSystem->Printf("couldn't exec %s\n", apArgs.GetByIndex(1));
 		return;
-	}
+	};
 	gpSystem->Printf("execing %s\n", apArgs.GetByIndex(1));
 
 	Cbuf_InsertText(f);
 	Hunk_FreeToLowMark(mark);
-}
+};
 
 /*
 ===============
@@ -312,7 +313,7 @@ void Cmd_Echo_f(const ICmdArgs &apArgs)
 	for(i = 1; i < apArgs.GetCount(); i++)
 		gpSystem->Printf("%s ", apArgs.GetByIndex(i));
 	gpSystem->Printf("\n");
-}
+};
 
 /*
 ===============
@@ -327,7 +328,7 @@ char *CopyString(const char *in)
 	char *out = (char *)Z_Malloc(Q_strlen(in) + 1);
 	Q_strcpy(out, in);
 	return out;
-}
+};
 
 void Cmd_Alias_f(const ICmdArgs &apArgs)
 {
@@ -342,14 +343,14 @@ void Cmd_Alias_f(const ICmdArgs &apArgs)
 		for(a = cmd_alias; a; a = a->next)
 			gpSystem->Printf("%s : %s\n", a->name, a->value);
 		return;
-	}
+	};
 
 	s = Cmd_Argv(1);
 	if(Q_strlen(s) >= MAX_ALIAS_NAME)
 	{
 		gpSystem->Printf("Alias name is too long\n");
 		return;
-	}
+	};
 
 	// if the alias allready exists, reuse it
 	for(a = cmd_alias; a; a = a->next)
@@ -358,15 +359,15 @@ void Cmd_Alias_f(const ICmdArgs &apArgs)
 		{
 			Z_Free(a->value);
 			break;
-		}
-	}
+		};
+	};
 
 	if(!a)
 	{
 		a = (cmdalias_t *)Z_Malloc(sizeof(cmdalias_t));
 		a->next = cmd_alias;
 		cmd_alias = a;
-	}
+	};
 	strcpy(a->name, s);
 
 	// copy the rest of the command line
@@ -377,11 +378,11 @@ void Cmd_Alias_f(const ICmdArgs &apArgs)
 		strcat(cmd, apArgs.GetByIndex(i));
 		if(i != c)
 			strcat(cmd, " ");
-	}
+	};
 	strcat(cmd, "\n");
 
 	a->value = CopyString(cmd);
-}
+};
 
 /*
 =============================================================================
@@ -424,7 +425,7 @@ void Cmd_Init()
 	Cmd_AddCommand("echo", Cmd_Echo_f);
 	Cmd_AddCommand("alias", Cmd_Alias_f);
 	Cmd_AddCommand("wait", Cmd_Wait_f);
-}
+};
 
 /*
 ============
@@ -434,7 +435,7 @@ Cmd_Argc
 int Cmd_Argc()
 {
 	return cmd_argc;
-}
+};
 
 /*
 ============
@@ -446,7 +447,7 @@ const char *Cmd_Argv(int arg)
 	if((unsigned)arg >= cmd_argc)
 		return cmd_null_string;
 	return cmd_argv[arg];
-}
+};
 
 /*
 ============
@@ -456,7 +457,7 @@ Cmd_Args
 const char *Cmd_Args()
 {
 	return cmd_args;
-}
+};
 
 /*
 ============
@@ -480,15 +481,14 @@ void Cmd_TokenizeString(const char *text)
 	{
 		// skip whitespace up to a /n
 		while(*text && *text <= ' ' && *text != '\n')
-		{
 			text++;
-		}
 
 		if(*text == '\n')
-		{ // a newline seperates commands in the buffer
+		{
+			// a newline seperates commands in the buffer
 			text++;
 			break;
-		}
+		};
 
 		if(!*text)
 			return;
@@ -614,8 +614,8 @@ void Cmd_ExecuteString(const char *text, cmd_source_t src)
 		{
 			cmd->function(Args);
 			return;
-		}
-	}
+		};
+	};
 
 	// check alias
 	for(a = cmd_alias; a; a = a->next)
@@ -624,13 +624,13 @@ void Cmd_ExecuteString(const char *text, cmd_source_t src)
 		{
 			Cbuf_InsertText(a->value);
 			return;
-		}
-	}
+		};
+	};
 
 	// check cvars
 	if(!Cvar_Command())
 		gpSystem->Printf("Unknown command \"%s\"\n", Args.GetByIndex(0));
-}
+};
 
 /*
 ================

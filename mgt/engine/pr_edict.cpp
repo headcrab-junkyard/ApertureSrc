@@ -374,7 +374,7 @@ void ED_PrintEdicts ()
 =============
 ED_PrintEdict_f
 
-For debugging, prints a single edicy
+For debugging, prints a single edict
 =============
 */
 /*
@@ -531,7 +531,7 @@ char *ED_NewString(char *string)
 	pnew = (char*)Hunk_Alloc(l);
 	new_p = pnew;
 
-	for(i = 0; i < l; i++)
+	for(i = 0; i < l; ++i)
 	{
 		if(string[i] == '\\' && i < l - 1)
 		{
@@ -632,8 +632,8 @@ char *ED_ParseEdict(char *data, edict_t *ent)
 		};
 
 		//if (!ED_ParseEpair ((void *)&ent->v, key, com_token))
-		//Host_Error ("ED_ParseEdict: parse error");
-	}
+			//Host_Error ("ED_ParseEdict: parse error");
+	};
 
 	if(!init)
 		ent->free = true;

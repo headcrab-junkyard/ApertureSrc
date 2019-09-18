@@ -23,7 +23,7 @@
 
 #include "quakedef.h"
 
-const int NUM_SAFE_ARGVS{7};
+constexpr auto NUM_SAFE_ARGVS{7};
 
 static const char *largv[MAX_NUM_ARGVS + NUM_SAFE_ARGVS + 1]{};
 static const char *argvdummy{" "};
@@ -37,7 +37,7 @@ char com_token[1024]{};
 int com_argc{0};
 char **com_argv;
 
-#define CMDLINE_LENGTH 256
+constexpr auto CMDLINE_LENGTH{256};
 char com_cmdline[CMDLINE_LENGTH]{};
 
 /*

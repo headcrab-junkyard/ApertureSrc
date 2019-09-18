@@ -34,7 +34,7 @@ SYSTEM IO
 #ifdef _WIN32
 #include "winquake.h"
 
-qboolean WinNT;
+bool WinNT{false};
 
 static double pfreq;
 static double curtime = 0.0;

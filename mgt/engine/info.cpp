@@ -148,7 +148,7 @@ void Info_RemovePrefixedKeys(char *start, char prefix)
 			if(!*s)
 				return;
 			*o++ = *s++;
-		}
+		};
 		*o = 0;
 		s++;
 
@@ -158,19 +158,19 @@ void Info_RemovePrefixedKeys(char *start, char prefix)
 			if(!*s)
 				return;
 			*o++ = *s++;
-		}
+		};
 		*o = 0;
 
 		if(pkey[0] == prefix)
 		{
 			Info_RemoveKey(start, pkey);
 			s = start;
-		}
+		};
 
 		if(!*s)
 			return;
-	}
-}
+	};
+};
 
 void Info_SetValueForStarKey(char *s, const char *key, const char *value, int maxsize)
 {
@@ -184,19 +184,19 @@ void Info_SetValueForStarKey(char *s, const char *key, const char *value, int ma
 	{
 		gpSystem->Printf("Can't use keys or values with a \\\n");
 		return;
-	}
+	};
 
 	if(strstr(key, "\"") || strstr(value, "\""))
 	{
 		gpSystem->Printf("Can't use keys or values with a \"\n");
 		return;
-	}
+	};
 
 	if(strlen(key) > 63 || strlen(value) > 63)
 	{
 		gpSystem->Printf("Keys and values must be < 64 characters.\n");
 		return;
-	}
+	};
 
 	// this next line is kinda trippy
 	if(*(v = Info_ValueForKey(s, key)))
@@ -207,8 +207,8 @@ void Info_SetValueForStarKey(char *s, const char *key, const char *value, int ma
 		{
 			gpSystem->Printf("Info string length exceeded\n");
 			return;
-		}
-	}
+		};
+	};
 	Info_RemoveKey(s, key);
 	if(!value || !strlen(value))
 		return;
@@ -219,7 +219,7 @@ void Info_SetValueForStarKey(char *s, const char *key, const char *value, int ma
 	{
 		gpSystem->Printf("Info string length exceeded\n");
 		return;
-	}
+	};
 
 	// only copy ascii values
 	s += strlen(s);
@@ -237,21 +237,21 @@ void Info_SetValueForStarKey(char *s, const char *key, const char *value, int ma
 			// auto lowercase team
 			if(stricmp(key, "team") == 0)
 				c = tolower(c);
-		}
+		};
 #else
 		if(!sv_highchars.value)
 		{
 			c &= 127;
 			if(c < 32 || c > 127)
 				continue;
-		}
+		};
 #endif
 		//		c &= 127;		// strip high bits
 		if(c > 13) // && c < 127)
 			*s++ = c;
-	}
+	};
 	*s = 0;
-}
+};
 
 void Info_SetValueForKey(char *s, const char *key, const char *value, int maxsize)
 {
@@ -259,7 +259,7 @@ void Info_SetValueForKey(char *s, const char *key, const char *value, int maxsiz
 	{
 		gpSystem->Printf("Can't set * keys\n");
 		return;
-	}
+	};
 
 	Info_SetValueForStarKey(s, key, value, maxsize);
 }

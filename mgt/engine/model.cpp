@@ -447,7 +447,7 @@ void Mod_LoadTextures (lump_t *l)
 			}
 			else
 				gpSystem->Error ("Bad animating texture %s", tx->name);
-		}
+		};
 		
 #define	ANIM_CYCLE	2
 	// link them all together
@@ -462,7 +462,7 @@ void Mod_LoadTextures (lump_t *l)
 			tx2->anim_next = anims[ (j+1)%max ];
 			if (altmax)
 				tx2->alternate_anims = altanims[0];
-		}
+		};
 		for (j=0 ; j<altmax ; j++)
 		{
 			tx2 = altanims[j];
@@ -474,9 +474,9 @@ void Mod_LoadTextures (lump_t *l)
 			tx2->anim_next = altanims[ (j+1)%altmax ];
 			if (max)
 				tx2->alternate_anims = anims[0];
-		}
-	}
-}
+		};
+	};
+};
 
 /*
 =================
@@ -489,10 +489,10 @@ void Mod_LoadLighting (lump_t *l)
 	{
 		loadmodel->lightdata = NULL;
 		return;
-	}
+	};
 	loadmodel->lightdata = (byte*)Hunk_AllocName ( l->filelen, loadname);	
 	memcpy (loadmodel->lightdata, mod_base + l->fileofs, l->filelen);
-}
+};
 
 /*
 =================
@@ -505,10 +505,10 @@ void Mod_LoadVisibility (lump_t *l)
 	{
 		loadmodel->visdata = NULL;
 		return;
-	}
+	};
 	loadmodel->visdata = (byte*)Hunk_AllocName ( l->filelen, loadname);	
 	memcpy (loadmodel->visdata, mod_base + l->fileofs, l->filelen);
-}
+};
 
 /*
 =================
@@ -521,10 +521,10 @@ void Mod_LoadEntities (lump_t *l)
 	{
 		loadmodel->entities = NULL;
 		return;
-	}
+	};
 	loadmodel->entities = (char*)Hunk_AllocName ( l->filelen, loadname);	
 	memcpy (loadmodel->entities, mod_base + l->fileofs, l->filelen);
-}
+};
 
 /*
 =================
@@ -551,8 +551,8 @@ void Mod_LoadVertexes (lump_t *l)
 		out->position[0] = LittleFloat (in->point[0]);
 		out->position[1] = LittleFloat (in->point[1]);
 		out->position[2] = LittleFloat (in->point[2]);
-	}
-}
+	};
+};
 
 /*
 =================
@@ -581,14 +581,14 @@ void Mod_LoadSubmodels (lump_t *l)
 			out->mins[j] = LittleFloat (in->mins[j]) - 1;
 			out->maxs[j] = LittleFloat (in->maxs[j]) + 1;
 			out->origin[j] = LittleFloat (in->origin[j]);
-		}
+		};
 		for (j=0 ; j<MAX_MAP_HULLS ; j++)
 			out->headnode[j] = LittleLong (in->headnode[j]);
 		out->visleafs = LittleLong (in->visleafs);
 		out->firstface = LittleLong (in->firstface);
 		out->numfaces = LittleLong (in->numfaces);
-	}
-}
+	};
+};
 
 /*
 =================
@@ -614,8 +614,8 @@ void Mod_LoadEdges (lump_t *l)
 	{
 		out->v[0] = (unsigned short)LittleShort(in->v[0]);
 		out->v[1] = (unsigned short)LittleShort(in->v[1]);
-	}
-}
+	};
+};
 
 /*
 =================
@@ -678,10 +678,10 @@ void Mod_LoadTexinfo (lump_t *l)
 			{
 				out->texture = r_notexture_mip; // texture not found
 				out->flags = 0;
-			}
-		}
-	}
-}
+			};
+		};
+	};
+};
 
 /*
 ================
@@ -721,8 +721,8 @@ void CalcSurfaceExtents (msurface_t *s)
 				mins[j] = val;
 			if (val > maxs[j])
 				maxs[j] = val;
-		}
-	}
+		};
+	};
 
 	for (i=0 ; i<2 ; i++)
 	{	
@@ -733,8 +733,8 @@ void CalcSurfaceExtents (msurface_t *s)
 		s->extents[i] = (bmaxs[i] - bmins[i]) * 16;
 		if ( !(tex->flags & TEX_SPECIAL) && s->extents[i] > 256)
 			gpSystem->Error ("Bad surface extents");
-	}
-}
+	};
+};
 
 /*
 =================
@@ -790,7 +790,7 @@ void Mod_LoadFaces (lump_t *l)
 		{
 			out->flags |= (SURF_DRAWSKY | SURF_DRAWTILED);
 			continue;
-		}
+		};
 		
 		if (!Q_strncmp(out->texinfo->texture->name,"*",1))		// turbulent
 		{
@@ -799,11 +799,11 @@ void Mod_LoadFaces (lump_t *l)
 			{
 				out->extents[i] = 16384;
 				out->texturemins[i] = -8192;
-			}
+			};
 			continue;
-		}
-	}
-}
+		};
+	};
+};
 
 /*
 =================
@@ -817,7 +817,7 @@ void Mod_SetParent (mnode_t *node, mnode_t *parent)
 		return;
 	Mod_SetParent (node->children[0], node);
 	Mod_SetParent (node->children[1], node);
-}
+};
 
 /*
 =================
@@ -845,7 +845,7 @@ void Mod_LoadNodes (lump_t *l)
 		{
 			out->minmaxs[j] = LittleShort (in->mins[j]);
 			out->minmaxs[3+j] = LittleShort (in->maxs[j]);
-		}
+		};
 	
 		p = LittleLong(in->planenum);
 		out->plane = loadmodel->planes + p;
@@ -860,11 +860,11 @@ void Mod_LoadNodes (lump_t *l)
 				out->children[j] = loadmodel->nodes + p;
 			else
 				out->children[j] = (mnode_t *)(loadmodel->leafs + (-1 - p));
-		}
-	}
+		};
+	};
 	
 	Mod_SetParent (loadmodel->nodes, NULL);	// sets nodes and leafs
-}
+};
 
 /*
 =================
@@ -892,7 +892,7 @@ void Mod_LoadLeafs (lump_t *l)
 		{
 			out->minmaxs[j] = LittleShort (in->mins[j]);
 			out->minmaxs[3+j] = LittleShort (in->maxs[j]);
-		}
+		};
 
 		p = LittleLong(in->contents);
 		out->contents = p;
@@ -910,8 +910,8 @@ void Mod_LoadLeafs (lump_t *l)
 		
 		for (j=0 ; j<4 ; j++)
 			out->ambient_sound_level[j] = in->ambient_level[j];
-	}	
-}
+	};
+};
 
 /*
 =================
@@ -962,8 +962,8 @@ void Mod_LoadClipnodes (lump_t *l)
 		out->planenum = LittleLong(in->planenum);
 		out->children[0] = LittleShort(in->children[0]);
 		out->children[1] = LittleShort(in->children[1]);
-	}
-}
+	};
+};
 
 /*
 =================
@@ -1000,9 +1000,9 @@ void Mod_MakeHull0 ()
 				out->children[j] = child->contents;
 			else
 				out->children[j] = child - loadmodel->nodes;
-		}
-	}
-}
+		};
+	};
+};
 
 /*
 =================
@@ -1030,8 +1030,8 @@ void Mod_LoadMarksurfaces (lump_t *l)
 		if (j >= loadmodel->numsurfaces)
 			gpSystem->Error ("Mod_ParseMarksurfaces: bad surface number");
 		out[i] = loadmodel->surfaces + j;
-	}
-}
+	};
+};
 
 /*
 =================
@@ -1054,7 +1054,7 @@ void Mod_LoadSurfedges (lump_t *l)
 
 	for ( i=0 ; i<count ; i++)
 		out[i] = LittleLong (in[i]);
-}
+};
 
 /*
 =================
@@ -1086,13 +1086,13 @@ void Mod_LoadPlanes (lump_t *l)
 			out->normal[j] = LittleFloat (in->normal[j]);
 			if (out->normal[j] < 0)
 				bits |= 1<<j;
-		}
+		};
 
 		out->dist = LittleFloat (in->dist);
 		out->type = LittleLong (in->type);
 		out->signbits = bits;
-	}
-}
+	};
+};
 
 /*
 =================
@@ -1108,7 +1108,7 @@ float RadiusFromBounds (vec3_t mins, vec3_t maxs)
 		corner[i] = fabs(mins[i]) > fabs(maxs[i]) ? fabs(mins[i]) : fabs(maxs[i]);
 
 	return Length (corner);
-}
+};
 
 /*
 =================
@@ -1224,7 +1224,7 @@ void * Mod_LoadAliasFrame (void * pin, int *pframeindex, int numv, trivertx_t *p
 	// endianness
 		pbboxmin->v[i] = pdaliasframe->bboxmin.v[i];
 		pbboxmax->v[i] = pdaliasframe->bboxmax.v[i];
-	}
+	};
 
 	pinframe = (trivertx_t *)(pdaliasframe + 1);
 	pframe = (trivertx_t*)Hunk_AllocName (numv * sizeof(*pframe), loadname);
@@ -1239,15 +1239,13 @@ void * Mod_LoadAliasFrame (void * pin, int *pframeindex, int numv, trivertx_t *p
 		pframe[j].lightnormalindex = pinframe[j].lightnormalindex;
 
 		for (k=0 ; k<3 ; k++)
-		{
 			pframe[j].v[k] = pinframe[j].v[k];
-		}
-	}
+	};
 
 	pinframe += numv;
 
 	return (void *)pinframe;
-}
+};
 
 /*
 =================
@@ -1277,7 +1275,7 @@ void * Mod_LoadAliasGroup (void * pin, int *pframeindex, int numv, trivertx_t *p
 	// these are byte values, so we don't have to worry about endianness
 		pbboxmin->v[i] = pingroup->bboxmin.v[i];
 		pbboxmax->v[i] = pingroup->bboxmax.v[i];
-	}
+	};
 
 	*pframeindex = (byte *)paliasgroup - (byte *)pheader;
 
@@ -1295,7 +1293,7 @@ void * Mod_LoadAliasGroup (void * pin, int *pframeindex, int numv, trivertx_t *p
 
 		poutintervals++;
 		pin_intervals++;
-	}
+	};
 
 	ptemp = (void *)pin_intervals;
 
@@ -1307,10 +1305,10 @@ void * Mod_LoadAliasGroup (void * pin, int *pframeindex, int numv, trivertx_t *p
 									&paliasgroup->frames[i].bboxmin,
 									&paliasgroup->frames[i].bboxmax,
 									pheader, name);
-	}
+	};
 
 	return ptemp;
-}
+};
 
 /*
 =================
@@ -1328,9 +1326,7 @@ void * Mod_LoadAliasSkin (void * pin, int *pskinindex, int skinsize, aliashdr_t 
 	*pskinindex = (byte *)pskin - (byte *)pheader;
 
 	if (r_pixbytes == 1)
-	{
 		Q_memcpy (pskin, pinskin, skinsize);
-	}
 	else if (r_pixbytes == 2)
 	{
 		pusskin = (unsigned short *)pskin;
@@ -1340,13 +1336,11 @@ void * Mod_LoadAliasSkin (void * pin, int *pskinindex, int skinsize, aliashdr_t 
 	}
 	else
 		gpSystem->Error ("Mod_LoadAliasSkin: driver set invalid r_pixbytes: %d\n", r_pixbytes);
-	{
-	}
 
 	pinskin += skinsize;
 
 	return ((void *)pinskin);
-}
+};
 
 /*
 =================
@@ -1388,7 +1382,7 @@ void * Mod_LoadAliasSkinGroup (void * pin, int *pskinindex, int skinsize, aliash
 
 		poutskinintervals++;
 		pinskinintervals++;
-	}
+	};
 
 	ptemp = (void *)pinskinintervals;
 
@@ -1396,10 +1390,10 @@ void * Mod_LoadAliasSkinGroup (void * pin, int *pskinindex, int skinsize, aliash
 	{
 		ptemp = Mod_LoadAliasSkin (ptemp,
 				&paliasskingroup->skindescs[i].skin, skinsize, pheader);
-	}
+	};
 
 	return ptemp;
-}
+};
 
 /*
 =================
@@ -1484,7 +1478,7 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 		pmodel->scale[i] = LittleFloat (pinmodel->scale[i]);
 		pmodel->scale_origin[i] = LittleFloat (pinmodel->scale_origin[i]);
 		pmodel->eyeposition[i] = LittleFloat (pinmodel->eyeposition[i]);
-	}
+	};
 
 	numskins = pmodel->numskins;
 	numframes = pmodel->numframes;
@@ -1529,8 +1523,8 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 					Mod_LoadAliasSkinGroup (pskintype + 1,
 											&pskindesc[i].skin,
 											skinsize, pheader);
-		}
-	}
+		};
+	};
 
 //
 // set base s and t vertices
@@ -1546,7 +1540,7 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	// put s and t in 16.16 format
 		pstverts[i].s = LittleLong (pinstverts[i].s) << 16;
 		pstverts[i].t = LittleLong (pinstverts[i].t) << 16;
-	}
+	};
 
 //
 // set up the triangles
@@ -1566,8 +1560,8 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 		{
 			ptri[i].vertindex[j] =
 					LittleLong (pintriangles[i].vertindex[j]);
-		}
-	}
+		};
+	};
 
 //
 // load the frames
@@ -1603,8 +1597,8 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 										&pheader->frames[i].bboxmin,
 										&pheader->frames[i].bboxmax,
 										pheader, pheader->frames[i].name);
-		}
-	}
+		};
+	};
 
 	mod->type = mod_alias;
 
@@ -1624,7 +1618,7 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	memcpy (mod->cache.data, pheader, total);
 
 	Hunk_FreeToLowMark (start);
-}
+};
 
 //=============================================================================
 
@@ -1664,9 +1658,7 @@ void * Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppframe)
 	pspriteframe->right = width + origin[0];
 
 	if (r_pixbytes == 1)
-	{
 		Q_memcpy (&pspriteframe->pixels[0], (byte *)(pinframe + 1), size);
-	}
 	else if (r_pixbytes == 2)
 	{
 		ppixin = (byte *)(pinframe + 1);
@@ -1677,11 +1669,9 @@ void * Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppframe)
 	}
 	else
 		gpSystem->Error ("Mod_LoadSpriteFrame: driver set invalid r_pixbytes: %d\n", r_pixbytes);
-	{
-	}
 
 	return (void *)((byte *)pinframe + sizeof (dspriteframe_t) + size);
-}
+};
 
 /*
 =================
@@ -1722,17 +1712,15 @@ void * Mod_LoadSpriteGroup (void * pin, mspriteframe_t **ppframe)
 
 		poutintervals++;
 		pin_intervals++;
-	}
+	};
 
 	ptemp = (void *)pin_intervals;
 
 	for (i=0 ; i<numframes ; i++)
-	{
 		ptemp = Mod_LoadSpriteFrame (ptemp, &pspritegroup->frames[i]);
-	}
 
 	return ptemp;
-}
+};
 
 /*
 =================
@@ -1805,11 +1793,11 @@ void Mod_LoadSpriteModel (model_t *mod, void *buffer)
 			pframetype = (dspriteframetype_t *)
 					Mod_LoadSpriteGroup (pframetype + 1,
 										 &psprite->frames[i].frameptr);
-		}
-	}
+		};
+	};
 
 	mod->type = mod_sprite;
-}
+};
 
 //=============================================================================
 
