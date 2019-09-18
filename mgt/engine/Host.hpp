@@ -59,7 +59,6 @@ void Host_Quit_f();
 void Host_Error(const char *error, ...);
 
 void Host_ClientCommands(client_t *host_client, const char *fmt, ...);
-void Host_ShutdownServer(bool crash);
 //void Host_WriteConfiguration ();
 
 class CHost final : public IHost

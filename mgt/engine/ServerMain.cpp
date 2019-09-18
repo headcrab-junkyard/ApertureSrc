@@ -632,6 +632,79 @@ void SV_Init()
 };
 
 /*
+==================
+Host_ShutdownServer
+
+This only happens at the end of a game, not between levels
+==================
+*/
+void SV_Shutdown(bool crash)
+{
+	int i;
+	int count;
+	sizebuf_t buf;
+	char message[4];
+	double start;
+
+	if(!sv.active)
+		return;
+
+	sv.active = false;
+	
+	// TODO: host event listener -> onservershutdown
+	if(gpEngineClient)
+		gpEngineClient->HostServerShutdown();
+
+	// flush any pending messages - like the score!!!
+	start = Sys_FloatTime();
+	do
+	{
+		count = 0;
+		for(i = 0, host_client = svs.clients; i < svs.maxclients; i++, host_client++)
+		{
+			if(host_client->active && host_client->netchan.message.cursize)
+			{
+				if(Netchan_CanPacket(&host_client->netchan)) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
+				{
+					Netchan_Transmit(&host_client->netchan, strlen(message), buf.data);
+					host_client->netchan.message->Clear();
+				}
+				else
+				{
+					NET_GetPacket(NS_SERVER, &net_from, &host_client->netchan.message); // TODO: was NET_GetMessage; REVISIT: We're reading into write buffer?????????
+					count++;
+				};
+			};
+		};
+
+		if((Sys_FloatTime() - start) > 3.0)
+			break;
+	} while(count);
+
+	// make sure all the clients know we're disconnecting
+	buf.data = (byte*)message;
+	buf.maxsize = 4;
+	buf.cursize = 0;
+	
+	buf.WriteByte(svc_disconnect);
+	
+	SV_BroadcastCommand("disconnect"); // TODO: was count = NET_SendToAll(&buf, 5);
+	
+	if(count)
+		gpSystem->Printf("Host_ShutdownServer: NET_SendToAll failed for %u clients\n", count);
+
+	for(i = 0, host_client = svs.clients; i < svs.maxclients; i++, host_client++)
+		if(host_client->active)
+			SV_DropClient(host_client, crash, "???");
+
+	//
+	// clear structures
+	//
+	memset(&sv, 0, sizeof(sv));
+	memset(svs.clients, 0, svs.maxclientslimit * sizeof(client_t));
+};
+
+/*
 =================
 SV_SendBan
 =================
