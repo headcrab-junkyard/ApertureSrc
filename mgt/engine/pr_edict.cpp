@@ -39,9 +39,12 @@ Sets everything to nullptr
 */
 void ED_ClearEdict(edict_t *e)
 {
-	memset(&e->v, 0, sizeof(e->v));
-	e->free = false;
-}
+	if(e)
+	{
+		memset(&e->v, 0, sizeof(e->v));
+		e->free = false;
+	};
+};
 
 /*
 =================
@@ -56,6 +59,8 @@ angles and bad trails.
 */
 edict_t *ED_Alloc()
 {
+	if(!sv.edicts)
+		Sys_Error("ED_Alloc: No edicts yet");
 
 	int i{0};
 	edict_t *e{nullptr};
