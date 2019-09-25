@@ -707,9 +707,9 @@ void ED_LoadFromFile(char *data)
 		};
 
 		// look for the spawn function
-		//func = ED_FindFunction ( PR_GetString(ent->v.classname) ); // TODO
+		func = ED_FindFunction ( PR_GetString(ent->v.classname) ); // TODO
 
-		//if (!func)
+		if (!func)
 		{
 			gpSystem->Printf("No spawn function for:\n");
 			//ED_Print(ent); // TODO: actually unused in gs, should i fix it?
