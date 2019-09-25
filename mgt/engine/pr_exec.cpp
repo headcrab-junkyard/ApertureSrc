@@ -22,10 +22,6 @@
 
 #include "quakedef.h"
 
-//qboolean pr_trace; // TODO: unused?
-
-//int pr_argc; // TODO: unused?
-
 //=============================================================================
 
 char *pr_strtbl[MAX_PRSTR]{};
