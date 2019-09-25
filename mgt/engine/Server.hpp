@@ -91,11 +91,7 @@ struct server_t
 	struct model_s *models[MAX_MODELS];
 	char *sound_precache[MAX_SOUNDS]; // NULL terminated
 	const char *lightstyles[MAX_LIGHTSTYLES];
-	int num_edicts;
-	int max_edicts;
-	edict_t *edicts;      // can NOT be array indexed, because
-	                      // edict_t is variable sized, but can
-	                      // be used to reference the world ent
+
 	server_state_t state; // some actions are only valid during load
 
 	sizebuf_t datagram;
@@ -143,7 +139,6 @@ typedef struct client_s
 	usercmd_t lastcmd; // for filling in big drops and partial predictions
 	double localtime;  // of last message
 
-	edict_t *edict; // EDICT_NUM(clientnum+1)
 	char name[32];  // for printing to other people
 	
 	int topcolor;
@@ -214,15 +209,12 @@ extern jmp_buf host_abortserver;
 
 extern double host_time;
 
-extern edict_t *sv_player;
-
 //===========================================================
 
 void SV_Init();
 void SV_Shutdown(bool abCrash);
 
 void SV_StartParticle(vec3_t org, vec3_t dir, int color, int count);
-void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume, float attenuation);
 
 void SV_DropClient(client_t *drop, bool crash, const char *fmt, ...);
 
@@ -245,14 +237,7 @@ void SV_BroadcastCommand(const char *fmt, ...);
 void SV_Frame();
 
 void SV_Physics(double frametime);
-bool SV_RunThink(edict_t *ent);
 
-bool SV_CheckBottom(edict_t *ent);
-bool SV_movestep(edict_t *ent, vec3_t move, bool relink);
-
-void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg);
-
-void SV_MoveToGoal(edict_t *ent, float dist);
 
 void SV_RunClients();
 void SV_SaveSpawnparms();
