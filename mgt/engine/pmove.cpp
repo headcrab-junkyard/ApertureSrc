@@ -19,7 +19,7 @@
 */
 
 /// @file
-/// @brief
+/// @brief player movement code
 
 #include "quakedef.h"
 

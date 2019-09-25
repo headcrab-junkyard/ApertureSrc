@@ -23,13 +23,22 @@
 #pragma once
 
 /// Allocate memory block
+/// @param size - amount of memory (in bytes) to allocate
+/// @return pointer to allocated memory block
 void *Mem_Alloc(size_t size);
 
-/// Allocate number * size bytes and zero it
+/// Allocate (number * size) bytes and zero it
+/// @param number - TODO
+/// @param size - TODO
+/// @return pointer to allocated memory block
 void *Mem_Calloc(int number, size_t size);
 
 /// Reallocate memory block
+/// @param ptr - pointer to a memory block to reallocate
+/// @param size - new size of the memory block
+/// @return pointer to allocated memory block
 void *Mem_Realloc(void *ptr, size_t size);
 
 /// Deallocate memory block
+/// @param ptr - pointer to a memory block to free
 void Mem_Free(void *ptr);

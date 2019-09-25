@@ -47,7 +47,7 @@ struct memzone_t
 void Cache_FreeLow(int new_low_hunk);
 void Cache_FreeHigh(int new_high_hunk);
 
-/*
+/**
 ==============================================================================
 
 						ZONE MEMORY ALLOCATION

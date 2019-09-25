@@ -29,7 +29,7 @@
 #include "GameClientEventDispatcher.hpp"
 extern CGameClientEventDispatcher *gpGameClientEventDispatcher;
 
-/*
+/**
 
 A server can always be started, even if the system started out as a client
 to a remote system.

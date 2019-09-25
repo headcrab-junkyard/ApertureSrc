@@ -19,7 +19,9 @@
 */
 
 /// @file
-/// @brief host subsystem header
+/// @brief the host system specifies the base of the directory tree, the
+/// command line parms passed to the program, and the amount of memory
+/// available for the program to use
 
 #pragma once
 
@@ -27,10 +29,6 @@
 //#include "core/CommonTypes.hpp"
 
 //=============================================================================
-
-// the host system specifies the base of the directory tree, the
-// command line parms passed to the program, and the amount of memory
-// available for the program to use
 
 typedef struct quakeparms_s
 {

@@ -35,8 +35,8 @@ void Sys_DebugLog(const char *file, const char *fmt, ...);
 
 void Sys_Init();
 
+/// an error will cause the entire program to exit
 void Sys_Error(const char *error, ...);
-// an error will cause the entire program to exit
 
 void Sys_Printf(const char *fmt, ...);
 // send text to the console
@@ -48,11 +48,11 @@ double Sys_FloatTime();
 char *Sys_ConsoleInput();
 
 void Sys_Sleep();
-// called to yield for a little bit so as
-// not to hog cpu when paused or debugging
+/// called to yield for a little bit so as
+/// not to hog cpu when paused or debugging
 
+/// Perform Key_Event() callbacks until the input que is empty
 void Sys_SendKeyEvents();
-// Perform Key_Event () callbacks until the input que is empty
 
 void Sys_LowFPPrecision();
 void Sys_HighFPPrecision();
