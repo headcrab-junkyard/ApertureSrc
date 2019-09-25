@@ -567,6 +567,8 @@ char *ED_ParseEdict(char *data, edict_t *ent)
 	if(ent != sv.edicts) // hack
 		Q_memset(&ent->v, 0, sizeof(ent->v));
 
+	SuckOutClassname(data, ent);
+
 	// go through all the dictionary pairs
 	while(1)
 	{
