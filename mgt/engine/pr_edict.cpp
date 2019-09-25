@@ -122,21 +122,14 @@ void ED_Free(edict_t *ed)
 ED_FindFunction
 ============
 */
-/*
-dfunction_t *ED_FindFunction (char *name)
+dfunction_t *ED_FindFunction(const char *name)
 {
-	dfunction_t		*func;
-	int				i;
-	
-	for (i=0 ; i<progs->numfunctions ; i++)
-	{
-		func = &pr_functions[i];
-		if (!strcmp(PR_GetString(func->s_name),name) )
-			return func;
-	}
+	dfunction_t *func = (dfunction_t)Sys_GetExport_Wrapper(gamedll, name);
+	if(func)
+		return func;
+
 	return nullptr;
-}
-*/
+};
 
 // TODO: unused?
 /*
