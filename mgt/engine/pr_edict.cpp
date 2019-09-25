@@ -525,7 +525,7 @@ char *ED_NewString(char *string)
 	char *pnew, *new_p;
 	int i, l;
 
-	l = strlen(string) + 1;
+	l = Q_strlen(string) + 1;
 	pnew = (char*)Hunk_Alloc(l);
 	new_p = pnew;
 
@@ -565,7 +565,7 @@ char *ED_ParseEdict(char *data, edict_t *ent)
 
 	// clear it
 	if(ent != sv.edicts) // hack
-		memset(&ent->v, 0, sizeof(ent->v));
+		Q_memset(&ent->v, 0, sizeof(ent->v));
 
 	// go through all the dictionary pairs
 	while(1)
@@ -579,22 +579,22 @@ char *ED_ParseEdict(char *data, edict_t *ent)
 
 		// anglehack is to allow QuakeEd to write single scalar angles
 		// and allow them to be turned into vectors. (FIXME...)
-		if(!strcmp(com_token, "angle"))
+		if(!Q_strcmp(com_token, "angle"))
 		{
-			strcpy(com_token, "angles");
+			Q_strcpy(com_token, "angles");
 			anglehack = true;
 		}
 		else
 			anglehack = false;
 
 		// FIXME: change light to _light to get rid of this hack
-		if(!strcmp(com_token, "light"))
-			strcpy(com_token, "light_lev"); // hack for single light def
+		if(!Q_strcmp(com_token, "light"))
+			Q_strcpy(com_token, "light_lev"); // hack for single light def
 
-		strcpy(keyname, com_token);
+		Q_strcpy(keyname, com_token);
 
 		// another hack to fix heynames with trailing spaces
-		n = strlen(keyname);
+		n = Q_strlen(keyname);
 		while(n && keyname[n - 1] == ' ')
 		{
 			keyname[n - 1] = 0;
