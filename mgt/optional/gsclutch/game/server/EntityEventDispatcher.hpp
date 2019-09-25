@@ -26,7 +26,7 @@
 //#include "engine/IEntityEventDispatcher.hpp"
 
 interface IEntityEventListener;
-using tEntityEventListenerList = std::list<IEntityEventListener*>;
+using tEntityEventListenerList = std::list<IEntityEventListener*>; // TODO: use vector?
 
 // TODO: temp
 struct SAVERESTOREDATA
