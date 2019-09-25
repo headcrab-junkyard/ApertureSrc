@@ -662,3 +662,91 @@ byte *COM_LoadStackFile(const char *path, void *buffer, int bufsize)
 
 	return buf;
 };
+
+/*
+================
+COM_InitFilesystem
+================
+*/
+void COM_InitFilesystem()
+{
+	int i, j;
+	char basedir[MAX_OSPATH];
+	searchpath_t *search;
+
+	//
+	// -basedir <path>
+	// Overrides the system supplied base directory (under GAMENAME)
+	//
+	i = COM_CheckParm("-basedir");
+	if(i && i < com_argc - 1)
+		Q_strcpy(basedir, com_argv[i + 1]);
+	else
+		Q_strcpy(basedir, host_parms.basedir);
+
+	j = Q_strlen(basedir);
+
+	if(j > 0)
+	{
+		if((basedir[j - 1] == '\\') || (basedir[j - 1] == '/'))
+			basedir[j - 1] = 0;
+	};
+
+	//
+	// -cachedir <path>
+	// Overrides the system supplied cache directory (nullptr or /qcache)
+	// -cachedir - will disable caching.
+	//
+	i = COM_CheckParm("-cachedir");
+	if(i && i < com_argc - 1)
+	{
+		if(com_argv[i + 1][0] == '-')
+			com_cachedir[0] = 0;
+		else
+			Q_strcpy(com_cachedir, com_argv[i + 1]);
+	}
+	else if(host_parms.cachedir)
+		Q_strcpy(com_cachedir, host_parms.cachedir);
+	else
+		com_cachedir[0] = 0;
+
+	//
+	// start up with GAMENAME by default (valve)
+	//
+	COM_AddGameDirectory(va("%s/" GAMENAME, basedir));
+
+	//
+	// -game <gamedir>
+	// Adds basedir/gamedir as an override game
+	//
+	i = COM_CheckParm("-game");
+	if(i && i < com_argc - 1)
+		COM_AddGameDirectory(va("%s/%s", basedir, com_argv[i + 1]));
+
+	//
+	// -path <dir or packfile> [<dir or packfile>] ...
+	// Fully specifies the exact serach path, overriding the generated one
+	//
+	i = COM_CheckParm("-path");
+	if(i)
+	{
+		com_searchpaths = nullptr;
+		while(++i < com_argc)
+		{
+			if(!com_argv[i] || com_argv[i][0] == '+' || com_argv[i][0] == '-')
+				break;
+
+			search = (searchpath_t*)Hunk_Alloc(sizeof(searchpath_t));
+			if(!strcmp(COM_FileExtension(com_argv[i]), "pak"))
+			{
+				search->pack = COM_LoadPackFile(com_argv[i]);
+				if(!search->pack)
+					gpSystem->Error("Couldn't load packfile: %s", com_argv[i]);
+			}
+			else
+				Q_strcpy(search->filename, com_argv[i]);
+			search->next = com_searchpaths;
+			com_searchpaths = search;
+		};
+	};
+};
