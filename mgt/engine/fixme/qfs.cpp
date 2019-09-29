@@ -2,7 +2,7 @@
 *	This file is part of Magenta Engine
 *
 *	Copyright (C) 1996-1997 Id Software, Inc.
-*	Copyright (C) 2018 BlackPhrase
+*	Copyright (C) 2018-2019 BlackPhrase
 *
 *	Magenta Engine is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -64,48 +64,5 @@ int COM_FOpenFile(const char *filename, IFile **file)
 {
 	return COM_FindFile(filename, nullptr, file);
 }
-
-/*
-================
-COM_AddGameDirectory
-
-Sets com_gamedir, adds the directory to the head of the path,
-then loads and adds pak1.pak pak2.pak ... 
-================
-*/
-void COM_AddGameDirectory(const char *dir)
 {
-	int i;
-	searchpath_t *search;
-	pack_t *pak;
-	char pakfile[MAX_OSPATH];
-
-	strcpy(com_gamedir, dir);
-
-	//
-	// add the directory to the search path
-	//
-	search = (searchpath_t*)Hunk_Alloc(sizeof(searchpath_t));
-	strcpy(search->filename, dir);
-	search->next = com_searchpaths;
-	com_searchpaths = search;
-
-	//
-	// add any pak files in the format pak0.pak pak1.pak, ...
-	//
-	for(i = 0;; i++)
-	{
-		sprintf(pakfile, "%s/pak%i.pak", dir, i);
-		pak = COM_LoadPackFile(pakfile);
-		if(!pak)
-			break;
-		search = (searchpath_t*)Hunk_Alloc(sizeof(searchpath_t));
-		search->pack = pak;
-		search->next = com_searchpaths;
-		com_searchpaths = search;
-	}
-
-	//
-	// add the contents of the parms.txt file to the end of the command line
-	//
 }

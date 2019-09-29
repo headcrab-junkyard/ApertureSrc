@@ -174,7 +174,51 @@ pack_t *COM_LoadPackFile(const char *packfile)
 	Con_Printf("Added packfile %s (%i files)\n", packfile, numpackfiles);
 	return pack;
 };
+
+/*
+================
+COM_AddGameDirectory
+
+Sets com_gamedir, adds the directory to the head of the path,
+then loads and adds pak1.pak pak2.pak ... 
+================
 */
+void COM_AddGameDirectory(const char *dir)
+{
+	int i;
+	searchpath_t *search;
+	pack_t *pak;
+	char pakfile[MAX_OSPATH];
+
+	strcpy(com_gamedir, dir);
+
+	//
+	// add the directory to the search path
+	//
+	search = (searchpath_t*)Hunk_Alloc(sizeof(searchpath_t));
+	strcpy(search->filename, dir);
+	search->next = com_searchpaths;
+	com_searchpaths = search;
+
+	//
+	// add any pak files in the format pak0.pak pak1.pak, ...
+	//
+	for(i = 0;; i++)
+	{
+		sprintf(pakfile, "%s/pak%i.pak", dir, i);
+		pak = COM_LoadPackFile(pakfile);
+		if(!pak)
+			break;
+		search = (searchpath_t*)Hunk_Alloc(sizeof(searchpath_t));
+		search->pack = pak;
+		search->next = com_searchpaths;
+		com_searchpaths = search;
+	};
+
+	//
+	// add the contents of the parms.txt file to the end of the command line
+	//
+};
 
 EXPOSE_SINGLE_INTERFACE(CFileSystem, IFileSystem, MGT_FILESYSTEM_INTERFACE_VERSION);
 
