@@ -665,6 +665,19 @@ byte *COM_LoadStackFile(const char *path, void *buffer, int bufsize)
 
 /*
 ================
+COM_AddGameDirectory
+
+Sets com_gamedir, adds the directory to the head of the path,
+then loads and adds pak1.pak pak2.pak ... 
+================
+*/
+void COM_AddGameDirectory(const char *dir)
+{
+	gpFileSystem->AddSearchPath(dir, "PLATFORM", false);
+};
+
+/*
+================
 COM_InitFilesystem
 ================
 */
