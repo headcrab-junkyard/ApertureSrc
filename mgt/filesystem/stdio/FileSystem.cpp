@@ -237,6 +237,7 @@ void CFileSystem::Unmount()
 void CFileSystem::AddSearchPath(const char *path, const char *alias, bool nowrite)
 {
 	//mlstSearchPaths.emplace_back(alias, path, nowrite); // TODO
+	COM_AddGameDirectory(path, "", false);
 };
 
 void CFileSystem::RemoveAllSearchPaths()
