@@ -37,6 +37,92 @@ int current_skill{0};
 
 void Mod_Print_f(const ICmdArgs &apArgs);
 
+typedef void (*pfnGiveFnptrsToDll)(enginefuncs_t *apEngFuncs, globalvars_t *apGlobals);
+
+extern enginefuncs_t gEngineFuncs; // TODO
+
+void *gamedll = NULL;
+
+void LoadThisDll(const char *name)
+{
+	pfnGiveFnptrsToDll fnGiveFnptrsToDll = NULL;
+	NEW_DLL_FUNCTIONS_FN fnGetNewDLLFunctions = NULL;
+	APIFUNCTION fnGetEntityAPI = NULL;
+	APIFUNCTION2 fnGetEntityAPI2 = NULL;
+
+	gamedll = FS_LoadLibrary(va("%s/%s", com_gamedir, name)); // TODO: was Sys_LoadModule
+
+	if(!gamedll)
+		Sys_Error("PR_LoadProgs: couldn't load game dll");
+
+	//pr_strings = (char *)progs + progs->ofs_strings; // TODO
+
+	fnGiveFnptrsToDll = (pfnGiveFnptrsToDll)Sys_GetExport_Wrapper(gamedll, "GiveFnptrsToDll");
+
+	if(!fnGiveFnptrsToDll)
+		return;
+
+	fnGiveFnptrsToDll(&gEngineFuncs, &gGlobalVariables); // TODO
+
+	fnGetNewDLLFunctions = (NEW_DLL_FUNCTIONS_FN)Sys_GetExport_Wrapper(gamedll, "GetNewDLLFunctions");
+	
+	int nDLLVersion = NEW_DLL_FUNCTIONS_VERSION;
+	
+	if(fnGetNewDLLFunctions)
+	{
+		fnGetNewDLLFunctions(&gNewDLLFunctions, &nDLLVersion);
+		
+		if(nDLLVersion != NEW_DLL_FUNCTIONS_VERSION)
+			Sys_Error("Extended API set has a wrong version (got %d, should be %d)", nDLLVersion, NEW_DLL_FUNCTIONS_VERSION);
+	};
+	
+	fnGetEntityAPI = (APIFUNCTION)Sys_GetExport_Wrapper(gamedll, "GetEntityAPI");
+	fnGetEntityAPI2 = (APIFUNCTION2)Sys_GetExport_Wrapper(gamedll, "GetEntityAPI2");
+
+	nDLLVersion = INTERFACE_VERSION;
+	
+	if(fnGetEntityAPI2)
+	{
+		if(!fnGetEntityAPI2(&gEntityInterface, &nDLLVersion))
+			return;
+
+		if(nDLLVersion != INTERFACE_VERSION)
+			Sys_Error("game dll has wrong version number (%i should be %i)", nDLLVersion, INTERFACE_VERSION);
+	};
+
+	if(fnGetEntityAPI)
+	{
+		if(!fnGetEntityAPI(&gEntityInterface, INTERFACE_VERSION))
+			return;
+	};
+};
+
+void PR_LoadProgs() // our temporary LoadEntityDLLs
+{
+	LoadThisDll("dlls/server");
+};
+
+/*
+==================
+Host_InitializeGameDLL
+
+TODO: should be located somewhere here around 222 line, called by Sys_InitGame
+==================
+*/
+void Host_InitializeGameDLL()
+{
+	static qboolean bLoaded = false;
+	
+	if(bLoaded)
+		return;
+	
+	Cbuf_Execute();
+	
+	PR_LoadProgs(); // TODO: LoadEntityDLLs
+	
+	bLoaded = true;
+};
+
 /*
 ==================
 Host_Quit_f
