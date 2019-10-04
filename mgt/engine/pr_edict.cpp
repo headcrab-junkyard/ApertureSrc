@@ -256,42 +256,6 @@ char *ED_NewString(char *string)
 	return pnew;
 };
 
-//typedef void (*pfnGiveFnptrsToDll)(enginefuncs_t *apEngFuncs, globalvars_t *apGlobals);
-
-void *gpGameLib{nullptr};
-IGame *gpGame{nullptr};
-
-/*
-===============
-PR_LoadProgs
-===============
-*/
-void PR_LoadProgs() // our temporary LoadEntityDLLs
-{
-	gpGameLib = Sys_LoadModule(va("%s/bin/server", com_gamedir));
-
-	if(!gpGameLib)
-		gpSystem->Error("PR_LoadProgs: couldn't load game dll!");
-
-	//pr_strings = (char *)progs + progs->ofs_strings; // TODO
-
-	auto fnGameFactory{Sys_GetFactory(gpGameLib)};
-	
-	if(!fnGameFactory)
-		return;
-	
-	gpGame = (IGame*)fnGameFactory(MGT_GAME_INTERFACE_VERSION, nullptr);
-	
-	if(!gpGame)
-		return;
-	
-	//if(nDLLVersion != INTERFACE_VERSION)
-		//Sys_Error("game dll has wrong version number (%i should be %i)", nDLLVersion, INTERFACE_VERSION);
-	
-	//fnGiveFnptrsToDll = (pfnGiveFnptrsToDll)Sys_GetExport(gamedll, "GiveFnptrsToDll");
-	//fnGiveFnptrsToDll(&gEngFuncs, &gGlobalVariables); // TODO
-};
-
 /*
 ===============
 PR_Init

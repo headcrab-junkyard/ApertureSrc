@@ -37,66 +37,56 @@ int current_skill{0};
 
 void Mod_Print_f(const ICmdArgs &apArgs);
 
-typedef void (*pfnGiveFnptrsToDll)(enginefuncs_t *apEngFuncs, globalvars_t *apGlobals);
+//typedef void (*pfnGiveFnptrsToDll)(enginefuncs_t *apEngFuncs, globalvars_t *apGlobals);
 
 extern enginefuncs_t gEngineFuncs; // TODO
 
-void *gamedll = NULL;
+void *gpGameLib{nullptr};
+IGame *gpGame{nullptr};
 
 void LoadThisDll(const char *name)
 {
-	pfnGiveFnptrsToDll fnGiveFnptrsToDll = NULL;
-	NEW_DLL_FUNCTIONS_FN fnGetNewDLLFunctions = NULL;
+	//pfnGiveFnptrsToDll fnGiveFnptrsToDll = NULL;
 	APIFUNCTION fnGetEntityAPI = NULL;
-	APIFUNCTION2 fnGetEntityAPI2 = NULL;
 
-	gamedll = FS_LoadLibrary(va("%s/%s", com_gamedir, name)); // TODO: was Sys_LoadModule
+	gpGameLib = FS_LoadLibrary(va("%s/%s", com_gamedir, name)); // TODO: was Sys_LoadModule
 
-	if(!gamedll)
-		Sys_Error("PR_LoadProgs: couldn't load game dll");
+	if(!gpGameLib)
+		gpSystem->Error("PR_LoadProgs: couldn't load game dll!");
 
 	//pr_strings = (char *)progs + progs->ofs_strings; // TODO
 
-	fnGiveFnptrsToDll = (pfnGiveFnptrsToDll)Sys_GetExport_Wrapper(gamedll, "GiveFnptrsToDll");
-
-	if(!fnGiveFnptrsToDll)
+	auto fnGameFactory{Sys_GetFactory(gpGameLib)};
+	
+	if(!fnGameFactory)
 		return;
-
-	fnGiveFnptrsToDll(&gEngineFuncs, &gGlobalVariables); // TODO
-
-	fnGetNewDLLFunctions = (NEW_DLL_FUNCTIONS_FN)Sys_GetExport_Wrapper(gamedll, "GetNewDLLFunctions");
 	
-	int nDLLVersion = NEW_DLL_FUNCTIONS_VERSION;
+	gpGame = (IGame*)fnGameFactory(MGT_GAME_INTERFACE_VERSION, nullptr);
 	
-	if(fnGetNewDLLFunctions)
-	{
-		fnGetNewDLLFunctions(&gNewDLLFunctions, &nDLLVersion);
-		
-		if(nDLLVersion != NEW_DLL_FUNCTIONS_VERSION)
-			Sys_Error("Extended API set has a wrong version (got %d, should be %d)", nDLLVersion, NEW_DLL_FUNCTIONS_VERSION);
-	};
+	if(!gpGame)
+		return;
 	
-	fnGetEntityAPI = (APIFUNCTION)Sys_GetExport_Wrapper(gamedll, "GetEntityAPI");
-	fnGetEntityAPI2 = (APIFUNCTION2)Sys_GetExport_Wrapper(gamedll, "GetEntityAPI2");
+/*
+	fnGetEntityAPI = (APIFUNCTION)Sys_GetExport_Wrapper(gpGameLib, "GetEntityAPI");
 
 	nDLLVersion = INTERFACE_VERSION;
 	
-	if(fnGetEntityAPI2)
+	if(fnGetEntityAPI)
 	{
-		if(!fnGetEntityAPI2(&gEntityInterface, &nDLLVersion))
+		if(!fnGetEntityAPI(&gEntityInterface, &nDLLVersion))
 			return;
 
 		if(nDLLVersion != INTERFACE_VERSION)
 			Sys_Error("game dll has wrong version number (%i should be %i)", nDLLVersion, INTERFACE_VERSION);
 	};
-
-	if(fnGetEntityAPI)
-	{
-		if(!fnGetEntityAPI(&gEntityInterface, INTERFACE_VERSION))
-			return;
-	};
+*/
 };
 
+/*
+===============
+PR_LoadProgs
+===============
+*/
 void PR_LoadProgs() // our temporary LoadEntityDLLs
 {
 	LoadThisDll("dlls/server");
@@ -119,6 +109,9 @@ void Host_InitializeGameDLL()
 	Cbuf_Execute();
 	
 	PR_LoadProgs(); // TODO: LoadEntityDLLs
+	
+	// TODO: actually init?
+	// TODO: also, should we provide access to the globalvars_t (gpGlobals)? //fnGiveFnptrsToDll(&gEngFuncs, &gGlobalVariables);
 	
 	bLoaded = true;
 };
