@@ -30,7 +30,7 @@ interface IModelLoader
 {
 	/**
 	*/
-	virtual bool IsExtensionSupported(const char *asExt) const = 0;
+	virtual bool IsExtSupported(const char *asExt) const = 0;
 	
 	/**
 	*/
