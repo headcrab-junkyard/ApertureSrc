@@ -27,7 +27,7 @@
 class CModelLoaderBSP final : public IModelLoader
 {
 public:
-	bool IsExtensionSupported(const char *asExt) const override;
+	bool IsExtSupported(const char *asExt) const override;
 	
 	IModel *TryLoad(const char *asName) override;
 };
