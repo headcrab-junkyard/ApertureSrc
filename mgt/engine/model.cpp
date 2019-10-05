@@ -119,7 +119,7 @@ byte *Mod_DecompressVis(byte *in, model_t *model)
 	out = decompressed;
 
 #if 0
-	memcpy (out, in, row);
+	Q_memcpy (out, in, row);
 #else
 	if (!in)
 	{
@@ -202,7 +202,7 @@ model_t *Mod_FindName(const char *name)
 	//
 	for (i=0 , mod=mod_known ; i<mod_numknown ; i++, mod++)
 	{
-		if (!strcmp (mod->name, name) )
+		if (!Q_strcmp (mod->name, name) )
 			break;
 		if (mod->needload == NL_UNREFERENCED)
 			if (!avail || mod->type != mod_alias)
@@ -226,7 +226,7 @@ model_t *Mod_FindName(const char *name)
 		else
 			mod_numknown++;
 		
-		strcpy (mod->name, name);
+		Q_strcpy (mod->name, name);
 		mod->needload = NL_NEEDS_LOADED;
 	};
 
@@ -396,8 +396,8 @@ void Mod_LoadTextures (lump_t *l)
 			continue;	// allready sequenced
 
 	// find the number of frames in the animation
-		memset (anims, 0, sizeof(anims));
-		memset (altanims, 0, sizeof(altanims));
+		Q_memset (anims, 0, sizeof(anims));
+		Q_memset (altanims, 0, sizeof(altanims));
 
 		max = tx->name[1];
 		altmax = 0;
@@ -425,7 +425,7 @@ void Mod_LoadTextures (lump_t *l)
 			tx2 = loadmodel->textures[j];
 			if (!tx2 || tx2->name[0] != '+')
 				continue;
-			if (strcmp (tx2->name+2, tx->name+2))
+			if (Q_strcmp (tx2->name+2, tx->name+2))
 				continue;
 
 			num = tx2->name[1];
@@ -507,7 +507,7 @@ void Mod_LoadVisibility (lump_t *l)
 		return;
 	};
 	loadmodel->visdata = (byte*)Hunk_AllocName ( l->filelen, loadname);	
-	memcpy (loadmodel->visdata, mod_base + l->fileofs, l->filelen);
+	Q_memcpy (loadmodel->visdata, mod_base + l->fileofs, l->filelen);
 };
 
 /*
@@ -523,7 +523,7 @@ void Mod_LoadEntities (lump_t *l)
 		return;
 	};
 	loadmodel->entities = (char*)Hunk_AllocName ( l->filelen, loadname);	
-	memcpy (loadmodel->entities, mod_base + l->fileofs, l->filelen);
+	Q_memcpy (loadmodel->entities, mod_base + l->fileofs, l->filelen);
 };
 
 /*
@@ -1189,7 +1189,7 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 			sprintf (name, "*%i", i+1);
 			loadmodel = Mod_FindName (name);
 			*loadmodel = *mod;
-			strcpy (loadmodel->name, name);
+			Q_strcpy (loadmodel->name, name);
 			mod = loadmodel;
 		};
 	};
@@ -1216,7 +1216,7 @@ void * Mod_LoadAliasFrame (void * pin, int *pframeindex, int numv, trivertx_t *p
 
 	pdaliasframe = (daliasframe_t *)pin;
 
-	strcpy (name, pdaliasframe->name);
+	Q_strcpy (name, pdaliasframe->name);
 
 	for (i=0 ; i<3 ; i++)
 	{
@@ -1615,7 +1615,7 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	Cache_Alloc (&mod->cache, total, loadname);
 	if (!mod->cache.data)
 		return;
-	memcpy (mod->cache.data, pheader, total);
+	Q_memcpy (mod->cache.data, pheader, total);
 
 	Hunk_FreeToLowMark (start);
 };
