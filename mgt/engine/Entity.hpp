@@ -50,7 +50,7 @@ public:
 	
 	float CheckBottom();
 private:
-	void SetMinMaxSize(const float *min, const float *max, bool rotate);
+	void SetMinMaxSize(const float *avMins, const float *avMaxs, bool abRotate);
 	
 	edict_t *e{nullptr};
 	IGameEntity *mpGameEntity{nullptr};

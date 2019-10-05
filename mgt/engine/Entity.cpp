@@ -78,7 +78,6 @@ setmodel(entity, model)
 void CEntity::SetModel(const char *m)
 {
 	char **check;
-	model_t *mod;
 	int i;
 
 	// check to see if model was properly precached
@@ -92,7 +91,7 @@ void CEntity::SetModel(const char *m)
 	e->v.model = m - pr_strings;
 	e->v.modelindex = i; //SV_ModelIndex (m);
 
-	mod = sv.models[(int)e->v.modelindex]; // Mod_ForName (m, true);
+	model_t *mod = sv.models[(int)e->v.modelindex]; // Mod_ForName (m, true);
 
 	if(mod)
 		SetMinMaxSize(mod->mins, mod->maxs, true);
