@@ -18,7 +18,7 @@ target_sources(${PROJECT_NAME}
 	PRIVATE ${PROJECT_SOURCES_PLATFORM}
 )
 
-target_link_libraries(${PROJECT_NAME} ogs-interface mgt-qlibc mgt-mathlib)
+target_link_libraries(${PROJECT_NAME} ogs-interface mgt-qlibc mgt-mathlib ogs-tier1)
 
 if(WIN32)
 	target_link_libraries(${PROJECT_NAME} winmm) # timeGetTime
