@@ -295,18 +295,18 @@ void CEntity::MakeStatic(edict_t *ent)
 {
 	int i;
 
-	MSG_WriteByte(&sv.signon, svc_spawnstatic);
+	sv.signon->WriteByte(svc_spawnstatic);
 
-	MSG_WriteByte(&sv.signon, SV_ModelIndex(pr_strings + ent->v.model));
+	sv.signon->WriteByte(SV_ModelIndex(pr_strings + ent->v.model));
 
-	MSG_WriteByte(&sv.signon, ent->v.frame);
-	MSG_WriteByte(&sv.signon, ent->v.colormap);
-	MSG_WriteByte(&sv.signon, ent->v.skin);
+	sv.signon->WriteByte(ent->v.frame);
+	sv.signon->WriteByte(ent->v.colormap);
+	sv.signon->WriteByte(ent->v.skin);
 
 	for(i = 0; i < 3; i++)
 	{
-		MSG_WriteCoord(&sv.signon, ent->v.origin[i]);
-		MSG_WriteAngle(&sv.signon, ent->v.angles[i]);
+		sv.signon->WriteCoord(ent->v.origin[i]);
+		sv.signon->WriteAngle(ent->v.angles[i]);
 	};
 
 	// throw the entity away now
