@@ -63,9 +63,9 @@ void Hunk_Check ()
 	for (h = (hunk_t *)hunk_base ; (byte *)h != hunk_base + hunk_low_used ; )
 	{
 		if (h->sentinal != HUNK_SENTINEL)
-			Sys_Error ("Hunk_Check: trahsed sentinal");
+			gpSystem->Error ("Hunk_Check: trahsed sentinal");
 		if (h->size < 16 || h->size + (byte *)h - hunk_base > hunk_size)
-			Sys_Error ("Hunk_Check: bad size");
+			gpSystem->Error ("Hunk_Check: bad size");
 		h = (hunk_t *)((byte *)h+h->size);
 	}
 }
@@ -121,9 +121,9 @@ void Hunk_Print (bool all)
 	// run consistancy checks
 	//
 		if (h->sentinal != HUNK_SENTINEL)
-			Sys_Error ("Hunk_Check: trahsed sentinal");
+			gpSystem->Error ("Hunk_Check: trahsed sentinal");
 		if (h->size < 16 || h->size + (byte *)h - hunk_base > hunk_size)
-			Sys_Error ("Hunk_Check: bad size");
+			gpSystem->Error ("Hunk_Check: bad size");
 			
 		next = (hunk_t *)((byte *)h+h->size);
 		count++;
@@ -171,12 +171,12 @@ void *Hunk_AllocName (int size, const char *name)
 #endif
 
 	if (size < 0)
-		Sys_Error ("Hunk_Alloc: bad size: %i", size);
+		gpSystem->Error ("Hunk_Alloc: bad size: %i", size);
 		
 	size = sizeof(hunk_t) + ((size+15)&~15);
 	
 	if (hunk_size - hunk_low_used - hunk_high_used < size)
-		Sys_Error ("Hunk_Alloc: failed on %i bytes",size);
+		gpSystem->Error ("Hunk_Alloc: failed on %i bytes",size);
 	
 	h = (hunk_t *)(hunk_base + hunk_low_used);
 	hunk_low_used += size;
@@ -210,7 +210,7 @@ int	Hunk_LowMark ()
 void Hunk_FreeToLowMark (int mark)
 {
 	if (mark < 0 || mark > hunk_low_used)
-		Sys_Error ("Hunk_FreeToLowMark: bad mark %i", mark);
+		gpSystem->Error ("Hunk_FreeToLowMark: bad mark %i", mark);
 	Q_memset (hunk_base + mark, 0, hunk_low_used - mark);
 	hunk_low_used = mark;
 }
@@ -234,7 +234,7 @@ void Hunk_FreeToHighMark (int mark)
 		Hunk_FreeToHighMark (hunk_tempmark);
 	}
 	if (mark < 0 || mark > hunk_high_used)
-		Sys_Error ("Hunk_FreeToHighMark: bad mark %i", mark);
+		gpSystem->Error ("Hunk_FreeToHighMark: bad mark %i", mark);
 	Q_memset (hunk_base + hunk_size - hunk_high_used, 0, hunk_high_used - mark);
 	hunk_high_used = mark;
 }
@@ -250,7 +250,7 @@ void *Hunk_HighAllocName (int size, const char *name)
 	hunk_t	*h;
 
 	if (size < 0)
-		Sys_Error ("Hunk_HighAllocName: bad size: %i", size);
+		gpSystem->Error ("Hunk_HighAllocName: bad size: %i", size);
 
 	if (hunk_tempactive)
 	{
