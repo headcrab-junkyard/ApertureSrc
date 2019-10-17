@@ -95,8 +95,8 @@ void Hunk_Print (bool all)
 	starthigh = (hunk_t *)(hunk_base + hunk_size - hunk_high_used);
 	endhigh = (hunk_t *)(hunk_base + hunk_size);
 
-	Con_Printf ("          :%8i total hunk size\n", hunk_size);
-	Con_Printf ("-------------------------\n");
+	gpSystem->Printf ("          :%8i total hunk size\n", hunk_size);
+	gpSystem->Printf ("-------------------------\n");
 
 	while (1)
 	{
@@ -105,9 +105,9 @@ void Hunk_Print (bool all)
 	//
 		if ( h == endlow )
 		{
-			Con_Printf ("-------------------------\n");
-			Con_Printf ("          :%8i REMAINING\n", hunk_size - hunk_low_used - hunk_high_used);
-			Con_Printf ("-------------------------\n");
+			gpSystem->Printf ("-------------------------\n");
+			gpSystem->Printf ("          :%8i REMAINING\n", hunk_size - hunk_low_used - hunk_high_used);
+			gpSystem->Printf ("-------------------------\n");
 			h = starthigh;
 		}
 		
@@ -135,7 +135,7 @@ void Hunk_Print (bool all)
 	//
 		memcpy (name, h->name, 8);
 		if (all)
-			Con_Printf ("%8p :%8i %8s\n",h, h->size, name);
+			gpSystem->Printf ("%8p :%8i %8s\n",h, h->size, name);
 			
 	//
 	// print the total
@@ -144,7 +144,7 @@ void Hunk_Print (bool all)
 		Q_strncmp (h->name, next->name, 8) )
 		{
 			if (!all)
-				Con_Printf ("          :%8i %8s (TOTAL)\n",sum, name);
+				gpSystem->Printf ("          :%8i %8s (TOTAL)\n",sum, name);
 			count = 0;
 			sum = 0;
 		}
@@ -152,8 +152,8 @@ void Hunk_Print (bool all)
 		h = next;
 	}
 
-	Con_Printf ("-------------------------\n");
-	Con_Printf ("%8i total blocks\n", totalblocks);
+	gpSystem->Printf ("-------------------------\n");
+	gpSystem->Printf ("%8i total blocks\n", totalblocks);
 	
 }
 
@@ -266,7 +266,7 @@ void *Hunk_HighAllocName (int size, const char *name)
 
 	if (hunk_size - hunk_low_used - hunk_high_used < size)
 	{
-		Con_Printf ("Hunk_HighAlloc: failed on %i bytes\n",size);
+		gpSystem->Printf ("Hunk_HighAlloc: failed on %i bytes\n",size);
 		return NULL;
 	}
 
