@@ -19,7 +19,6 @@
 */
 
 /// @file
-/// @brief
 
 #include "quakedef.h"
 #include "crc.h"
@@ -70,7 +69,7 @@ static const CRC32_t crctable[256] =
 void CRC32_Init(CRC32_t *crcvalue)
 {
 	*crcvalue = CRC32_INIT_VALUE;
-}
+};
 
 CRC32_t CRC32_Final(CRC32_t crcvalue)
 {
@@ -149,12 +148,12 @@ GotoSucks:
 void CRC32_ProcessByte(CRC32_t *crcvalue, byte data)
 {
 	*crcvalue = (*crcvalue << 8) ^ crctable[(*crcvalue >> 8) ^ data];
-}
+};
 
 CRC32_t CRC32_Value(CRC32_t crcvalue)
 {
 	return crcvalue ^ CRC32_XOR_VALUE;
-}
+};
 
 CRC32_t CRC32_Block(byte *start, int count)
 {
@@ -166,4 +165,4 @@ CRC32_t CRC32_Block(byte *start, int count)
 		crc = (crc << 8) ^ crctable[(crc >> 8) ^ *start++];
 
 	return crc;
-}
+};
