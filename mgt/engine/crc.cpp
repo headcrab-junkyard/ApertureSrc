@@ -72,6 +72,11 @@ void CRC_Init(unsigned short *crcvalue)
 	*crcvalue = CRC_INIT_VALUE;
 }
 
+CRC32_t CRC32_Final(CRC32_t crcvalue)
+{
+	return crcvalue ^= CRC32_XOR_VALUE;
+};
+
 void CRC32_ProcessBuffer(CRC32_t *crcvalue, void *data, int len)
 {
 	CRC32_t ulCRC = *crcvalue;
