@@ -24,14 +24,14 @@
 #include "quakedef.h"
 #include "crc.h"
 
-// this is a 16 bit, non-reflected CRC using the polynomial 0x1021
+// this is a 32 bit, non-reflected CRC using the polynomial 0x1021
 // and the initial and final xor values shown below...  in other words, the
 // CCITT standard CRC used by XMODEM
 
 #define CRC32_INIT_VALUE 0xffff
 #define CRC32_XOR_VALUE 0x0000
 
-static unsigned short crctable[256] =
+static const CRC32_t crctable[256] =
 {
   0x0000, 0x1021, 0x2042, 0x3063, 0x4084, 0x50a5, 0x60c6, 0x70e7,
   0x8108, 0x9129, 0xa14a, 0xb16b, 0xc18c, 0xd1ad, 0xe1ce, 0xf1ef,
@@ -158,7 +158,7 @@ CRC32_t CRC32_Value(CRC32_t crcvalue)
 
 CRC32_t CRC32_Block(byte *start, int count)
 {
-	unsigned short crc;
+	CRC32_t crc;
 
 	CRC32_Init(&crc);
 
