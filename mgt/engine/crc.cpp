@@ -72,6 +72,75 @@ void CRC_Init(unsigned short *crcvalue)
 	*crcvalue = CRC_INIT_VALUE;
 }
 
+void CRC32_ProcessBuffer(CRC32_t *crcvalue, void *data, int len)
+{
+	CRC32_t ulCRC = *crcvalue;
+	byte *pBuf = (byte*)data;
+	uint nFront;
+	int nMain;
+
+GotoSucks:
+
+	switch(len)
+	{
+	case 7:
+		ulCRC = crctable[*pBuf++ ^ (byte)ulCRC] ^ (ulCRC >> 8);
+	case 6:
+		ulCRC = crctable[*pBuf++ ^ (byte)ulCRC] ^ (ulCRC >> 8);
+	case 5:
+		ulCRC = crctable[*pBuf++ ^ (byte)ulCRC] ^ (ulCRC >> 8);
+	case 4:
+		ulCRC ^= LittleLong(*(CRC32_t*)pBuf);
+		ulCRC = crctable[(byte)ulCRC] ^ (ulCRC >> 8);
+		ulCRC = crctable[(byte)ulCRC] ^ (ulCRC >> 8);
+		ulCRC = crctable[(byte)ulCRC] ^ (ulCRC >> 8);
+		*crcvalue = ulCRC;
+		return;
+	case 3:
+		ulCRC = crctable[*pBuf++ ^ (byte)ulCRC] ^ (ulCRC >> 8);
+	case 2:
+		ulCRC = crctable[*pBuf++ ^ (byte)ulCRC] ^ (ulCRC >> 8);
+	case 1:
+		ulCRC = crctable[*pBuf++ ^ (byte)ulCRC] ^ (ulCRC >> 8);
+	case 0:
+		*crcvalue = ulCRC;
+		return;
+	};
+	
+	nFront = ((uint)pBuf) & 3;
+	len -= nFront;
+	
+	switch(nFront)
+	{
+	case 3:
+		ulCRC = crctable[*pBuf++ ^ (byte)ulCRC] ^ (ulCRC >> 8);
+	case 2:
+		ulCRC = crctable[*pBuf++ ^ (byte)ulCRC] ^ (ulCRC >> 8);
+	case 1:
+		ulCRC = crctable[*pBuf++ ^ (byte)ulCRC] ^ (ulCRC >> 8);
+	};
+	
+	nMain = len >> 3;
+	
+	while(nMain--)
+	{
+		ulCRC ^= LittleLong(*(CRC32_t*)pBuf);
+		ulCRC = crctable[(byte)ulCRC] ^ (ulCRC >> 8);
+		ulCRC = crctable[(byte)ulCRC] ^ (ulCRC >> 8);
+		ulCRC = crctable[(byte)ulCRC] ^ (ulCRC >> 8);
+		ulCRC = crctable[(byte)ulCRC] ^ (ulCRC >> 8);
+		ulCRC ^= LittleLong(*(CRC32_t*)(pBuf + 4));
+		ulCRC = crctable[(byte)ulCRC] ^ (ulCRC >> 8);
+		ulCRC = crctable[(byte)ulCRC] ^ (ulCRC >> 8);
+		ulCRC = crctable[(byte)ulCRC] ^ (ulCRC >> 8);
+		ulCRC = crctable[(byte)ulCRC] ^ (ulCRC >> 8);
+		pBuf += 8;
+	};
+	
+	len &= 7;
+	goto GotoSucks;
+};
+
 void CRC_ProcessByte(unsigned short *crcvalue, byte data)
 {
 	*crcvalue = (*crcvalue << 8) ^ crctable[(*crcvalue >> 8) ^ data];
