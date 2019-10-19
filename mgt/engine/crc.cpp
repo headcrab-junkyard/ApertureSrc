@@ -156,7 +156,7 @@ CRC32_t CRC32_Value(CRC32_t crcvalue)
 	return crcvalue ^ CRC_XOR_VALUE;
 }
 
-unsigned short CRC_Block(byte *start, int count)
+CRC32_t CRC32_Block(byte *start, int count)
 {
 	unsigned short crc;
 
