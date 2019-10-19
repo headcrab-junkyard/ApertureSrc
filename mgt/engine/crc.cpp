@@ -160,7 +160,8 @@ CRC32_t CRC32_Block(byte *start, int count)
 {
 	unsigned short crc;
 
-	CRC_Init(&crc);
+	CRC32_Init(&crc);
+
 	while(count--)
 		crc = (crc << 8) ^ crctable[(crc >> 8) ^ *start++];
 
