@@ -29,7 +29,7 @@
 // CCITT standard CRC used by XMODEM
 
 #define CRC32_INIT_VALUE 0xffff
-#define CRC_XOR_VALUE 0x0000
+#define CRC32_XOR_VALUE 0x0000
 
 static unsigned short crctable[256] =
 {
@@ -153,7 +153,7 @@ void CRC32_ProcessByte(CRC32_t *crcvalue, byte data)
 
 CRC32_t CRC32_Value(CRC32_t crcvalue)
 {
-	return crcvalue ^ CRC_XOR_VALUE;
+	return crcvalue ^ CRC32_XOR_VALUE;
 }
 
 CRC32_t CRC32_Block(byte *start, int count)
