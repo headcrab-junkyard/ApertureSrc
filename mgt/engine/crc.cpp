@@ -146,7 +146,7 @@ GotoSucks:
 	goto GotoSucks;
 };
 
-void CRC_ProcessByte(unsigned short *crcvalue, byte data)
+void CRC32_ProcessByte(CRC32_t *crcvalue, byte data)
 {
 	*crcvalue = (*crcvalue << 8) ^ crctable[(*crcvalue >> 8) ^ data];
 }
