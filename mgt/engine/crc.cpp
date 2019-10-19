@@ -28,7 +28,7 @@
 // and the initial and final xor values shown below...  in other words, the
 // CCITT standard CRC used by XMODEM
 
-#define CRC_INIT_VALUE 0xffff
+#define CRC32_INIT_VALUE 0xffff
 #define CRC_XOR_VALUE 0x0000
 
 static unsigned short crctable[256] =
@@ -69,7 +69,7 @@ static unsigned short crctable[256] =
 
 void CRC32_Init(CRC32_t *crcvalue)
 {
-	*crcvalue = CRC_INIT_VALUE;
+	*crcvalue = CRC32_INIT_VALUE;
 }
 
 CRC32_t CRC32_Final(CRC32_t crcvalue)
