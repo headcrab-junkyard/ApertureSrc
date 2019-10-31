@@ -25,7 +25,8 @@
 #include "CommonTypes.hpp"
 
 struct INetChannel;
-class CSizeBuffer;
+interface IReadBuffer;
+interface IWriteBuffer;
 
 interface INetMsg
 {
@@ -34,12 +35,10 @@ interface INetMsg
 	//virtual void Release() = 0;
 	
 	/** Returns true if parsing was OK */
-	//virtual bool ReadFromBuffer(bf_read &apBuffer) = 0;
-	virtual bool ReadFromBuffer(const CSizeBuffer &aBuffer) = 0;
+	virtual bool ReadFromBuffer(/*const*/ IReadBuffer &aBuffer) = 0;
 	
 	/** Returns true if writing was OK */
-	//virtual bool WriteToBuffer(bf_write &apBuffer) = 0;
-	virtual bool WriteToBuffer(CSizeBuffer &aBuffer) = 0;
+	virtual bool WriteToBuffer(IWriteBuffer &aBuffer) = 0;
 	
 	/** Calles the recently set handler to process this message */
 	//virtual bool Process() = 0;
