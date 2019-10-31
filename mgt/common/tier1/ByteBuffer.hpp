@@ -24,6 +24,8 @@
 #pragma once
 
 #include "qcommon.h"
+#include "network/IReadBuffer.hpp"
+#include "network/IWriteBuffer.hpp"
 
 using sizebuf_t = struct sizebuf_s;
 
@@ -31,7 +33,7 @@ using sizebuf_t = struct sizebuf_s;
 
 struct ISystem;
 
-class CByteBuffer
+class CByteBuffer : public IReadBuffer, public IWriteBuffer
 {
 public:
 	CByteBuffer(sizebuf_t *apData);
@@ -43,57 +45,57 @@ public:
 	// Writing methods
 	
 	///
-	void WriteByte(int nValue);
+	void WriteByte(int nValue) override;
 
 	///
-	void WriteChar(int nValue);
+	void WriteChar(int nValue) override;
 	
 	///
-	void WriteShort(int nValue);
+	void WriteShort(int nValue) override;
 
 	///
-	void WriteLong(int nValue);
+	void WriteLong(int nValue) override;
 	
 	///
-	void WriteFloat(float fValue);
+	void WriteFloat(float fValue) override;
 	
 	///
-	void WriteAngle(float fValue);
+	void WriteAngle(float fValue) override;
 	
 	///
-	void WriteCoord(float fValue);
+	void WriteCoord(float fValue) override;
 	
 	///
-	void WriteString(const char *sValue);
+	void WriteString(const char *sValue) override;
 	
 	///
-	void WriteEntity(int nValue);
+	void WriteEntity(int nValue) override;
 	
 	// Reading methods
 
 	///
-	int ReadByte();
+	int ReadByte() override;
 	
 	/// returns -1 and sets msg_badread if no more characters are available
-	int ReadChar();
+	int ReadChar() override;
 
 	///
-	int ReadShort();
+	int ReadShort() override;
 
 	///
-	int ReadLong();
+	int ReadLong() override;
 	
 	///
-	float ReadFloat();
+	float ReadFloat() override;
 	
 	///
-	float ReadCoord();
+	float ReadCoord() override;
 	
 	///
-	float ReadAngle();
+	float ReadAngle() override;
 	
 	///
-	char *ReadString();
+	const char *ReadString() override;
 	
 	///
 	int GetReadCount() const {return msg_readcount;} // TODO: used by ServerUser
