@@ -137,7 +137,7 @@ const char *CSystem::GetFullCommandLine()
 
 bool CSystem::GetCurrentTimeAndDate(int *year, int *month, int *dayOfWeek, int *day, int *hour, int *minute, int *second)
 {
-	return "";
+	return false;
 };
 
 double CSystem::GetFreeDiskSpace(const char *path)
