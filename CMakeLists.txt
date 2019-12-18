@@ -19,6 +19,12 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/../bin)
 #set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/../bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/../bin)
 
+# Set path to OGS SDK
+set(OGS_SDK_PATH ${CMAKE_SOURCE_DIR}/../ogs-sdk/goldsrc
+	CACHE PATH
+	"Path to OGS engine SDK"
+)
+
 
 # Define available options
 option(MGT_DEDICATED "Build only dedicated server" OFF)
@@ -63,6 +69,9 @@ if(NOT CMAKE_BUILD_TYPE)
 endif()
 
 # Add subdirectories
+
+# Add OGS SDK directory
+add_subdirectory(${OGS_SDK_PATH} ${CMAKE_BINARY_DIR}/sdk)
 
 add_subdirectory(mgt)
 add_subdirectory(tests)
