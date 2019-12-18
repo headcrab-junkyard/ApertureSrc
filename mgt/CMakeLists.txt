@@ -16,9 +16,7 @@ include_directories(
 
 add_subdirectory(qlibc)
 #add_subdirectory(applib)
-add_subdirectory(mathlib)
 add_subdirectory(pm_shared)
-add_subdirectory(interface)
 #add_subdirectory(utils)
 
 #add_subdirectory(optional)
