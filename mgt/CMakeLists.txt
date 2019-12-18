@@ -15,6 +15,7 @@ include_directories(
 # Add subdirectories
 
 add_subdirectory(qlibc)
+add_subdirectory(tier1)
 #add_subdirectory(applib)
 add_subdirectory(pm_shared)
 #add_subdirectory(utils)
