@@ -1,4 +1,4 @@
-project(mgt-script)
+project(ogs-script)
 
 # Build as a shared library
 add_library(${PROJECT_NAME} MODULE)
@@ -16,4 +16,4 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 # Link with dependencies
-target_link_libraries(${PROJECT_NAME} ogs-interface)
+target_link_libraries(${PROJECT_NAME} ogs-tier1)
