@@ -27,7 +27,7 @@
 
 constexpr auto MGT_SCRIPT_INTERFACE_VERSION{"MGTScript001Alpha"};
 
-interface IScriptInstance
+interface IScript
 {
 	///
 	virtual void Exec(const char *asText) = 0;
@@ -42,8 +42,8 @@ interface IScriptSystem
 	virtual void Shutdown() = 0;
 	
 	///
-	virtual IScriptInstance *CreateInstance() = 0;
+	virtual IScript *CreateScript() = 0;
 	
 	///
-	virtual void DestroyInstance(IScriptInstance *apInstance) = 0;
+	virtual void DestroyScript(IScript *apScript) = 0;
 };
