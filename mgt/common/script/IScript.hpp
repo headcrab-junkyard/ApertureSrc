@@ -33,7 +33,7 @@ interface IScriptInstance
 	virtual void Exec(const char *asText) = 0;
 };
 
-interface IScript
+interface IScriptSystem
 {
 	///
 	virtual bool Init(CreateInterfaceFn afnEngineFactory) = 0;
