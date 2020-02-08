@@ -21,7 +21,7 @@
 
 #include "SquirrelScript.hpp"
 
-EXPOSE_SINGLE_INTERFACE(CScriptSquirrel, IScript, MGT_SCRIPT_INTERFACE_VERSION);
+EXPOSE_SINGLE_INTERFACE(CScriptSquirrel, IScriptSystem, MGT_SCRIPT_INTERFACE_VERSION);
 
 CScriptSquirrel::CScriptSquirrel() = default;
 CScriptSquirrel::~CScriptSquirrel() = default;
@@ -35,12 +35,12 @@ void CScriptSquirrel::Shutdown()
 {
 };
 
-IScriptInstance *CScriptSquirrel::CreateInstance()
+IScript *CScriptSquirrel::CreateScript()
 {
 	return nullptr;
 };
 
-void CScriptSquirrel::DestroyInstance(IScriptInstance *apInstance)
+void CScriptSquirrel::DestroyScript(IScript *apScript)
 {
 	if(!apInstance)
 		return;

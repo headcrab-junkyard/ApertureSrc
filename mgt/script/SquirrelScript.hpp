@@ -23,7 +23,7 @@
 
 #include "script/IScript.hpp"
 
-class CScriptSquirrel final : public IScript
+class CScriptSquirrel final : public IScriptSystem
 {
 public:
 	CScriptSquirrel();
@@ -32,7 +32,7 @@ public:
 	bool Init(CreateInterfaceFn afnEngineFactory) override;
 	void Shutdown() override;
 	
-	IScriptInstance *CreateInstance() override;
-	void DestroyInstance(IScriptInstance *apInstance) override;
+	IScript *CreateScript() override;
+	void DestroyScript(IScript *apScript) override;
 private:
 };
