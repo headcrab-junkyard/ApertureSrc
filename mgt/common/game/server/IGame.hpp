@@ -32,7 +32,7 @@ interface IGame : public IBaseInterface
 	/**
 	* Initialize the game for the first time
 	*/
-	virtual bool Init(CreateInterfaceFn afnModuleFactory) = 0;
+	virtual bool Init(CreateInterfaceFn afnEngineFactory) = 0;
 	
 	/**
 	* Shut down the entire game

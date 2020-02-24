@@ -32,7 +32,7 @@ interface IClientGame : public IBaseInterface
 	///
 	virtual bool Init(CreateInterfaceFn afnEngineFactory) = 0;
 	
-	///
+	/// oportunity to flush and close any open files
 	virtual void Shutdown() = 0;
 	
 	///
