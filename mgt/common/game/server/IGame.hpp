@@ -25,7 +25,7 @@
 #include "CommonTypes.hpp"
 #include "Interface.hpp"
 
-constexpr auto MGT_GAME_INTERFACE_VERSION{"MGTGame001Alpha"};
+constexpr auto OGS_GAME_INTERFACE_VERSION{"OGSGame001"};
 
 interface IGame : public IBaseInterface
 {
