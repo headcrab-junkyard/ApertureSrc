@@ -25,7 +25,7 @@
 #include "CommonTypes.hpp"
 #include "Interface.hpp"
 
-constexpr auto MGT_SCRIPT_INTERFACE_VERSION{"MGTScript001Alpha"};
+constexpr auto OGS_SCRIPTSYSTEM_INTERFACE_VERSION{"OGSScriptSystem001"};
 
 interface IScript
 {
