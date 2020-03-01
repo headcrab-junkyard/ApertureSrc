@@ -29,7 +29,7 @@
 #include <windef.h>
 #endif
 
-constexpr auto MGT_INPUTSYSTEM_INTERFACE_VERSION{"MGTInputSystem001Alpha"};
+constexpr auto OGS_INPUTSYSTEM_INTERFACE_VERSION{"OGSInputSystem001"};
 
 interface IInputEventListener;
 
