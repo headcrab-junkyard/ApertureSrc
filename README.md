@@ -1,9 +1,9 @@
-# Magenta Engine
+# OGSNext Engine
 
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/BlackPhrase/magenta?svg=true)](https://ci.appveyor.com/project/BlackPhrase/magenta)
-[![Build Status](https://travis-ci.org/BlackPhrase/magenta.svg)](https://travis-ci.org/BlackPhrase/magenta)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/BlackPhrase/OGSNext?svg=true)](https://ci.appveyor.com/project/BlackPhrase/OGSNext)
+[![Build Status](https://travis-ci.org/BlackPhrase/OGSNext.svg)](https://travis-ci.org/BlackPhrase/OGSNext)
 
-![Magenta Logo](docs/pics/MGTLogo1280x512.png?raw=true "Magenta Logo")
+![OGSNext Logo](docs/pics/OGSLogo1280x512.png?raw=true "OGSNext Logo")
 
 ## Contributing
 
@@ -28,7 +28,7 @@ Please note that this project is released with a [Contributor Code of Conduct](C
 
 ## License
 
-[![license](https://img.shields.io/gitlab/license/BlackPhrase/magenta.svg)](https://gitlab.com/BlackPhrase/magenta/blob/master/LICENSE)
+[![license](https://img.shields.io/github/license/BlackPhrase/OGSNext.svg)](https://gitlab.com/BlackPhrase/OGSNext/blob/master/LICENSE)
 
 The engine is licensed under the terms of GNU GPLv3 license  
 See [LICENSE](LICENSE) file for license text and additional info
