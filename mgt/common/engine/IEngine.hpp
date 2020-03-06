@@ -29,7 +29,7 @@ constexpr auto OGS_ENGINE_INTERFACE_VERSION{"OGSEngine005"};
 
 interface IEngine : public IBaseInterface
 {
-	struct SInitData
+	struct InitParams
 	{
 		CreateInterfaceFn fnLauncherFactory{nullptr}; ///< Factory function from launcher module to get interfaces from it
 		
@@ -50,7 +50,7 @@ interface IEngine : public IBaseInterface
 	* @param aInitData - passed read-only struct that contains specified init settings
 	* @return true if successfully (or already) initialized
 	*/
-	virtual bool Init(const SInitData &apInitData) = 0;
+	virtual bool Init(const InitParams &apInitParams) = 0;
 	
 	/// Shutdown the engine
 	virtual void Shutdown() = 0;
