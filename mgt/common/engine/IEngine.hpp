@@ -33,12 +33,12 @@ interface IEngine : public IBaseInterface
 	{
 		CreateInterfaceFn fnLauncherFactory{nullptr}; ///< Factory function from launcher module to get interfaces from it
 		
-		const char *sGameDir{""};	///< Game folder to load resources and game module from (TODO: basedir?)
-		const char *sCmdLine{""};		///< Passed command line
+		const char *sGameDir{""}; /*(TODO: basedir?)*/ ///< Game folder to load resources and game module from
+		const char *sCmdLine{""}; ///< Passed command line arguments string
 		
-		char *sPostRestartCmdLine{nullptr};
+		char *sPostRestartCmdLine{nullptr}; ///< This string will be executed after the engine restart
 		
-		bool bDedicated{false}; ///< Set to true to run in dedicated mode
+		bool bDedicated{false}; ///< Set this to true to run in dedicated mode (without a local client support)
 		
 		//void *pWindowPtr{nullptr}; ///< Custom window pointer
 		//bool bEditorMode{false}; ///< Initialize in editor mode
