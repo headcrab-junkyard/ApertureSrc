@@ -23,7 +23,7 @@
 #pragma once
 
 #include "CommonTypes.hpp"
-#include "interface.h"
+#include "public/interface.h"
 
 constexpr auto OGS_ENGINE_INTERFACE_VERSION{"OGSEngine005"};
 
