@@ -25,7 +25,7 @@
 #include "CommonTypes.hpp"
 #include "interface.h"
 
-constexpr auto MGT_ENGINE_INTERFACE_VERSION{"MGTEngine005Alpha"};
+constexpr auto OGS_ENGINE_INTERFACE_VERSION{"OGSEngine005"};
 
 interface IEngine : public IBaseInterface
 {
