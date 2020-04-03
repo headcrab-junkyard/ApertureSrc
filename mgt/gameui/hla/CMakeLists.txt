@@ -1,4 +1,4 @@
-project(mgt-gameui-hla)
+project(ogs-gameui-hla)
 
 add_library(${PROJECT_NAME} MODULE)
 

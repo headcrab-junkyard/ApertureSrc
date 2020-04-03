@@ -21,7 +21,7 @@
 
 #include "GameConsole.hpp"
 
-EXPOSE_SINGLE_INTERFACE(CGameConsole, IGameConsole, MGT_GAMECONSOLE_INTERFACE_VERSION);
+EXPOSE_SINGLE_INTERFACE(CGameConsole, IGameConsole, OGS_GAMECONSOLE_INTERFACE_VERSION);
 
 CGameConsole::CGameConsole() = default;
 CGameConsole::~CGameConsole() = default;
