@@ -64,7 +64,6 @@
 
 using namespace std::chrono_literals;
 
-using uint = unsigned int;
 using dword = unsigned long;
 
 using tString = std::string;
