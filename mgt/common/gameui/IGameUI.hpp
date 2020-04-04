@@ -25,7 +25,7 @@
 #include "CommonTypes.hpp"
 #include "Interface.hpp"
 
-constexpr auto MGT_GAMEUI_INTERFACE_VERSION{"MGTGameUI001Alpha"};
+constexpr auto OGS_GAMEUI_INTERFACE_VERSION{"OGSGameUI001"};
 
 using cl_enginefuncs_t = struct cl_enginefuncs_s;
 
