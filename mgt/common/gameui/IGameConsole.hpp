@@ -25,7 +25,7 @@
 #include "CommonTypes.hpp"
 #include "Interface.hpp"
 
-constexpr auto MGT_GAMECONSOLE_INTERFACE_VERSION{"MGTGameConsole001Alpha"};
+constexpr auto OGS_GAMECONSOLE_INTERFACE_VERSION{"OGSGameConsole001"};
 
 //class Color;
 
