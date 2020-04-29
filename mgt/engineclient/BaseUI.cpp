@@ -56,7 +56,7 @@ void LoadGameUIModule()
 		gpGameUILib = Sys_LoadModule("valve/cl_dlls/gameui");
 
 		if(!gpGameUILib)
-			return;
+			return; // TODO: gpSystem->Error
 	};
 
 	auto fnGameUIFactory{ Sys_GetFactory(gpGameUILib) };
@@ -92,7 +92,7 @@ void CBaseUI::Initialize(CreateInterfaceFn *factories, int count)
 		auto fnVGUI2CreateInterface{Sys_GetFactory(g_hVGUI2)};
 		auto fnEngineCreateInterface{Sys_GetFactoryThis()};
 
-		IKeyValuesSystem *pKeyValuesSystem = (IKeyValuesSystem *)fnVGUI2CreateInterface(KEYVALUESSYSTEM_INTERFACE_VERSION, NULL);
+		IKeyValuesSystem *pKeyValuesSystem = reinterpret_cast<IKeyValuesSystem*>(fnVGUI2CreateInterface(KEYVALUESSYSTEM_INTERFACE_VERSION, NULL));
 
 		vgui::IVGui *pVGui = (vgui::IVGui *)fnVGUI2CreateInterface(VGUI_IVGUI_INTERFACE_VERSION, NULL);
 		vgui::ISurface *pSurface = (vgui::ISurface *)fnEngineCreateInterface(VGUI_SURFACE_INTERFACE_VERSION, NULL);
@@ -126,13 +126,13 @@ void CBaseUI::Start(struct cl_enginefuncs_s *engineFuncs, int interfaceVersion)
 {
 /*
 	CreateInterfaceFn factories[2];
-	factories[0] = g_pMetaHookAPI->GetEngineFactory();
-	factories[1] = Sys_GetFactory(g_hVGUI2);
+	factories[0] = gpMetaHookAPI->GetEngineFactory();
+	factories[1] = Sys_GetFactory(ghVGUI2);
 
-	vgui::g_pInput->SetIMEWindow(g_hMainWnd);
+	vgui::gpInput->SetIMEWindow(g_hMainWnd);
 
-	g_pVGuiLocalize = (vgui::ILocalize *)(Sys_GetFactoryThis()(VGUI_LOCALIZE_INTERFACE_VERSION, NULL));
-	g_pVGuiLocalize->AddFile("resource/valve_%language%.txt", "GAME");
+	gpVGuiLocalize = reinterpret_cast<vgui::ILocalize*>(Sys_GetFactoryThis()(VGUI_LOCALIZE_INTERFACE_VERSION, nullptr));
+	gpVGuiLocalize->AddFile("resource/valve_%language%.txt", "GAME");
 
 	g_pFileSystem->CreateDirHierarchy("cfg", "DEFAULT_WRITE_PATH");
 
