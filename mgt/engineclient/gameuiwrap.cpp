@@ -20,17 +20,17 @@
 /// @file
 
 #include "quakedef.h"
-#include "GameUI/IGameUI.h"
-#include "GameUI/IGameConsole.h"
+#include "GameUI/IGameUI.hpp"
+#include "GameUI/IGameConsole.hpp"
 //#include "GameUI/ICareerUI.h" // TODO
 
-void *gpGameUILib{nullptr};
 IGameUI *gpGameUI{nullptr};
 
 extern IGameConsole *gpGameConsole;
 
 //ICareerUI *gpCareerUI{nullptr};
 
+/*
 void UnloadGameUIModule()
 {
 	if(gpGameUILib)
@@ -54,17 +54,16 @@ void LoadGameUIModule()
 	if(!fnGameUIFactory)
 		return;
 	
-	gpGameUI = (IGameUI*)fnGameUIFactory(GAMEUI_INTERFACE_VERSION, nullptr);
-	gpGameConsole = (IGameConsole*)fnGameUIFactory(GAMECONSOLE_INTERFACE_VERSION, nullptr);
+	gpGameUI = (IGameUI*)fnGameUIFactory(OGS_GAMEUI_INTERFACE_VERSION, nullptr);
+	gpGameConsole = (IGameConsole*)fnGameUIFactory(OGS_GAMECONSOLE_INTERFACE_VERSION, nullptr);
 	//gpCareerUI = (ICareerUI*)fnGameUIFactory(CAREERUI_INTERFACE_VERSION, nullptr);
 	
 	if(!gpGameUI || !gpGameConsole) //|| !gpCareerUI)
 		return;
 };
+*/
 
-//void GameUI_Initialize(CreateInterfaceFn *factories, int count);
 //void GameUI_Start(struct cl_enginefuncs_s *engineFuncs, int interfaceVersion, void *system);
-//void GameUI_Shutdown();
 
 int GameUI_ActivateGameUI()
 {
@@ -107,13 +106,13 @@ void GameUI_DisconnectFromServer()
 void GameUI_HideGameUI()
 {
 	if(gpGameUI)
-		gpGameUI->HideGameUI();
+		gpGameUI->Hide();
 };
 
 bool GameUI_IsGameUIActive()
 {
 	if(gpGameUI)
-		return gpGameUI->IsGameUIActive();
+		return gpGameUI->IsActive();
 	
 	return false;
 };
@@ -170,11 +169,9 @@ void GameUI_SetSecondaryProgressBarText(const char *statusText)
 		gpGameUI->SetSecondaryProgressBarText(statusText);
 };
 
-// Obsolete, does nothing
-//void GameUI_ValidateCDKey(bool force, bool inConnect);
 
 void GameUI_OnDisconnectFromServer(int eSteamLoginFailure, const char *username)
 {
-	if(gpGameUI)
-		gpGameUI->OnDisconnectFromServer(eSteamLoginFailure, username);
+	//if(gpGameUI)
+		//gpGameUI->OnDisconnectFromServer(eSteamLoginFailure, username);
 };
