@@ -32,4 +32,11 @@ public:
 	void Shutdown();
 
 	void CheckChanges();
+private:
+	void LoadRendererModule(const char *asName);
+	void UnloadRendererModule();
+	
+	void *mpRendererModule{nullptr};
+	
+	IRenderer *mpRenderer{nullptr};
 };
