@@ -23,5 +23,11 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 class CSound
 {
 public:
+	void Init();
+	void Shutdown();
+	
+	void Update();
 private:
+	void LoadSoundSystemModule();
+	void UnloadSoundSystemModule();
 };
