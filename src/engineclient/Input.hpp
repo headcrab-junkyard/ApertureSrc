@@ -37,4 +37,7 @@ public:
 	/// Restores all button and position states to defaults
 	void ClearStates();
 #endif
+private:
+	void LoadInputSystemModule();
+	void UnloadInputSystemModule();
 };
