@@ -1,3 +1,10 @@
+include_directories(
+	${CMAKE_SOURCE_DIR}/mgt/common
+	${OGS_SDK_PATH}/common
+	${OGS_SDK_PATH}/public
+	${OGS_SDK_PATH}/next
+)
+
 add_subdirectory(engine)
 add_subdirectory(engineclient)
 
