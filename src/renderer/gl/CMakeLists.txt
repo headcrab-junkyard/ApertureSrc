@@ -8,7 +8,7 @@ target_sources(${PROJECT_NAME}
 	PRIVATE ${PROJECT_SOURCES}
 )
 
-target_link_directories(${PROJECT_NAME} ogs-tier1)
+target_link_libraries(${PROJECT_NAME} ogs-tier1)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
 	OUTPUT_NAME "r_gl"
