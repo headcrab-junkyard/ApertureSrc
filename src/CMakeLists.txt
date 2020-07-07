@@ -6,7 +6,6 @@ include_directories(
 )
 
 add_subdirectory(engine)
-add_subdirectory(engineclient)
 
 add_subdirectory(filesystem)
 
@@ -19,4 +18,6 @@ if(NOT OGS_DEDICATED)
 	add_subdirectory(inputsystem)
 	add_subdirectory(soundsystem)
 	add_subdirectory(voice)
+	
+	add_subdirectory(engineclient)
 endif()
