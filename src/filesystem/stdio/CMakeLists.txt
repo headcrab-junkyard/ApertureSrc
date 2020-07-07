@@ -1,4 +1,4 @@
-project(ogsnext-filesystem-stdio)
+project(ogs-filesystem-stdio)
 
 add_library(${PROJECT_NAME} MODULE)
 

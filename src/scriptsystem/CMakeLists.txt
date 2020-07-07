@@ -1,4 +1,4 @@
-project(ogsnext-scriptsystem)
+project(ogs-scriptsystem)
 
 add_library(${PROJECT_NAME} MODULE)
 

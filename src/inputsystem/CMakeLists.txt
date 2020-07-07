@@ -1,4 +1,4 @@
-project(ogsnext-inputsystem)
+project(ogs-inputsystem)
 
 add_library(${PROJECT_NAME} MODULE)
 

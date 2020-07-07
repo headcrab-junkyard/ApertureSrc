@@ -1,4 +1,4 @@
-project(ogsnext-soundsystem)
+project(ogs-soundsystem)
 
 add_library(${PROJECT_NAME} MODULE)
 

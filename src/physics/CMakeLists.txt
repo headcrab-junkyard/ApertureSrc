@@ -1,4 +1,4 @@
-project(ogsnext-physics)
+project(ogs-physics)
 
 add_library(${PROJECT_NAME} MODULE)
 

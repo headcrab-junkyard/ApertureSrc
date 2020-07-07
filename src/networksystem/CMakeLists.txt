@@ -1,4 +1,4 @@
-project(ogsnext-networksystem)
+project(ogs-networksystem)
 
 add_library(${PROJECT_NAME} MODULE)
 
