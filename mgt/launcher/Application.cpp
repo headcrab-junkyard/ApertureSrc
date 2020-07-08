@@ -87,7 +87,6 @@ bool CApplication::Init()
 	InitParams.sCmdLine = "";
 	//InitParams.sPostRestartCmdLine = ""; // TODO
 	InitParams.fnLauncherFactory = LauncherFactory;
-	//InitParams.fnFSFactory = pFSFactory;
 	InitParams.bDedicated = false;
 	
 	if(!mpEngine->Init(InitParams))
