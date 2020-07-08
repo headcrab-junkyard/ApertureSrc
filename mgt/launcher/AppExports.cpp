@@ -20,7 +20,7 @@
 #ifdef _WIN32
 	#define EXPORT [[dllexport]]
 #else
-	#define EXPORT [[visibility(default)]]
+	#define EXPORT [[visibility("default")]]
 #endif
 
 // Prefer dedicated graphics cards if present
