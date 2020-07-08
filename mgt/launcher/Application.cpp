@@ -81,7 +81,7 @@ bool CApplication::Init()
 	if(!mpEngine)
 		return false;
 	
-	IEngine::SInitData InitParams{};
+	IEngine::InitParams InitParams{};
 	
 	InitParams.sGameDir = ".";
 	InitParams.sCmdLine = "";
