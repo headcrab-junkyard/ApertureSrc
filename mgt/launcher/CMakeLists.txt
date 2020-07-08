@@ -1,4 +1,4 @@
-project(mgt-launcher)
+project(ogs-launcher)
 
 add_executable(${PROJECT_NAME})
 
