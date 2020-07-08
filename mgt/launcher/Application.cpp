@@ -28,7 +28,7 @@ CreateInterfaceFn gfnFSFactory{nullptr};
 
 IBaseInterface *LauncherFactory(const char *name, int *retval)
 {
-	if(!strcmp(name, MGT_FILESYSTEM_INTERFACE_VERSION))
+	if(!strcmp(name, OGS_FILESYSTEM_INTERFACE_VERSION))
 		return gfnFSFactory(name, retval);
 	
 	auto fnThisFactory{Sys_GetFactoryThis()};
@@ -76,7 +76,7 @@ bool CApplication::Init()
 	if(!pEngineFactory)
 		return false;
 	
-	mpEngine = (IEngine*)pEngineFactory(MGT_ENGINE_INTERFACE_VERSION, nullptr);
+	mpEngine = (IEngine*)pEngineFactory(OGS_ENGINE_INTERFACE_VERSION, nullptr);
 	
 	if(!mpEngine)
 		return false;
