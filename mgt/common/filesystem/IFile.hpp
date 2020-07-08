@@ -27,26 +27,30 @@
 interface IFile
 {
 	///
-	//virtual bool Open(const char *asName, const char *asOptions) = 0; // TODO: Reopen?
-	//virtual void Close() = 0;
-	//virtual bool IsOpen() const = 0;
-	
-	/// Write data from the buffer to the file
-	virtual /*int*/ void Write(const void *data, int count) = 0;
-	//virtual int Write(const void *apInput, int anSize, int anCount) = 0; // const?
-	
-	/// Read data from the file to the buffer
-	virtual int Read(void *dest, int count) const = 0;
-	//virtual int Read(void *apOutput, int anSize, int anCount) = 0; // const?
+	//virtual bool Open(const char *asName, const char *asMode) = 0;
 	
 	///
-	//virtual char *ReadLine(char *asOutput, int anMaxChars) = 0; // const?
+	//virtual bool Reopen(const char *asName, const char *asMode) = 0;
+	
+	///
+	//virtual void Close() = 0;
+	
+	///
+	virtual bool IsOpen() const = 0;
+	
+	/// Write data from the buffer to the file
+	//virtual int Write(const void *data, int count) = 0;
+	virtual size_t Write(const void *apInput, size_t anSize, size_t anCount) = 0; // TODO: const?
+	
+	/// Read data from the file to the buffer
+	//virtual int Read(void *dest, int count) const = 0;
+	virtual size_t Read(void *apOutput, size_t anSize, size_t anCount) const = 0;
+	
+	///
+	//virtual char *ReadLine(char *asOutput, int anMaxChars) const = 0;
 	
 	/// Like fprintf
-	virtual /*int*/ void Printf(/*VERIFY_FORMAT_STRING*/ const char *text, ...) = 0;
-	
-	/// Like fprintf but with argument pointer
-	//virtual int VPrintf(const char *asMsg, va_list alstArgs) = 0; // TODO: Is it ABI-safe?
+	virtual int Printf(/*VERIFY_FORMAT_STRING*/ const char *text, ...) = 0;
 	
 	enum class SeekMode : int
 	{
@@ -56,26 +60,26 @@ interface IFile
 	};
 	
 	/// Seek on a file
-	virtual int Seek(int position) const = 0;
-	//virtual int Seek(long anOffset, SeekMode aeMode) = 0;
-	//virtual void Seek(int anPos, FileSystemSeek_t seekType) = 0;
-	//virtual int Seek(long offset, fsOrigin_t origin) = 0;
+	virtual int Seek(long anOffset, SeekMode aeMode) const = 0;
 	
 	/// @return offset in file
-	virtual /*unsigned*/ int Tell() const = 0;
+	virtual long Tell() const = 0;
 	
 	/// Go back to the beginning of the file
-	//virtual void Rewind() = 0;
+	virtual void Rewind() = 0;
 	
 	/// Causes any buffered data to be written to the file
 	/// @param abForce - Forces flush on files being writting to
 	virtual void Flush(/*bool abForce*/) = 0;
 	
 	///
-	//virtual int IsOk() const = 0;
+	virtual int SetVBuf(char *apBuffer, int anMode, size_t anSize) = 0;
 	
 	///
-	virtual /*int*/ bool IsEOF() const = 0;
+	//virtual bool IsOk() const = 0;
+	
+	///
+	virtual bool IsEOF() const = 0; // TODO: return uint?
 	
 	/// @return name of the file
 	virtual const char *GetName() const = 0;
@@ -87,7 +91,7 @@ interface IFile
 	virtual const char *GetPath() const = 0; // TODO: GetFullPath?
 	
 	///
-	virtual int GetTime() const = 0;
+	//virtual int GetTime() const = 0;
 	
 	/// @return the length of the file
 	virtual /*unsigned*/ int GetSize() const = 0; // TODO: int GetLength?
@@ -96,7 +100,16 @@ interface IFile
 	//virtual ID_TIME_T GetTimeStamp() const = 0;
 	
 	///
-	//virtual byte GetCharacter() const = 0;
+	//virtual int PutChar(byte anChar) = 0; // TODO
+	
+	///
+	virtual int GetChar() const = 0;
+	
+	///
+	//virtual int PutStr(const char *asStr) = 0; // TODO
+	
+	///
+	//virtual const char *GetStr() const = 0; // TODO
 	
 	//virtual FileHandle_t GetHandle() const = 0;
 	//operator bool(){return GetHandle() != nullptr;}
