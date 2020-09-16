@@ -21,44 +21,49 @@
 /// @file
 /// @brief file i/o
 
+//#include <cstdio>
+//#include <cstdarg>
 #include <cstring>
+//#include <cstdlib>
+//#include <sys/stat.h>
 #include "FileSystem.hpp"
 #include "File.hpp"
 
-// if a packfile directory differs from this, it is assumed to be hacked
-#define PAK0_COUNT 339
-#define PAK0_CRC 32981
-
 // TODO
-/*
+
 // .pak support
 #define MAX_FILES_IN_PACK 2048
 
-//
-// on disk
-//
-typedef struct
-{
-	char name[56];
-	int filepos, filelen;
-} dpackfile_t;
-
-typedef struct
-{
-	char id[4];
-	int dirofs;
-	int dirlen;
-} dpackheader_t;
-//
-*/
+#ifndef MAX_QPATH
+const int MAX_QPATH = 64;
+#endif
 
 #ifndef MAX_OSPATH
 const int MAX_OSPATH = 256;
 #endif
 
-#ifndef MAX_QPATH
-const int MAX_QPATH = 64;
-#endif
+//
+// on disk
+//
+
+typedef struct
+{
+	char name[56]{};
+	int filepos{0}, filelen{0};
+} dpackfile_t;
+
+typedef struct
+{
+	char id[4]{};
+	int dirofs{0};
+	int dirlen{0};
+} dpackheader_t;
+//
+
+
+
+
+
 
 //
 // in memory
@@ -66,16 +71,16 @@ const int MAX_QPATH = 64;
 
 typedef struct
 {
-	char name[MAX_QPATH];
-	int filepos, filelen;
+	char name[MAX_QPATH]{};
+	int filepos{0}, filelen{0};
 } packfile_t;
 
 typedef struct pack_s
 {
-	char filename[MAX_OSPATH];
-	IFile *handle; // FILE *handle; // TODO
-	int numfiles;
-	packfile_t *files;
+	char filename[MAX_OSPATH]{};
+	IFile *handle{nullptr}; // FILE *handle; // TODO
+	int numfiles{0};
+	packfile_t *files{nullptr};
 } pack_t;
 
 // search paths
@@ -86,11 +91,11 @@ typedef struct searchpath_s
 	struct searchpath_s *next;
 } searchpath_t;
 
-searchpath_t *com_searchpaths;
+searchpath_t *com_searchpaths{nullptr};
 
-int com_filesize;
+int com_filesize{0};
 
-char com_cachedir[MAX_OSPATH];
+char com_cachedir[MAX_OSPATH]{};
 
 // TODO: temp
 void Sys_Error(const char *msg, ...)
@@ -107,8 +112,6 @@ Loads the header and directory, adding the files at the beginning
 of the list so they override previous pack files.
 =================
 */
-// TODO
-/*
 pack_t *COM_LoadPackFile(const char *packfile)
 {
 	dpackheader_t header;
@@ -139,10 +142,6 @@ pack_t *COM_LoadPackFile(const char *packfile)
 	if(numpackfiles > MAX_FILES_IN_PACK)
 		Sys_Error("%s has %i files", packfile, numpackfiles);
 
-	// TODO
-	//if(numpackfiles != PAK0_COUNT)
-		//com_modified = true; // not the original file
-
 	newfiles = (packfile_t*)Hunk_AllocName(numpackfiles * sizeof(packfile_t), "packfile");
 
 	FS_FileSeek(packhandle, header.dirofs);
@@ -153,10 +152,6 @@ pack_t *COM_LoadPackFile(const char *packfile)
 	
 	for(i = 0; i < header.dirlen; i++)
 		CRC_ProcessByte(&crc, ((byte *)info)[i]);
-	
-	// TODO
-	//if(crc != PAK0_CRC)
-		//com_modified = true;
 
 	// parse the directory
 	for(i = 0; i < numpackfiles; i++)
@@ -261,7 +256,7 @@ Sets com_filesize and one of handle or file
 */
 // TODO
 /*
-int COM_FindFile(const char *filename, int *handle, IFile **file)
+IFile *COM_FindFile(const char *filename, int *handle, IFile **file)
 {
 	searchpath_t *search;
 	char netpath[MAX_OSPATH];
@@ -269,11 +264,7 @@ int COM_FindFile(const char *filename, int *handle, IFile **file)
 	pack_t *pak;
 	int i;
 	int findtime, cachetime;
-
-	if(file && handle)
-		Sys_Error("COM_FindFile: both handle and file set");
-	if(!file && !handle)
-		Sys_Error("COM_FindFile: neither handle or file set");
+	IFile *pFile;
 
 	//
 	// search through the path, one element at a time
@@ -293,17 +284,17 @@ int COM_FindFile(const char *filename, int *handle, IFile **file)
 					Sys_Printf("PackFile: %s : %s\n", pak->filename, filename);
 					if(handle)
 					{
-						*handle = pak->handle;
 						pak->handle->Seek(pak->files[i].filepos);
 					}
 					else
-					{ // open a new file on the pakfile
-						*file = fopen(pak->filename, "rb");
-						if(*file)
-							fseek(*file, pak->files[i].filepos, SEEK_SET);
+					{
+						// open a new file on the pakfile
+						pFile = FileOpen(pak->filename, "rb");
+						if(pFile)
+							pFile->Seek(pak->files[i].filepos, SEEK_SET);
 					}
 					com_filesize = pak->files[i].filelen;
-					return com_filesize;
+					return pFile;
 				}
 		}
 		else
@@ -338,26 +329,15 @@ int COM_FindFile(const char *filename, int *handle, IFile **file)
 			}
 
 			Sys_Printf("FindFile: %s\n", netpath);
-			com_filesize = FS_FileOpenRead(netpath, &i);
-			if(handle)
-				*handle = i;
-			else
-			{
-				FS_FileClose(i);
-				*file = fopen(netpath, "rb");
-			}
-			return com_filesize;
+			pFile = OpenFile(netpath, "rb");
+			com_filesize = pFile->GetSize();
+			return pFile;
 		}
 	}
 
 	Sys_Printf("FindFile: can't find %s\n", filename);
-
-	if(handle)
-		*handle = -1;
-	else
-		*file = nullptr;
 	com_filesize = -1;
-	return -1;
+	return nullptr;
 }
 */
 
@@ -528,8 +508,16 @@ int CFileSystem::FileWrite(int handle, const void *data, int count)
 	return x;
 };
 
+/*
+============
+Sys_FileTime
+
+returns -1 if not present
+============
+*/
 int CFileSystem::GetFileTime(const char *path) const
 {
+#ifdef _WIN32
 	int t = 0; //VID_ForceUnlockedAndReturnState(); // TODO windows
 	FILE *f{fopen(path, "rb")};
 	int retval;
@@ -544,6 +532,14 @@ int CFileSystem::GetFileTime(const char *path) const
 	
 	//VID_ForceLockState(t); // TODO windows
 	return -1; //return retval; // TODO
+#else
+	struct stat buf;
+
+	if(stat(path, &buf) == -1)
+		return -1;
+
+	return buf.st_mtime;
+#endif
 };
 
 int CFileSystem::GetFileSize(const char *path) const
@@ -554,7 +550,7 @@ int CFileSystem::GetFileSize(const char *path) const
 int CFileSystem::findhandle()
 {
 	for(int i = 1; i < MAX_HANDLES; i++)
-		if(!sys_handles[i])
+		if(!sys_handles[i]) // TODO: if(!sys_handles[i].hFile) for sun
 			return i;
 	
 	Sys_Error("out of handles");

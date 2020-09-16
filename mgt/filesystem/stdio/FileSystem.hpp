@@ -28,6 +28,8 @@
 #include <unordered_map>
 #include "filesystem/IFileSystem.hpp"
 
+typedef struct pack_s pack_t;
+
 struct SSearchPathEntry
 {
 	std::string name{""};
@@ -54,67 +56,60 @@ public:
 	void Mount() override;
 	void Unmount() override;
 	
-	//void PrintOpenedFiles() override;
+	void PrintOpenedFiles() override;
 	
 	//void SetWarningFunc(void (*pfnWarning)(const char *fmt, ...)) override;
 	//void SetWarningLevel(FileWarningLevel_t level) override;
 	
-	//void LogLevelLoadStarted(const char *name) override;
-	//void LogLevelLoadFinished(const char *name) override;
+	void LogLevelLoadStarted(const char *asName) override;
+	void LogLevelLoadFinished(const char *asName) override;
 	
 	//int HintResourceNeed(const char *hintlist, int forgetEverything) override;
 	
-	//int PauseResourcePreloading() override;
-	//int ResumeResourcePreloading() override;
+	int PauseResourcePreloading() override;
+	int ResumeResourcePreloading() override;
 	
 	void AddSearchPath(const char *path, const char *alias, bool bNoWrite) override; // NOTE: alias = pathID
-	//bool RemoveSearchPath(const char *pPath) override;
+	bool RemoveSearchPath(const char *pPath) override;
 	
 	void RemoveAllSearchPaths() override;
 	
-	//bool AddPackFile(const char *fullpath, const char *pathID) override;
+	bool AddPackFile(const char *asFullPath, const char *asPathID) override;
 	
 	//const char *GetLocalPath(const char *pFileName, char *pLocalPath, int localPathBufferSize) override;
 	//bool FullPathToRelativePath(const char *pFullpath, char *pRelative) override;
 	
-	//bool GetCurrentDirectory(char *pDirectory, int maxlen) override;
+	bool GetCurrentDirectory(char *asDirectory, int anMaxLen) const override;
 	
-	//void GetInterfaceVersion(char *p, int maxlen) override;
+	void GetInterfaceVersion(char *p, int anMaxLen) override;
 	
-	//void GetLocalCopy(const char *pFileName) override;
+	void GetLocalCopy(const char *asFileName) override;
 	
-	//void FileTimeToString(char *pStrip, int maxCharsIncludingTerminator, long fileTime) override;
+	/// @param anMaxChars - max character including a null terminator
+	void FileTimeToString(char *asStrip, int anMaxChars, long anFileTime) override;
 	
 	IFile *OpenPathID(const char *asPath, const char *asPathID) override;
 	
 	IFile *OpenFile(const char *asName, const char *asMode/*, const char *pathID*/) override;
 	//IFile *OpenFromCacheForRead(const char *pFileName, const char *pOptions, const char *pathID) override;
 	
-	void CloseFile(IFile *apFile) override;
+	void CloseFile(const IFile &apFile) override;
 	
-	//int FileOpen(const char *path, const char *mode) override;
-	//void FileClose(int handle) override;
+	/*long*/ int GetFileTime(const char *asPath) const override;
+	uint GetFileSize(const char *asFileName) const override;
 	
-	void FileSeek(int handle, int position) override;
+	bool FileExists(const char *asFileName) const override;
 	
-	int FileRead(int handle, void *dest, int count) override;
-	int FileWrite(int handle, const void *data, int count) override;
+	void CreateDirHierarchy(const char *asPath, const char *asPathID) override;
 	
-	/*long*/ int GetFileTime(const char *path) const override;
-	/*unsigned*/ int GetFileSize(const char *pFileName) const override;
-	
-	//bool FileExists(const char *pFileName) override;
-	
-	//void CreateDirHierarchy(const char *path, const char *pathID) override;
-	
-	//void RemoveFile(const char *pRelativePath, const char *pathID) override;
+	void RemoveFile(const char *asRelativePath, const char *asPathID) override;
 	
 	//char *ParseFile(char *pFileBytes, char *pToken, bool *pWasQuoted) override;
 	
-	//bool IsDirectory(const char *asPath) override;
-	//bool IsFileImmediatelyAvailable(const char *pFileName) override;
+	bool IsDirectory(const char *asPath) const override;
+	bool IsFileImmediatelyAvailable(const char *asFileName) const override;
 	
-	//bool IsAppReadyForOfflinePlay(int appID) override;
+	bool IsAppReadyForOfflinePlay(int anAppID) const override;
 	
 	//const char *FindFirst(const char *pWildCard, FileFindHandle_t *pHandle, const char *pathID) override;
 	//const char *FindNext(FileFindHandle_t handle) override;
@@ -127,11 +122,28 @@ public:
 private:
 	static constexpr auto MAX_HANDLES{10};
 	
-	tSearchPathGroupList mlstSearchPaths;
+	FileHandle_t FindFile(const char *filename);
 	
-	int findhandle();
+	pack_t *LoadPackFile(const char *packfile);
+	void AddGameDirectory(const char *dir);
+	
+	int findhandle() const;
 	int filelength(FILE *f);
+	
+	tSearchPathGroupList mlstSearchPaths;
 
+#ifdef _WIN32
 	// TODO: if WIN only?
 	FILE *sys_handles[MAX_HANDLES]{nullptr};
+#elif sun
+	struct MEMFILE
+	{
+		FILE *hFile{nullptr};
+		char *pMap{nullptr};
+		int nLen{0};
+		int nPos{0};
+	};
+
+	MEMFILE sys_handles[MAX_HANDLES]{};
+#endif
 };
