@@ -40,13 +40,19 @@ CFile::~CFile()
 	};
 };
 
-void CFile::Write(const void *data, int count)
+/*int*/ void CFile::Write(const void *data, int count)
 {
 	if(!data)
 		return;
 	
+	//if(!mpHandle)
+		//return;
+	
+	//if(mbReadOnly)
+		//Sys_Error("Attempted to write to read-only file %d!\n", mpHandle);
+	
 	if(mpHandle)
-		fwrite(data, sizeof(char), count, mpHandle);
+		/*return*/ fwrite(data, /*1*/ sizeof(char), count, mpHandle);
 };
 
 int CFile::Read(void *dest, int count) const

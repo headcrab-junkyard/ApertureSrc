@@ -31,8 +31,8 @@ public:
 	CFile(const char *asName, const char *asMode);
 	~CFile();
 	
-	/*int*/ void Write(const void *data, int count) override;
-	int Read(void *dest, int count) const override;
+	/*int*/ void Write(const void *apData, int anCount) override; // TODO: return int?
+	int Read(void *apDest, int anCount) const override;
 
 	//char *ReadLine(char *pOutput, int maxChars) override;
 	
@@ -43,11 +43,11 @@ public:
 	/*void*/ //int Seek(int position, FileSystemSeek_t seekType) const; //override; // TODO
 	int Seek(int position) const override;
 	
-	/*unsigned*/ int Tell() const override;
+	uint Tell() const override;
 
 	//int SetVBuf(char *buffer, int mode, long size) override;
 	
-	//bool IsOK() const override;
+	//bool IsOK() const override; // TODO: IsValid?
 	bool IsEOF() const override;
 	
 	//void *GetReadBuffer(int *outBufferSize, bool failIfNotInCache) override;
@@ -58,7 +58,7 @@ public:
 	const char *GetPath() const override;
 
 	int GetTime() const override;
-	/*unsigned*/ int GetSize() const override;
+	uint GetSize() const override;
 private:
 	const char *msName{""};
 	
