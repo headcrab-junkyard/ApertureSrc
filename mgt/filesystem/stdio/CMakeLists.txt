@@ -1,4 +1,4 @@
-project(mgt-filesystem-stdio)
+project(ogs-filesystem-stdio)
 
 # Build as a shared library
 add_library(${PROJECT_NAME} MODULE)
