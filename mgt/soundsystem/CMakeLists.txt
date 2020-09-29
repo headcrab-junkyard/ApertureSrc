@@ -27,7 +27,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 )
 
 # Link with dependencies
-target_link_libraries(${PROJECT_NAME} ogs-interface mgt-qlibc mgt-mathlib)
+target_link_libraries(${PROJECT_NAME} ogs-tier1 mgt-qlibc mgt-mathlib)
 
 if(WIN32)
 	target_link_libraries(${PROJECT_NAME} winmm)
