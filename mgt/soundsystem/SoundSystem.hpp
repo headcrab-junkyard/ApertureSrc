@@ -148,9 +148,6 @@ public:
 	
 	void ClearBuffer() override;
 	
-	void BeginPrecaching() override;
-	void EndPrecaching() override;
-	
 	sfx_t *PrecacheSound(const char *sample) override;
 	
 	void TouchSound(const char *sample) override;

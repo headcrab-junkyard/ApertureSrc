@@ -627,14 +627,6 @@ void CSoundSystem::ClearBuffer()
 // Load a sound
 // =======================================================================
 
-void CSound::BeginPrecaching()
-{
-};
-
-void CSound::EndPrecaching()
-{
-};
-
 /*
 ==================
 S_PrecacheSound
