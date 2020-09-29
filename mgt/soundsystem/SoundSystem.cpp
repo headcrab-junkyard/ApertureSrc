@@ -195,8 +195,8 @@ void S_Play(const ICmdArgs &apArgs)
 		else
 			Q_strcpy(name, apArgs.GetByIndex(i));
 		
-		sfx = gpSound->PrecacheSound(name);
-		gpSound->StartDynamicSound(hash++, 0, sfx, listener_origin, 1.0, 1.0);
+		sfx = gpSoundSystem->PrecacheSound(name);
+		gpSoundSystem->StartDynamicSound(hash++, 0, sfx, listener_origin, 1.0, 1.0);
 		i++;
 	};
 };
