@@ -44,7 +44,7 @@ interface ISound;
 extern cvar_t loadas8bit;
 extern cvar_t volume;
 
-extern ISound *gpSound;
+extern ISoundSystem *gpSoundSystem;
 extern ISystem *gpSystem;
 extern IMemory *gpMemory;
 extern IUtils *gpUtils;
@@ -132,11 +132,11 @@ wavinfo_t GetWavinfo(const char *name, byte *wav, int wavlength);
 
 sfxcache_t *S_LoadSound(sfx_t *s);
 
-class CSound final : public ISound
+class CSoundSystem final : public ISoundSystem
 {
 public:
-	CSound();
-	~CSound();
+	CSoundSystem();
+	~CSoundSystem();
 	
 	bool Init(CreateInterfaceFn afnEngineFactory, void *apWindow) override;
 	void Shutdown() override;

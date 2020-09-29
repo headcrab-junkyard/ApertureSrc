@@ -36,7 +36,7 @@
 #include "engine/IUtils.hpp"
 #include "filesystem/IFileSystem.hpp"
 
-ISound *gpSound{nullptr};
+ISoundSystem *gpSoundSystem{nullptr};
 ISystem *gpSystem{nullptr};
 IMemory *gpMemory{nullptr};
 IUtils *gpUtils{nullptr};
@@ -220,16 +220,16 @@ void S_PlayVol(const ICmdArgs &apArgs)
 		else
 			Q_strcpy(name, apArgs.GetByIndex(i));
 		
-		sfx = gpSound->PrecacheSound(name);
+		sfx = gpSoundSystem->PrecacheSound(name);
 		vol = Q_atof(apArgs.GetByIndex(i + 1));
-		gpSound->StartDynamicSound(hash++, 0, sfx, listener_origin, vol, 1.0);
+		gpSoundSystem->StartDynamicSound(hash++, 0, sfx, listener_origin, vol, 1.0);
 		i += 2;
 	};
 };
 
 void S_StopAllSoundsC(const ICmdArgs &apArgs)
 {
-	gpSound->StopAllSounds(true);
+	gpSoundSystem->StopAllSounds(true);
 };
 
 void S_SoundList(const ICmdArgs &apArgs)
@@ -274,17 +274,17 @@ void S_SoundInfo_f(const ICmdArgs &apArgs)
 	gpSystem->Printf("%5d total_channels\n", total_channels);
 };
 
-EXPOSE_SINGLE_INTERFACE(CSound, ISound, MGT_SOUND_INTERFACE_VERSION);
+EXPOSE_SINGLE_INTERFACE(CSoundSystem, ISoundSystem, MGT_SOUNDSYSTEM_INTERFACE_VERSION);
 
-CSound::CSound() = default;
-CSound::~CSound() = default;
+CSoundSystem::CSoundSystem() = default;
+CSoundSystem::~CSoundSystem() = default;
 
 /*
 ================
 S_Init
 ================
 */
-bool CSound::Init(CreateInterfaceFn afnEngineFactory, void *apWindow)
+bool CSoundSystem::Init(CreateInterfaceFn afnEngineFactory, void *apWindow)
 {
 	mpSystem = (ISystem*)afnEngineFactory(MGT_SYSTEM_INTERFACE_VERSION, nullptr);
 	mpCmdLine = (ICmdLine*)afnEngineFactory(MGT_CMDLINE_INTERFACE_VERSION, nullptr);
@@ -330,7 +330,7 @@ bool CSound::Init(CreateInterfaceFn afnEngineFactory, void *apWindow)
 		return false;
 	};
 	
-	gpSound = this;
+	gpSoundSystem = this;
 	gpSystem = mpSystem;
 	gpMemory = mpMemory;
 	gpCmdLine = mpCmdLine;
@@ -413,7 +413,7 @@ bool CSound::Init(CreateInterfaceFn afnEngineFactory, void *apWindow)
 // =======================================================================
 // Shutdown sound engine
 // =======================================================================
-void CSound::Shutdown()
+void CSoundSystem::Shutdown()
 {
 	if(!sound_started)
 		return;
@@ -427,7 +427,7 @@ void CSound::Shutdown()
 	if(!fakedma)
 		SNDDMA_Shutdown();
 	
-	gpSound = nullptr;
+	gpSoundSystem = nullptr;
 };
 
 /*
@@ -435,7 +435,7 @@ void CSound::Shutdown()
 S_Startup
 ================
 */
-void CSound::Startup()
+void CSoundSystem::Startup()
 {
 	int rc;
 
@@ -467,7 +467,7 @@ Called once each time through the main loop
 ============
 */
 //void S_Update(vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
-void CSound::Update(float *origin, float *forward, float *right, float *up)
+void CSoundSystem::Update(float *origin, float *forward, float *right, float *up)
 {
 	int i, j;
 	int total;
@@ -557,7 +557,7 @@ void CSound::Update(float *origin, float *forward, float *right, float *up)
 	Update_();
 };
 
-void CSound::ExtraUpdate()
+void CSoundSystem::ExtraUpdate()
 {
 #ifdef _WIN32
 	//IN_Accumulate(); // TODO
@@ -569,7 +569,7 @@ void CSound::ExtraUpdate()
 	Update_();
 };
 
-void CSound::ClearBuffer()
+void CSoundSystem::ClearBuffer()
 {
 	int clear;
 
@@ -641,7 +641,7 @@ S_PrecacheSound
 
 ==================
 */
-sfx_t *CSound::PrecacheSound(const char *name)
+sfx_t *CSoundSystem::PrecacheSound(const char *name)
 {
 	sfx_t *sfx;
 
@@ -663,7 +663,7 @@ S_TouchSound
 
 ==================
 */
-void CSound::TouchSound(const char *name)
+void CSoundSystem::TouchSound(const char *name)
 {
 	sfx_t *sfx;
 
@@ -678,7 +678,7 @@ void CSound::TouchSound(const char *name)
 // Start a sound effect
 // =======================================================================
 
-void CSound::LocalSound(const char *sound)
+void CSoundSystem::LocalSound(const char *sound)
 {
 	sfx_t *sfx;
 
@@ -703,7 +703,7 @@ void CSound::LocalSound(const char *sound)
 S_StaticSound
 =================
 */
-void CSound::StartStaticSound(sfx_t *sfx, vec3_t origin, float vol, float attenuation)
+void CSoundSystem::StartStaticSound(sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 {
 	channel_t *ss;
 	sfxcache_t *sc;
@@ -739,7 +739,7 @@ void CSound::StartStaticSound(sfx_t *sfx, vec3_t origin, float vol, float attenu
 	SND_Spatialize(ss);
 };
 
-void CSound::StartDynamicSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation)
+void CSoundSystem::StartDynamicSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation)
 {
 	channel_t *target_chan, *check;
 	sfxcache_t *sc;
@@ -807,7 +807,7 @@ void CSound::StartDynamicSound(int entnum, int entchannel, sfx_t *sfx, vec3_t or
 	}
 };
 
-void CSound::StopSound(int entnum, int entchannel)
+void CSoundSystem::StopSound(int entnum, int entchannel)
 {
 	int i;
 
@@ -822,7 +822,7 @@ void CSound::StopSound(int entnum, int entchannel)
 	}
 };
 
-void CSound::StopAllSounds(bool clear)
+void CSoundSystem::StopAllSounds(bool clear)
 {
 	int i;
 
@@ -841,7 +841,7 @@ void CSound::StopAllSounds(bool clear)
 		ClearBuffer();
 };
 
-void CSound::Update_()
+void CSoundSystem::Update_()
 {
 	unsigned int endtime;
 	int samps;
@@ -894,7 +894,7 @@ void CSound::Update_()
 S_UpdateAmbientSounds
 ===================
 */
-void CSound::UpdateAmbientSounds()
+void CSoundSystem::UpdateAmbientSounds()
 {
 	// TODO: thing thing requires interaction with model geometry interaction, probably should be moved somewhere else?
 /*
@@ -946,7 +946,7 @@ void CSound::UpdateAmbientSounds()
 */
 }
 
-void CSound::GetSoundtime()
+void CSoundSystem::GetSoundtime()
 {
 	int samplepos;
 	static int buffers;
@@ -985,7 +985,7 @@ S_FindName
 
 ==================
 */
-sfx_t *CSound::FindName(const char *name)
+sfx_t *CSoundSystem::FindName(const char *name)
 {
 	int i;
 	sfx_t *sfx;
@@ -1019,7 +1019,7 @@ sfx_t *CSound::FindName(const char *name)
 SND_Spatialize
 =================
 */
-void CSound::SND_Spatialize(channel_t *ch)
+void CSoundSystem::SND_Spatialize(channel_t *ch)
 {
 	float dot;
 	float dist;
