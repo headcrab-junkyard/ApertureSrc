@@ -1,7 +1,7 @@
 /*
  * This file is part of Magenta Engine
  *
- * Copyright (C) 2018 BlackPhrase
+ * Copyright (C) 2018-2019 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 #include "bspfile.h"
 #include "cvardef.h"
 
-#include "Sound.hpp"
+#include "SoundSystem.hpp"
 #include "engine/ISystem.hpp"
 #include "engine/ICmdLine.hpp"
 #include "engine/ICmdArgs.hpp"
