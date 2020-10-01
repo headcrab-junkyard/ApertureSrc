@@ -50,7 +50,20 @@ void CInput::LoadInputSystemModule()
 {
 	UnloadInputSystemModule();
 	
+	mpInputSystemModule = Sys_LoadModule("inputsystem");
+	
+	if(!mpInputSystemModule)
+		mpSystem->Error("");
+	
+	auto fnInputSystemFactory{Sys_GetFactory(mpInputSystemModule)};
+	
+	if(!fnInputSystemFactory)
+		mpSystem->Error("");
+	
 	mpInputSystem = reinterpret_cast<IInputSystem*>(fnInputSystemFactory(OGS_INPUTSYSTEM_INTERFACE_VERSION, nullptr));
+	
+	if(!mpInputSystem)
+		mpSystem->Error("");
 };
 
 void CInput::UnloadInputSystemModule()
