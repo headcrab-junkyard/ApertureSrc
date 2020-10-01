@@ -1,5 +1,7 @@
 include_directories(
 	${CMAKE_SOURCE_DIR}/mgt/common
+	${CMAKE_SOURCE_DIR}/mgt/engine
+	${OGS_SDK_PATH}
 	${OGS_SDK_PATH}/common
 	${OGS_SDK_PATH}/public
 	${OGS_SDK_PATH}/next
