@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2019-2020 BlackPhrase
+Copyright (C) 2020 BlackPhrase
 
 This program is free software: you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,27 +20,20 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-class CEdict
+class CModel;
+
+using model_t = struct model_s;
+
+class CModelCache
 {
 public:
-	edict_t *Alloc();
-	void Free(edict_t *ed);
-
-	/// returns a copy of the string allocated from the server's string heap
-	char *NewString(const char *string);
-
-	void Print(edict_t *ed);
-	void Write(FILE *f, edict_t *ed);
+	void Init();
 	
-	char *ParseEdict(char *data, edict_t *ent);
-
-	void WriteGlobals(FILE *f);
-	void ParseGlobals(char *data);
-
-	void LoadFromFile(char *data);
-
-	void PrintEdicts();
-	void PrintNum(int ent);
-
-	//eval_t *GetEdictFieldValue(edict_t *ed, const char *field);
+	void ClearAll();
+	
+	model_t *GetForName(const char *name, bool crash) const;
+	
+	void TouchModel(const char *name);
+private:
+	model_t *FindName(const char *name) const;
 };

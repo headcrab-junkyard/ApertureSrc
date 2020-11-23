@@ -26,25 +26,23 @@
 class CMemory;
 class CCmdBuffer;
 class CCmd;
+class CSys;
 class CNetwork;
 class CProgs;
 class CModelCache;
-class CGameServer;
+class CServer; //class CGameServer;
 
 interface IEngineClient;
 
 class CHost
 {
 public:
-	bool Init();
+	bool Init(IEngineClient *apEngineClient);
 	void Shutdown();
 	
 	bool Frame();
 private:
 	void InitLocal();
-	
-	void LoadClientModule();
-	void UnloadClientModule();
 private:
 	CMemory *mpMemory{nullptr};
 	CCmdBuffer *mpCmdBuffer{nullptr};
@@ -52,13 +50,15 @@ private:
 	
 	//COM_Init();
 	
+	CSys *mpSystem{nullptr};
+	
 	CNetwork *mpNetwork{nullptr};
 	//Netchan_Init();
 	
 	CProgs *mpProgs{nullptr};
 	CModelCache *mpModelCache{nullptr};
 	
-	CGameServer *mpServer{nullptr};
+	/*CGameServer*/ CServer *mpServer{nullptr};
 	
 	IEngineClient *mpEngineClient{nullptr};
 };

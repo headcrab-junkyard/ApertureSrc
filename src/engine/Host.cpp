@@ -20,21 +20,32 @@
 /// @file
 
 #include "Host.hpp"
+#include "Memory.hpp"
+#include "CmdBuffer.hpp"
+#include "Cmd.hpp"
+#include "Sys.hpp"
+#include "Net.hpp"
+#include "Progs.hpp"
+#include "ModelCache.hpp"
+#include "Server.hpp"
+#include "engineclient/IEngineClient.hpp"
 
-bool CHost::Init()
+bool CHost::Init(IEngineClient *apEngineClient)
 {
-	mpMemory->Init();
+	mpEngineClient = apEngineClient;
+	
+	mpMemory->Init(nullptr, 0); // TODO
 	mpCmdBuffer->Init();
 	mpCmd->Init();
 	
-	COM_Init();
+	//COM_Init(); // TODO
 	
-	mpSystem->Init();
+	//mpSystem->Init(); // TODO ?
 	
 	InitLocal();
 	
 	mpNetwork->Init();
-	Netchan_Init();
+	//Netchan_Init(); // TODO
 	
 	mpProgs->Init();
 	mpModelCache->Init();
@@ -42,7 +53,7 @@ bool CHost::Init()
 	mpServer->Init();
 	
 	if(mpEngineClient)
-		if(!mpEngineClient->Init())
+		if(!mpEngineClient->Init(Sys_GetFactoryThis()))
 			return false;
 	
 	return true;
@@ -60,9 +71,15 @@ void CHost::Shutdown()
 
 bool CHost::Frame()
 {
-	if(mpEngineClient)
-		if(!mpEngineClient->Frame())
-			return false;
+	mpServer->Frame(0.0f); // TODO
 	
+	if(mpEngineClient)
+	{
+		if(!mpEngineClient->PreFrame())
+			return false;
+		
+		mpEngineClient->Frame();
+	};
+
 	return true;
 };

@@ -20,12 +20,14 @@
 /// @file
 
 #include "Engine.hpp"
+#include "Host.hpp"
+#include "engineclient/IEngineClient.hpp"
 
-EXPOSE_SINGLE_INTERFACE(CEngine, IEngine, OGS_ENGINE_INTERFACE_VERSION)
+EXPOSE_SINGLE_INTERFACE(CEngine, IEngine, OGS_ENGINE_INTERFACE_VERSION);
 
 bool CEngine::Init(const InitParams &apInitParams)
 {
-	IEngineClient *pEngineClient
+	IEngineClient *pEngineClient{LoadClientModule()};
 	
 	return mpHost->Init(pEngineClient);
 };
@@ -33,9 +35,32 @@ bool CEngine::Init(const InitParams &apInitParams)
 void CEngine::Shutdown()
 {
 	mpHost->Shutdown();
+	
+	UnloadClientModule();
 };
 
 bool CEngine::Frame()
 {
 	return mpHost->Frame();
+};
+
+IEngineClient *CEngine::LoadClientModule()
+{
+	mpClientModule = Sys_LoadModule("engineclient");
+	
+	if(!mpClientModule)
+		return nullptr;
+	
+	auto pfnClientModuleFactory{Sys_GetFactory(mpClientModule)};
+	
+	if(!pfnClientModuleFactory)
+		return nullptr;
+	
+	auto pEngineClient{reinterpret_cast<IEngineClient*>(pfnClientModuleFactory(OGS_ENGINECLIENT_INTERFACE_VERSION, nullptr))};
+	return pEngineClient;
+};
+
+void CEngine::UnloadClientModule()
+{
+	Sys_UnloadModule(mpClientModule);
 };

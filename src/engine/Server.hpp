@@ -20,27 +20,26 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-class CEdict
+class CClient;
+
+using client_t = struct client_s;
+
+class CServer
 {
 public:
-	edict_t *Alloc();
-	void Free(edict_t *ed);
-
-	/// returns a copy of the string allocated from the server's string heap
-	char *NewString(const char *string);
-
-	void Print(edict_t *ed);
-	void Write(FILE *f, edict_t *ed);
+	void Init();
+	void Shutdown();
 	
-	char *ParseEdict(char *data, edict_t *ent);
-
-	void WriteGlobals(FILE *f);
-	void ParseGlobals(char *data);
-
-	void LoadFromFile(char *data);
-
-	void PrintEdicts();
-	void PrintNum(int ent);
-
-	//eval_t *GetEdictFieldValue(edict_t *ed, const char *field);
+	void Frame(float time);
+	
+	void ClientPrintf(client_t *host_client, const char *fmt, ...);
+	void SendClientCmd(client_t *host_client, const char *fmt, ...);
+	
+	void BroadcastPrintf(const char *fmt, ...);
+	
+	void ReconnectAllClients();
+public:
+	CClient *clients{nullptr};
+	
+	bool active{false};
 };

@@ -1,57 +1,87 @@
 #include "quakedef.h"
 #include "Net.hpp"
+#include "Sys.hpp"
 
-void CNet::Init()
+CNetwork::CNetwork(CSys *apSystem) : mpSystem(apSystem){}
+
+void CNetwork::Init()
 {
-	NET_Init();
+	LoadModule();
+	
+	mpNetworkSystem->Init(Sys_GetFactoryThis());
 };
 
-void CNet::Shutdown()
+void CNetwork::Shutdown()
 {
-	NET_Shutdown();
+	if(mpNetworkSystem)
+	{
+		mpNetworkSystem->Shutdown();
+		mpNetworkSystem = nullptr;
+	};
+	
+	UnloadModule();
 };
 
-void CNet::Config(bool multiplayer)
+void CNetwork::Config(bool multiplayer)
 {
-	NET_Config(multiplayer);
+	mpNetworkSystem->Config(multiplayer);
 };
 
-void CNet::Sleep(int msec)
+void CNetwork::Sleep(int msec)
 {
-	NET_Sleep(msec);
+	//mpNetworkSystem->Sleep(msec); // TODO
 };
 
-bool CNet::GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message)
+bool CNetwork::GetPacket(netsrc_t sock, netadr_t &net_from, sizebuf_t &net_message)
 {
-	return NET_GetPacket(sock, net_from, net_message);
+	return mpNetworkSystem->GetPacket(sock, net_from, net_message);
 };
 
-void CNet::SendPacket(netsrc_t sock, int length, const void *data, netadr_t to)
+void CNetwork::SendPacket(netsrc_t sock, int length, const void *data, const netadr_t &to)
 {
-	NET_SendPacket(sock, length, data, to);
+	mpNetworkSystem->SendPacket(sock, length, data, to);
 };
 
-bool CNet::CompareAdr(const netadr_t &a, const netadr_t &b)
+bool CNetwork::CompareAdr(const netadr_t &a, const netadr_t &b)
 {
 	return NET_CompareAdr(a, b);
 };
 
-bool CNet::CompareBaseAdr(const netadr_t &a, const netadr_t &b)
+bool CNetwork::CompareBaseAdr(const netadr_t &a, const netadr_t &b)
 {
 	return NET_CompareBaseAdr(a, b);
 };
 
-bool CNet::IsLocalAddress(const netadr_t &adr)
+bool CNetwork::StringToAdr(const char *s, netadr_t &a)
 {
-	return NET_IsLocalAddress(adr);
+	return mpNetworkSystem->StringToAdr(s, a);
 };
 
-const char *CNet::AdrToString(const netadr_t &a)
+void CNetwork::LoadModule()
 {
-	return NET_AdrToString(a);
+	UnloadModule();
+	
+	mpNetworkSystemModule = Sys_LoadModule("networksystem");
+	
+	if(!mpNetworkSystemModule)
+		mpSystem->Error("");
+	
+	auto fnNetworkSystemFactory{Sys_GetFactory(mpNetworkSystemModule)};
+	
+	if(!fnNetworkSystemFactory)
+		mpSystem->Error("");
+	
+	mpNetworkSystem = reinterpret_cast<INetworkSystem*>(fnNetworkSystemFactory(OGS_NETWORKSYSTEM_INTERFACE_VERSION, nullptr));
+	
+	if(!mpNetworkSystem)
+		mpSystem->Error("");
 };
 
-bool CNet::StringToAdr(const char *s, netadr_t *a)
+void CNetwork::UnloadModule()
 {
-	return NET_StringToAdr(s, a);
+	if(mpNetworkSystemModule)
+	{
+		Sys_UnloadModule(mpNetworkSystemModule);
+		mpNetworkSystemModule = nullptr;
+	};
 };

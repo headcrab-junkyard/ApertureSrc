@@ -23,6 +23,10 @@
 
 #include "engine/IEngine.hpp"
 
+class CHost;
+
+interface IEngineClient;
+
 class CEngine final : public IEngine
 {
 public:
@@ -30,4 +34,11 @@ public:
 	void Shutdown() override;
 	
 	bool Frame() override;
+private:
+	IEngineClient *LoadClientModule();
+	void UnloadClientModule();
+private:
+	CHost *mpHost{nullptr};
+	
+	void *mpClientModule{nullptr};
 };

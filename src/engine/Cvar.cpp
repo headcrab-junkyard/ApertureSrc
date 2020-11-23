@@ -36,7 +36,7 @@ bool CCvar::HandleCommand()
 	return Cvar_Command();
 };
 
-void CCvar::WriteVariables(FILE *f)
+void CCvar::WriteVariables(IFile *f)
 {
 	Cvar_WriteVariables(f);
 };

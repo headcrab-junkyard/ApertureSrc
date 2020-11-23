@@ -20,6 +20,14 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "CommonTypes.hpp"
+
+interface ICmdArgs;
+
+using xcommand_t = void (*)(const ICmdArgs &aArgs);
+
+enum cmd_source_t : int;
+
 class CCmd
 {
 public:

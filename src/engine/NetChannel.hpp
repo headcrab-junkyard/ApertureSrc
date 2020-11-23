@@ -20,22 +20,26 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+using netchan_t = struct netchan_s;
+
 class CNetChannel
 {
 public:
-	void Init();
+	//void Init();
 	
-	void Setup(netsrc_t sock, netchan_t *chan, const netadr_t &adr, int qport);
+	void Setup(netsrc_t sock, const netadr_t &adr, int qport);
 
-	bool NeedReliable(netchan_t *chan);
+	bool NeedReliable();
 	
-	void Transmit(netchan_t *chan, int length, const byte *data);
+	void Transmit(int length, const byte *data);
 	
-	void OutOfBand(int net_socket, netadr_t adr, int length, const byte *data);
-	void OutOfBandPrint(int net_socket, netadr_t adr, const char *format, ...);
+	//void OutOfBand(int net_socket, netadr_t adr, int length, const byte *data);
+	//void OutOfBandPrint(int net_socket, netadr_t adr, const char *format, ...);
 	
-	bool Process(netchan_t *chan, sizebuf_t *msg);
+	bool Process(sizebuf_t *msg);
 
-	bool CanPacket(netchan_t *chan);
-	bool CanReliable(netchan_t *chan);
+	bool CanPacket();
+	bool CanReliable();
+private:
+	netchan_t *chan{nullptr};
 };

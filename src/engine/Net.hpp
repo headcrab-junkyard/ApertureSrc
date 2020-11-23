@@ -20,9 +20,21 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-class CNet
+#include "CommonTypes.hpp"
+#include "enums.h"
+
+interface INetworkSystem;
+
+using netadr_t = struct netadr_s;
+using sizebuf_t = struct sizebuf_s;
+
+class CSys;
+
+class CNetwork
 {
 public:
+	CNetwork(CSys *apSystem);
+	
 	void Init();
 	void Shutdown();
 
@@ -30,14 +42,19 @@ public:
 
 	void Sleep(int msec);
 	
-	bool GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message);
-	void SendPacket(netsrc_t sock, int length, const void *data, netadr_t to);
+	bool GetPacket(netsrc_t sock, netadr_t &net_from, sizebuf_t &net_message);
+	void SendPacket(netsrc_t sock, int length, const void *data, const netadr_t &to);
 
 	bool CompareAdr(const netadr_t &a, const netadr_t &b);
 	bool CompareBaseAdr(const netadr_t &a, const netadr_t &b);
 	
-	bool IsLocalAddress(const netadr_t &adr);
+	bool StringToAdr(const char *s, netadr_t &a);
+private:
+	void LoadModule();
+	void UnloadModule();
 	
-	const char *AdrToString(const netadr_t &a);
-	bool StringToAdr(const char *s, netadr_t *a);
+	void *mpNetworkSystemModule{nullptr};
+	
+	INetworkSystem *mpNetworkSystem{nullptr};
+	CSys *mpSystem{nullptr};
 };

@@ -50,7 +50,7 @@ public:
 
 	/// Writes lines containing "set variable value" for all variables
 	/// with the archive flag set to true.
-	void WriteVariables(FILE *f);
+	void WriteVariables(IFile *f);
 
 	cvar_t *FindVar(const char *var_name) const;
 };
