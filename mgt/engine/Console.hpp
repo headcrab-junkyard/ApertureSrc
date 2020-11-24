@@ -19,12 +19,9 @@
 */
 
 /// @file
+/// @brief console
 
 #pragma once
-
-//
-// console
-//
 
 void Con_Init();
 void Con_Printf(const char *fmt, ...);

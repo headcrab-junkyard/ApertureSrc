@@ -19,9 +19,10 @@
 */
 
 /// @file
-/// @brief
 
 #pragma once
+
+#include "const.h" // TODO: plane_t, trace_t
 
 enum
 {

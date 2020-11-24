@@ -233,9 +233,11 @@ Writes lines containing "set variable value" for all variables
 with the archive flag set to true.
 ============
 */
-void Cvar_WriteVariables(FILE *f)
+void Cvar_WriteVariables(IFile *f)
 {
 	for(auto var = cvar_vars; var; var = var->next)
 		if(var->flags & FCVAR_ARCHIVE)
-			fprintf(f, "%s \"%s\"\n", var->name, var->string);
-}
+			f->Printf("%s \"%s\"\n", var->name, var->string);
+};
+
+};

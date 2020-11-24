@@ -54,7 +54,7 @@ struct server_static_t
 	int maxclientslimit;
 	struct client_s *clients;    // [maxclients]
 	int serverflags;             // episode completion information
-	qboolean changelevel_issued; // cleared when at SV_SpawnServer
+	bool changelevel_issued; // cleared when at SV_SpawnServer
 
 	svstats_t stats;
 

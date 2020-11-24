@@ -60,9 +60,7 @@ If the requested file is inside a packfile, a new FILE * will be opened
 into the file.
 ===========
 */
-int COM_FOpenFile(const char *filename, IFile **file)
+/*was int*/ FileHandle_t COM_FOpenFile(const char *filename)
 {
-	return COM_FindFile(filename, nullptr, file);
-}
-{
+	return COM_FindFile(filename, nullptr);
 }

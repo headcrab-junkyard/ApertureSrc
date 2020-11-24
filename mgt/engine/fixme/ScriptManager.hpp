@@ -1,7 +1,7 @@
 /*
  * This file is part of Magenta Engine
  *
- * Copyright (C) 2016-2018 BlackPhrase
+ * Copyright (C) 2016-2019 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,12 +32,11 @@ public:
 	CScriptManager();
 	~CScriptManager();
 	
-	void LoadScript(const char *asName);
-	void UnloadScript(const char *asName);
+	void Load(const char *asName);
+	void Unload(const char *asName);
 	
-	void LoadScriptsFromFolder(const char *asPath);
-	
-	void UnloadAllScripts();
+	void LoadAllFromFolder(const char *asPath);
+	void UnloadAll();
 private:
 	tScriptVec mvScripts;
 };

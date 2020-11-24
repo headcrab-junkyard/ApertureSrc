@@ -22,8 +22,8 @@
 
 #pragma once
 
-//#include "CommonTypes.hpp"
-#include "game/server/IGame.hpp"
+#include "CommonTypes.hpp"
+//#include "game/server/IGame.hpp"
 
 interface IGame;
 

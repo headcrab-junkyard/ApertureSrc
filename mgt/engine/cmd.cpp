@@ -24,18 +24,11 @@
 #include "quakedef.h"
 #include "CmdArgs.hpp"
 
-#define MAX_ALIAS_NAME 32
+#include "engine/cdll_int.h"
 
-typedef struct cmdalias_s
-{
-	struct cmdalias_s *next;
-	char name[MAX_ALIAS_NAME];
-	char *value;
-} cmdalias_t;
+cmdalias_t *cmd_alias{nullptr};
 
-cmdalias_t *cmd_alias;
-
-qboolean cmd_wait;
+bool cmd_wait{false};
 
 //=============================================================================
 
@@ -82,9 +75,7 @@ Adds command text at the end of the buffer
 */
 void Cbuf_AddText(const char *text)
 {
-	int l;
-
-	l = Q_strlen(text);
+	int l = Q_strlen(text);
 
 	if(cmd_text.cursize + l >= cmd_text.maxsize)
 	{
@@ -106,19 +97,16 @@ FIXME: actually change the command buffer to do less copying
 */
 void Cbuf_InsertText(const char *text)
 {
-	char *temp;
-	int templen;
+	char *temp{nullptr};
 
 	// copy off any commands still remaining in the exec buffer
-	templen = cmd_text.cursize;
+	int templen = cmd_text.cursize;
 	if(templen)
 	{
 		temp = (char *)Z_Malloc(templen);
 		Q_memcpy(temp, cmd_text.data, templen);
 		cmd_text.Clear();
-	}
-	else
-		temp = nullptr; // shut up compiler
+	};
 
 	// add the entire text of the file
 	Cbuf_AddText(text);
@@ -159,7 +147,7 @@ void Cbuf_Execute()
 				break;
 		};
 
-		memcpy(line, text, i);
+		Q_memcpy(line, text, i);
 		line[i] = 0;
 
 		// delete the text from the command buffer and move remaining commands down
@@ -308,9 +296,7 @@ Just prints the rest of the line to the console
 */
 void Cmd_Echo_f(const ICmdArgs &apArgs)
 {
-	int i;
-
-	for(i = 1; i < apArgs.GetCount(); i++)
+	for(int i = 1; i < apArgs.GetCount(); ++i)
 		gpSystem->Printf("%s ", apArgs.GetByIndex(i));
 	gpSystem->Printf("\n");
 };

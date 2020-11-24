@@ -1,20 +1,20 @@
 /*
-*	This file is part of Magenta Engine
-*
-*	Copyright (C) 2015-2018 BlackPhrase
-*
-*	Magenta Engine is free software: you can redistribute it and/or modify
-*	it under the terms of the GNU General Public License as published by
-*	the Free Software Foundation, either version 3 of the License, or
-*	(at your option) any later version.
-*
-*	Magenta Engine is distributed in the hope that it will be useful,
-*	but WITHOUT ANY WARRANTY; without even the implied warranty of
-*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-*	GNU General Public License for more details.
-*
-*	You should have received a copy of the GNU General Public License
-*	along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of Magenta Engine
+ *
+ * Copyright (C) 2015-2019 BlackPhrase
+ *
+ * Magenta Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * Magenta Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with Magenta Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /// @file
@@ -22,7 +22,6 @@
 #include <memory>
 #include "PluginManager.hpp"
 #include "PluginHandle.hpp"
-//#include "debug/Debug.hpp"
 #include "common/LibUtil.hpp"
 #include "common/ArchTypes.hpp"
 #include "common/PlatformTypes.hpp"
@@ -64,7 +63,7 @@ bool CPluginManager::LoadFromFolder(const tString &asPath, IFileSystem *apFileSy
 
 CPluginHandle *CPluginManager::LoadPlugin(const tString &asPath)
 {
-	std::unique_ptr<CPluginHandle> pPlugin{std::make_unique<CPluginHandle>(mfnModuleFactory)};
+	auto pPlugin{std::make_unique<CPluginHandle>(mfnModuleFactory)};
 
 	//DevMsg("Plugin Handler", "Loading a plugin from: %s", It.c_str());
 
@@ -77,7 +76,7 @@ CPluginHandle *CPluginManager::LoadPlugin(const tString &asPath)
 	
 	//DevMsg("Plugin Handler", "Loaded plugin info:\n-Plugin Name: %s\n-Plugin Version: %s\n-Plugin Author: %s", pPlugin->GetInfo()->msName, pPlugin->GetInfo()->msVersion, pPlugin->GetInfo()->msAuthor);
 	
-	auto Plugin = pPlugin.release();
+	auto Plugin{pPlugin.release()};
 	mvPlugins.push_back(Plugin);
 	return Plugin;
 };

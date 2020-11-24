@@ -23,7 +23,7 @@
 #include "filesystem/IFileSystem.hpp"
 #include "filesystem/IFile.hpp"
 
-IFileSystem *gpFileSystem{ nullptr };
+IFileSystem *gpFileSystem{nullptr};
 
 void FileSystem_Init(const char *basedir, void *filesystemFactory)
 {

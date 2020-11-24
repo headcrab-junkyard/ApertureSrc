@@ -22,7 +22,7 @@
 
 #include "quakedef.h"
 
-// char *date = "Oct 24 1996";
+// char *date = "Oct 9 2016";
 // char *time = "13:22:52";
 const char *date{__DATE__};
 const char *curtime{__TIME__};
@@ -32,7 +32,7 @@ const char *mon[12] =
 char mond[12] =
 { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
 
-// returns days since Oct 24 1996
+// returns days since Oct 9 2016
 int build_number()
 {
 	int m = 0;
@@ -60,7 +60,11 @@ int build_number()
 	if(((y % 4) == 0) && m > 1)
 		b += 1;
 
-	b -= 34995; // Oct 24 1996 // TODO
+	// TODO
+	b -= 34995; // Oct 24 1996
+	//b -= 35741; // Nov 9 1998
+	//b -= 42285; // Oct 9 2016
+	//b -= 42300; // Oct 24 2016
 
 	hr = (curtime[0] - '0') * 10 + (curtime[1] - '0');
 	min = (curtime[3] - '0') * 10 + (curtime[4] - '0');

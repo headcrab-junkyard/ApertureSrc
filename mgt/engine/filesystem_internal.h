@@ -30,24 +30,26 @@
 
 #define FILESYSTEM_INVALID_HANDLE (FileHandle_t)0
 
-typedef enum {
+enum FileSystemSeek_t
+{
 	FILESYSTEM_SEEK_HEAD = 0,
 	FILESYSTEM_SEEK_CURRENT,
 	FILESYSTEM_SEEK_TAIL
 	//...?
-} FileSystemSeek_t;
+};
 
 enum
 {
 	FILESYSTEM_INVALID_FIND_HANDLE = -1
 };
 
-typedef enum {
+enum FileWarningLevel_t
+{
 	FILESYSTEM_WARNING_QUIET = 0,      ///< Don't print anything
 	FILESYSTEM_WARNING_REPORTUNCLOSED, ///< On shutdown, report names of files left unclosed
 	FILESYSTEM_WARNING_REPORTUSAGE,    ///< Report number of times a file was opened/closed
 	FILESYSTEM_WARNING_REPORTALLACCESS ///< Report all open/close events to console (SLOW!!!!)
-} FileWarningLevel_t;
+};
 
 struct IFile;
 

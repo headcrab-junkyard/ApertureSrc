@@ -108,16 +108,13 @@ int			floodvalid;
 
 qboolean	portalopen[MAX_MAP_AREAPORTALS];
 
-
 cvar_t		*map_noareas;
 
 void	CM_InitBoxHull (void);
 void	FloodAreaConnections (void);
 
-
 int		c_pointcontents;
 int		c_traces, c_brush_traces;
-
 
 /*
 ===============================================================================
@@ -166,7 +163,6 @@ void CMod_LoadSubmodels (lump_t *l)
 	}
 }
 
-
 /*
 =================
 CMod_LoadSurfaces
@@ -198,7 +194,6 @@ void CMod_LoadSurfaces (lump_t *l)
 		out->c.value = LittleLong (in->value);
 	}
 }
-
 
 /*
 =================
@@ -236,7 +231,6 @@ void CMod_LoadNodes (lump_t *l)
 			out->children[j] = child;
 		}
 	}
-
 }
 
 /*
@@ -269,7 +263,6 @@ void CMod_LoadBrushes (lump_t *l)
 		out->numsides = LittleLong(in->numsides);
 		out->contents = LittleLong(in->contents);
 	}
-
 }
 
 /*
@@ -521,7 +514,6 @@ void CMod_LoadVisibility (lump_t *l)
 	}
 }
 
-
 /*
 =================
 CMod_LoadEntityString
@@ -535,8 +527,6 @@ void CMod_LoadEntityString (lump_t *l)
 
 	memcpy (map_entitystring, cmod_base + l->fileofs, l->filelen);
 }
-
-
 
 /*
 ==================
@@ -687,7 +677,6 @@ int		CM_LeafArea (int leafnum)
 
 //=======================================================================
 
-
 cplane_t	*box_planes;
 int			box_headnode;
 cbrush_t	*box_brush;
@@ -763,7 +752,6 @@ void CM_InitBoxHull (void)
 	}	
 }
 
-
 /*
 ===================
 CM_HeadnodeForBox
@@ -789,7 +777,6 @@ int	CM_HeadnodeForBox (vec3_t mins, vec3_t maxs)
 
 	return box_headnode;
 }
-
 
 /*
 ==================
@@ -829,8 +816,6 @@ int CM_PointLeafnum (vec3_t p)
 		return 0;		// sound may call this without map loaded
 	return CM_PointLeafnum_r (p, 0);
 }
-
-
 
 /*
 =============
@@ -878,7 +863,6 @@ void CM_BoxLeafnums_r (int nodenum)
 			CM_BoxLeafnums_r (node->children[0]);
 			nodenum = node->children[1];
 		}
-
 	}
 }
 
@@ -905,8 +889,6 @@ int	CM_BoxLeafnums (vec3_t mins, vec3_t maxs, int *list, int listsize, int *topn
 	return CM_BoxLeafnums_headnode (mins, maxs, list,
 		listsize, map_cmodels[0].headnode, topnode);
 }
-
-
 
 /*
 ==================
@@ -960,7 +942,6 @@ int	CM_TransformedPointContents (vec3_t p, int headnode, vec3_t origin, vec3_t a
 
 	return map_leafs[l].contents;
 }
-
 
 /*
 ===============================================================================
@@ -1140,7 +1121,6 @@ void CM_TestBoxInBrush (vec3_t mins, vec3_t maxs, vec3_t p1,
 		// if completely in front of face, no intersection
 		if (d1 > 0)
 			return;
-
 	}
 
 	// inside this brush
@@ -1148,7 +1128,6 @@ void CM_TestBoxInBrush (vec3_t mins, vec3_t maxs, vec3_t p1,
 	trace->fraction = 0;
 	trace->contents = brush->contents;
 }
-
 
 /*
 ================
@@ -1180,9 +1159,7 @@ void CM_TraceToLeaf (int leafnum)
 		if (!trace_trace.fraction)
 			return;
 	}
-
 }
-
 
 /*
 ================
@@ -1214,9 +1191,7 @@ void CM_TestInLeaf (int leafnum)
 		if (!trace_trace.fraction)
 			return;
 	}
-
 }
-
 
 /*
 ==================
@@ -1271,7 +1246,6 @@ void CM_RecursiveHullCheck (int num, float p1f, float p2f, vec3_t p1, vec3_t p2)
 				fabs(trace_extents[2]*plane->normal[2]);
 	}
 
-
 #if 0
 CM_RecursiveHullCheck (node->children[0], p1f, p2f, p1, p2);
 CM_RecursiveHullCheck (node->children[1], p1f, p2f, p1, p2);
@@ -1324,7 +1298,6 @@ return;
 
 	CM_RecursiveHullCheck (node->children[side], p1f, midf, p1, mid);
 
-
 	// go past the node
 	if (frac2 < 0)
 		frac2 = 0;
@@ -1337,8 +1310,6 @@ return;
 
 	CM_RecursiveHullCheck (node->children[side^1], midf, p2f, mid, p2);
 }
-
-
 
 //======================================================================
 
@@ -1434,7 +1405,6 @@ trace_t		CM_BoxTrace (vec3_t start, vec3_t end,
 	return trace_trace;
 }
 
-
 /*
 ==================
 CM_TransformedBoxTrace
@@ -1446,7 +1416,6 @@ rotating entities
 #ifdef _WIN32
 #pragma optimize( "", off )
 #endif
-
 
 trace_t		CM_TransformedBoxTrace (vec3_t start, vec3_t end,
 						  vec3_t mins, vec3_t maxs,
@@ -1511,8 +1480,6 @@ trace_t		CM_TransformedBoxTrace (vec3_t start, vec3_t end,
 #ifdef _WIN32
 #pragma optimize( "", on )
 #endif
-
-
 
 /*
 ===============================================================================
@@ -1590,7 +1557,6 @@ byte	*CM_ClusterPHS (int cluster)
 	return phsrow;
 }
 
-
 /*
 ===============================================================================
 
@@ -1647,7 +1613,6 @@ void	FloodAreaConnections (void)
 		floodnum++;
 		FloodArea_r (area, floodnum);
 	}
-
 }
 
 void	CM_SetAreaPortalState (int portalnum, qboolean open)
@@ -1671,7 +1636,6 @@ qboolean	CM_AreasConnected (int area1, int area2)
 		return true;
 	return false;
 }
-
 
 /*
 =================
@@ -1709,7 +1673,6 @@ int CM_WriteAreaBits (byte *buffer, int area)
 
 	return bytes;
 }
-
 
 /*
 ===================
@@ -1767,4 +1730,3 @@ qboolean CM_HeadnodeVisible (int nodenum, byte *visbits)
 		return true;
 	return CM_HeadnodeVisible(node->children[1], visbits);
 }
-

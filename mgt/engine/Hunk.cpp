@@ -67,8 +67,8 @@ void Hunk_Check ()
 		if (h->size < 16 || h->size + (byte *)h - hunk_base > hunk_size)
 			gpSystem->Error ("Hunk_Check: bad size");
 		h = (hunk_t *)((byte *)h+h->size);
-	}
-}
+	};
+};
 
 /*
 ==============
@@ -109,7 +109,7 @@ void Hunk_Print (bool all)
 			gpSystem->Printf ("          :%8i REMAINING\n", hunk_size - hunk_low_used - hunk_high_used);
 			gpSystem->Printf ("-------------------------\n");
 			h = starthigh;
-		}
+		};
 		
 	//
 	// if totally done, break
@@ -133,7 +133,7 @@ void Hunk_Print (bool all)
 	//
 	// print the single block
 	//
-		memcpy (name, h->name, 8);
+		Q_memcpy (name, h->name, 8);
 		if (all)
 			gpSystem->Printf ("%8p :%8i %8s\n",h, h->size, name);
 			
@@ -147,15 +147,14 @@ void Hunk_Print (bool all)
 				gpSystem->Printf ("          :%8i %8s (TOTAL)\n",sum, name);
 			count = 0;
 			sum = 0;
-		}
+		};
 
 		h = next;
-	}
+	};
 
 	gpSystem->Printf ("-------------------------\n");
 	gpSystem->Printf ("%8i total blocks\n", totalblocks);
-	
-}
+};
 
 /*
 ===================
@@ -190,7 +189,7 @@ void *Hunk_AllocName (int size, const char *name)
 	Q_strncpy (h->name, name, 8);
 	
 	return (void *)(h+1);
-}
+};
 
 /*
 ===================
@@ -200,12 +199,12 @@ Hunk_Alloc
 void *Hunk_Alloc (int size)
 {
 	return Hunk_AllocName (size, "unknown");
-}
+};
 
 int	Hunk_LowMark ()
 {
 	return hunk_low_used;
-}
+};
 
 void Hunk_FreeToLowMark (int mark)
 {
@@ -213,7 +212,7 @@ void Hunk_FreeToLowMark (int mark)
 		gpSystem->Error ("Hunk_FreeToLowMark: bad mark %i", mark);
 	Q_memset (hunk_base + mark, 0, hunk_low_used - mark);
 	hunk_low_used = mark;
-}
+};
 
 int	Hunk_HighMark ()
 {
@@ -221,10 +220,10 @@ int	Hunk_HighMark ()
 	{
 		hunk_tempactive = false;
 		Hunk_FreeToHighMark (hunk_tempmark);
-	}
+	};
 
 	return hunk_high_used;
-}
+};
 
 void Hunk_FreeToHighMark (int mark)
 {
@@ -232,13 +231,12 @@ void Hunk_FreeToHighMark (int mark)
 	{
 		hunk_tempactive = false;
 		Hunk_FreeToHighMark (hunk_tempmark);
-	}
+	};
 	if (mark < 0 || mark > hunk_high_used)
 		gpSystem->Error ("Hunk_FreeToHighMark: bad mark %i", mark);
 	Q_memset (hunk_base + hunk_size - hunk_high_used, 0, hunk_high_used - mark);
 	hunk_high_used = mark;
-}
-
+};
 
 /*
 ===================
@@ -256,7 +254,7 @@ void *Hunk_HighAllocName (int size, const char *name)
 	{
 		Hunk_FreeToHighMark (hunk_tempmark);
 		hunk_tempactive = false;
-	}
+	};
 
 #ifdef PARANOID
 	Hunk_Check ();
@@ -267,8 +265,8 @@ void *Hunk_HighAllocName (int size, const char *name)
 	if (hunk_size - hunk_low_used - hunk_high_used < size)
 	{
 		gpSystem->Printf ("Hunk_HighAlloc: failed on %i bytes\n",size);
-		return NULL;
-	}
+		return nullptr;
+	};
 
 	hunk_high_used += size;
 	Cache_FreeHigh (hunk_high_used);
@@ -281,7 +279,7 @@ void *Hunk_HighAllocName (int size, const char *name)
 	Q_strncpy (h->name, name, 8);
 
 	return (void *)(h+1);
-}
+};
 
 /*
 =================
@@ -300,7 +298,7 @@ void *Hunk_TempAlloc (int size)
 	{
 		Hunk_FreeToHighMark (hunk_tempmark);
 		hunk_tempactive = false;
-	}
+	};
 	
 	hunk_tempmark = Hunk_HighMark ();
 
@@ -309,4 +307,4 @@ void *Hunk_TempAlloc (int size)
 	hunk_tempactive = true;
 
 	return buf;
-}
+};

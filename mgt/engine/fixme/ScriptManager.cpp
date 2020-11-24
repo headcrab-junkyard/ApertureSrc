@@ -30,3 +30,18 @@ void CScriptManager::LoadScript(const char *asName)
 {
 	// TODO
 };
+
+void CScriptManager::Unload(const char *asName)
+{
+	// TODO
+};
+
+void CScriptManager::LoadAllFromFolder(const char *asPath)
+{
+	// TODO
+};
+
+void CScriptManager::UnloadAll()
+{
+	// TODO
+};

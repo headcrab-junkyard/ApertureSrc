@@ -59,7 +59,7 @@ void Con_Init()
 		char temp[MAXGAMEDIRLEN + 1]{};
 		const char *t2{"/qconsole.log"};
 		
-		if(strlen(com_gamedir) < (MAXGAMEDIRLEN - strlen(t2)))
+		if(Q_strlen(com_gamedir) < (MAXGAMEDIRLEN - Q_strlen(t2)))
 		{
 			sprintf(temp, "%s%s", com_gamedir, t2);
 			unlink(temp);

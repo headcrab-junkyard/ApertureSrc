@@ -69,7 +69,7 @@ Mod_Init
 */
 void Mod_Init()
 {
-	memset(mod_novis, 0xff, sizeof(mod_novis)); // TODO: client-side only?
+	Q_memset(mod_novis, 0xff, sizeof(mod_novis)); // TODO: client-side only?
 };
 
 /*
@@ -80,14 +80,13 @@ Mod_PointInLeaf
 // TODO: also used on client-side
 mleaf_t *Mod_PointInLeaf (vec3_t p, model_t *model)
 {
-	mnode_t		*node;
 	float		d;
 	mplane_t	*plane;
 	
 	if (!model || !model->nodes)
 		gpSystem->Error ("Mod_PointInLeaf: bad model");
 
-	node = model->nodes;
+	mnode_t *node = model->nodes;
 	while (1)
 	{
 		if (node->contents < 0)
@@ -169,10 +168,9 @@ Mod_ClearAll
 */
 void Mod_ClearAll()
 {
-	int i;
-	model_t	*mod;
+	model_t	*mod{mod_known};
 
-	for(i = 0, mod=mod_known; i < mod_numknown; i++, mod++)
+	for(int i = 0; i < mod_numknown; ++i, ++mod)
 	{
 		mod->needload = NL_UNREFERENCED;
 		
@@ -191,8 +189,8 @@ Mod_FindName
 model_t *Mod_FindName(const char *name)
 {
 	int		i;
-	model_t	*mod;
-	model_t	*avail = nullptr;
+	model_t	*mod{nullptr};
+	model_t	*avail{nullptr};
 
 	if (!name[0])
 		gpSystem->Error ("Mod_ForName: NULL name");
@@ -240,9 +238,9 @@ Mod_LoadModel
 Loads a model into the cache
 ==================
 */
-model_t *Mod_LoadModel (model_t *mod, qboolean crash)
+model_t *Mod_LoadModel (model_t *mod, bool crash)
 {
-	unsigned int *buf;
+	uint *buf{nullptr};
 	byte stackbuf[1024]{}; // avoid dirtying the cache heap
 
 	if (mod->type == mod_alias)
@@ -268,7 +266,7 @@ model_t *Mod_LoadModel (model_t *mod, qboolean crash)
 	if (!buf)
 	{
 		if (crash)
-			gpSystem->Error ("Mod_NumForName: %s not found", mod->name);
+			gpSystem->Error ("Mod_LoadModel: %s not found", mod->name);
 		return nullptr;
 	};
 	
@@ -311,9 +309,9 @@ Mod_ForName
 Loads in a model for the given name
 ==================
 */
-model_t *Mod_ForName(const char *name, qboolean crash)
+model_t *Mod_ForName(const char *name, bool crash)
 {
-	model_t	*mod{Mod_FindName(name)};
+	auto mod{Mod_FindName(name)};
 
 	return Mod_LoadModel(mod, crash);
 };
@@ -327,10 +325,10 @@ Mod_Print
 */
 void Mod_Print ()
 {
-	model_t	*mod{mod_known};
+	auto mod{mod_known};
 
 	gpSystem->Printf ("Cached models:\n");
-	for (int i=0; i < mod_numknown ; i++, mod++)
+	for (int i=0; i < mod_numknown ; ++i, ++mod)
 	{
 		gpSystem->Printf ("%8p : %s",mod->cache.data, mod->name);
 		if (mod->needload & NL_UNREFERENCED)

@@ -71,7 +71,7 @@ void VID_UnlockBuffer();
 #define id386 0
 #endif
 
-#ifdef SERVERONLY // no asm in dedicated server
+#ifdef SWDS // no asm in dedicated server
 #undef id386
 #endif
 
