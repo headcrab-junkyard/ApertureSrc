@@ -20,10 +20,11 @@
 
 /// @file
 
-#include <cstring>
-#include "common.hpp"
-#include "Memory.hpp"
-#include "CmdRegistry.hpp"
+#include "quakedef.h"
+//#include <cstring>
+//#include "common.hpp"
+//#include "Memory.hpp"
+//#include "CmdRegistry.hpp"
 
 /*
 ===============================================================================
@@ -45,11 +46,6 @@ typedef struct cache_system_s
 cache_system_t *Cache_TryAlloc (int size, bool nobottom);
 
 cache_system_t	cache_head;
-
-//TEMP
-extern void Con_Printf(const char *fmt, ...);
-extern void Con_DPrintf(const char *fmt, ...);
-extern void Sys_Error(const char *fmt, ...);
 
 /*
 ===========
@@ -77,8 +73,8 @@ void Cache_Move ( cache_system_t *c)
 //		Con_Printf ("cache_move failed\n");
 
 		Cache_Free (c->user);		// tough luck...
-	}
-}
+	};
+};
 
 /*
 ============
@@ -99,8 +95,8 @@ void Cache_FreeLow (int new_low_hunk)
 		if ((byte *)c >= hunk_base + new_low_hunk)
 			return;		// there is space to grow the hunk
 		Cache_Move ( c );	// reclaim the space
-	}
-}
+	};
+};
 
 /*
 ============
@@ -113,7 +109,7 @@ void Cache_FreeHigh (int new_high_hunk)
 {
 	cache_system_t	*c, *prev;
 	
-	prev = NULL;
+	prev = nullptr;
 	while (1)
 	{
 		c = cache_head.prev;
@@ -127,31 +123,31 @@ void Cache_FreeHigh (int new_high_hunk)
 		{
 			Cache_Move (c);	// try to move it
 			prev = c;
-		}
-	}
-}
+		};
+	};
+};
 
 void Cache_UnlinkLRU (cache_system_t *cs)
 {
 	if (!cs->lru_next || !cs->lru_prev)
-		Sys_Error ("Cache_UnlinkLRU: NULL link");
+		gpSystem->Error ("Cache_UnlinkLRU: NULL link");
 
 	cs->lru_next->lru_prev = cs->lru_prev;
 	cs->lru_prev->lru_next = cs->lru_next;
 	
-	cs->lru_prev = cs->lru_next = NULL;
-}
+	cs->lru_prev = cs->lru_next = nullptr;
+};
 
 void Cache_MakeLRU (cache_system_t *cs)
 {
 	if (cs->lru_next || cs->lru_prev)
-		Sys_Error ("Cache_MakeLRU: active link");
+		gpSystem->Error ("Cache_MakeLRU: active link");
 
 	cache_head.lru_next->lru_prev = cs;
 	cs->lru_next = cache_head.lru_next;
 	cs->lru_prev = &cache_head;
 	cache_head.lru_next = cs;
-}
+};
 
 /*
 ============
@@ -170,10 +166,10 @@ cache_system_t *Cache_TryAlloc (int size, bool nobottom)
 	if (!nobottom && cache_head.prev == &cache_head)
 	{
 		if (hunk_size - hunk_high_used - hunk_low_used < size)
-			Sys_Error ("Cache_TryAlloc: %i is greater then free hunk", size);
+			gpSystem->Error ("Cache_TryAlloc: %i is greater then free hunk", size);
 
 		pnew = (cache_system_t *) (hunk_base + hunk_low_used);
-		memset (pnew, 0, sizeof(*pnew));
+		Q_memset (pnew, 0, sizeof(*pnew));
 		pnew->size = size;
 
 		cache_head.prev = cache_head.next = pnew;
@@ -181,7 +177,7 @@ cache_system_t *Cache_TryAlloc (int size, bool nobottom)
 		
 		Cache_MakeLRU (pnew);
 		return pnew;
-	}
+	};
 	
 // search from the bottom up for space
 
@@ -194,7 +190,7 @@ cache_system_t *Cache_TryAlloc (int size, bool nobottom)
 		{
 			if ( (byte *)cs - (byte *)pnew >= size)
 			{	// found space
-				memset (pnew, 0, sizeof(*pnew));
+				Q_memset (pnew, 0, sizeof(*pnew));
 				pnew->size = size;
 				
 				pnew->next = cs;
@@ -205,19 +201,20 @@ cache_system_t *Cache_TryAlloc (int size, bool nobottom)
 				Cache_MakeLRU (pnew);
 	
 				return pnew;
-			}
-		}
+			};
+		};
 
 	// continue looking		
 		pnew = (cache_system_t *)((byte *)cs + cs->size);
 		cs = cs->next;
 
-	} while (cs != &cache_head);
+	}
+	while (cs != &cache_head);
 	
 // try to allocate one at the very end
 	if ( hunk_base + hunk_size - hunk_high_used - (byte *)pnew >= size)
 	{
-		memset (pnew, 0, sizeof(*pnew));
+		Q_memset (pnew, 0, sizeof(*pnew));
 		pnew->size = size;
 		
 		pnew->next = &cache_head;
@@ -228,10 +225,10 @@ cache_system_t *Cache_TryAlloc (int size, bool nobottom)
 		Cache_MakeLRU (pnew);
 
 		return pnew;
-	}
+	};
 	
-	return NULL;		// couldn't allocate
-}
+	return nullptr;		// couldn't allocate
+};
 
 /*
 ============
@@ -244,8 +241,7 @@ void Cache_Flush ()
 {
 	while (cache_head.next != &cache_head)
 		Cache_Free ( cache_head.next->user );	// reclaim the space
-}
-
+};
 
 /*
 ============
@@ -258,10 +254,8 @@ void Cache_Print ()
 	cache_system_t	*cd;
 
 	for (cd = cache_head.next ; cd != &cache_head ; cd = cd->next)
-	{
-		Con_Printf ("%8i : %s\n", cd->size, cd->name);
-	}
-}
+		gpSystem->Printf ("%8i : %s\n", cd->size, cd->name);
+};
 
 /*
 ============
@@ -271,8 +265,8 @@ Cache_Report
 */
 void Cache_Report ()
 {
-	Con_DPrintf ("%4.1f megabyte data cache\n", (hunk_size - hunk_high_used - hunk_low_used) / (float)(1024*1024) );
-}
+	gpSystem->DevPrintf ("%4.1f megabyte data cache\n", (hunk_size - hunk_high_used - hunk_low_used) / (float)(1024*1024) );
+};
 
 /*
 ============
@@ -282,7 +276,7 @@ Cache_Compact
 */
 void Cache_Compact ()
 {
-}
+};
 
 /*
 ============
@@ -296,7 +290,7 @@ void Cache_Init ()
 	cache_head.lru_next = cache_head.lru_prev = &cache_head;
 
 	gpCmdRegistry->Add("flush", Cache_Flush);
-}
+};
 
 /*
 ==============
@@ -310,20 +304,18 @@ void Cache_Free (cache_user_t *c)
 	cache_system_t	*cs;
 
 	if (!c->data)
-		Sys_Error ("Cache_Free: not allocated");
+		gpSystem->Error ("Cache_Free: not allocated");
 
 	cs = ((cache_system_t *)c->data) - 1;
 
 	cs->prev->next = cs->next;
 	cs->next->prev = cs->prev;
-	cs->next = cs->prev = NULL;
+	cs->next = cs->prev = nullptr;
 
-	c->data = NULL;
+	c->data = nullptr;
 
 	Cache_UnlinkLRU (cs);
-}
-
-
+};
 
 /*
 ==============
@@ -335,7 +327,7 @@ void *Cache_Check (cache_user_t *c)
 	cache_system_t	*cs;
 
 	if (!c->data)
-		return NULL;
+		return nullptr;
 
 	cs = ((cache_system_t *)c->data) - 1;
 
@@ -344,23 +336,22 @@ void *Cache_Check (cache_user_t *c)
 	Cache_MakeLRU (cs);
 	
 	return c->data;
-}
-
+};
 
 /*
 ==============
 Cache_Alloc
 ==============
 */
-void *Cache_Alloc (cache_user_t *c, int size, char *name)
+void *Cache_Alloc (cache_user_t *c, int size, const char *name)
 {
 	cache_system_t	*cs;
 
 	if (c->data)
-		Sys_Error ("Cache_Alloc: allready allocated");
+		gpSystem->Error ("Cache_Alloc: allready allocated");
 	
 	if (size <= 0)
-		Sys_Error ("Cache_Alloc: size %i", size);
+		gpSystem->Error ("Cache_Alloc: size %i", size);
 
 	size = (size + sizeof(cache_system_t) + 15) & ~15;
 
@@ -374,14 +365,14 @@ void *Cache_Alloc (cache_user_t *c, int size, char *name)
 			c->data = (void *)(cs+1);
 			cs->user = c;
 			break;
-		}
+		};
 	
 	// free the least recently used cahedat
 		if (cache_head.lru_prev == &cache_head)
-			Sys_Error ("Cache_Alloc: out of memory");
+			gpSystem->Error ("Cache_Alloc: out of memory");
 													// not enough memory at all
 		Cache_Free ( cache_head.lru_prev->user );
-	} 
+	};
 	
 	return Cache_Check (c);
-}
+};

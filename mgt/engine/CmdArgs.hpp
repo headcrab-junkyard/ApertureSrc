@@ -30,10 +30,9 @@ public:
 	~CCmdArgs();
 	
 	const char *GetByIndex(int anArg) const override;
-	
+	const char *GetByName(const char *asArg) const override;
+
 	int CheckParm(const char *parm) const override;
-	
-	const char *GetArgValue(const char *asArg) const override;
 	
 	int GetCount() const override;
 	

@@ -40,7 +40,7 @@ char **com_argv;
 constexpr auto CMDLINE_LENGTH{256};
 char com_cmdline[CMDLINE_LENGTH]{};
 
-/*
+/**
 
 
 All of engine's data access is through a hierchal file system, but the contents of the file system can be transparently merged from several sources.

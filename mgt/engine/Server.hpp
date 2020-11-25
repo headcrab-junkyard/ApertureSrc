@@ -20,6 +20,8 @@
 
 /// @file
 
+#pragma once
+
 #include "usercmd.h"
 
 struct svstats_t

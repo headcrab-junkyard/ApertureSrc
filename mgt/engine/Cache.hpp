@@ -23,12 +23,16 @@
 
 #pragma once
 
+#include "engine/IMemory.hpp"
+
 /////////////////////////////////////////////////
 
+/*
 typedef struct cache_user_s
 {
 	void *data{nullptr};
 } cache_user_t;
+*/
 
 ///
 void Cache_Flush();

@@ -34,12 +34,12 @@ const char *CCmdArgs::GetByIndex(int anArg) const
 	return Cmd_Argv(anArg);
 };
 
+const char *CCmdArgs::GetByName(const char *asArg) const
 int CCmdArgs::CheckParm(const char *parm) const
 {
 	return Cmd_CheckParm(parm);
 };
 
-const char *CCmdArgs::GetArgValue(const char *asArg) const
 {
 	auto nArg{Cmd_CheckParm(asArg)};
 	return nArg? Cmd_Argv(nArg) : "";

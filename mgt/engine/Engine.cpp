@@ -63,7 +63,7 @@ bool CEngine::Init(const SInitData &apInitParams)
 	mParms.membase = malloc(mParms.memsize);
 	
 	if(!mParms.membase)
-		Sys_Error("Not enough memory free; check disk space\n");
+		mpSystem->Error("Not enough memory free; check disk space\n");
 	
 	// TODO: windows
 	/*

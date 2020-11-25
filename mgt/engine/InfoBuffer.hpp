@@ -20,6 +20,8 @@
 
 /// @file
 
+#pragma once
+
 #include "engine/IInfoBuffer.hpp"
 
 class CInfoBuffer final : public IInfoBuffer

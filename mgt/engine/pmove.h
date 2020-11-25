@@ -23,8 +23,8 @@
 
 #pragma once
 
-#include "pm_defs.h"
-#include "pm_movevars.h"
+#include "pm_shared/pm_defs.h"
+#include "pm_shared/pm_movevars.h"
 
 /*
 typedef struct

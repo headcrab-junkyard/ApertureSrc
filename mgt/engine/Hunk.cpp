@@ -20,12 +20,9 @@
 
 /// @file
 
-#include "common.h"
-#include "Memory.hpp"
-
-//TEMP
-extern void Con_Printf(const char *fmt, ...);
-extern void Sys_Error(const char *fmt, ...);
+#include "quakedef.h"
+//#include "common.h"
+//#include "Memory.hpp"
 
 //============================================================================
 

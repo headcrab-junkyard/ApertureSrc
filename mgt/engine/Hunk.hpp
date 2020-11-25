@@ -23,6 +23,8 @@
 
 #pragma once
 
+#include "CommonTypes.hpp"
+
 /////////////////////////////////////////////////
 
 extern byte *hunk_base;

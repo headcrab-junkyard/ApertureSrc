@@ -20,6 +20,7 @@
 
 /// @file
 
+#include "quakedef.h"
 #include "InfoBuffer.hpp"
 
 CInfoBuffer::CInfoBuffer(char *asBuf) : buf(asBuf){}
