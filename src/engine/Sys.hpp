@@ -49,7 +49,7 @@ public:
 
 	/// called to yield for a little bit so as
 	/// not to hog cpu when paused or debugging
-	void Sleep();
+	void Sleep(int anMilliSecs);
 
 	/// Perform Key_Event() callbacks until the input que is empty
 	void SendKeyEvents();

@@ -18,7 +18,7 @@ void CSys::Error(const char *error, ...)
 
 void CSys::Printf(const char *fmt, ...)
 {
-	Sys_Printf(fmt);
+	Sys_Printf(false, fmt);
 };
 
 void CSys::Quit()
@@ -28,7 +28,7 @@ void CSys::Quit()
 
 double CSys::GetDoubleTime()
 {
-	return Sys_GetDoubleTime();
+	return Sys_FloatTime(); //Sys_GetDoubleTime();
 };
 
 char *CSys::GetConsoleInput()
@@ -38,15 +38,9 @@ char *CSys::GetConsoleInput()
 
 /// called to yield for a little bit so as
 /// not to hog cpu when paused or debugging
-void CSys::Sleep()
+void CSys::Sleep(int anMilliSecs)
 {
-	Sys_Sleep();
-};
-
-/// Perform Key_Event() callbacks until the input que is empty
-void CSys::SendKeyEvents()
-{
-	Sys_SendKeyEvents();
+	Sys_Sleep(anMilliSecs);
 };
 
 void CSys::LowFPPrecision()
@@ -61,5 +55,5 @@ void CSys::HighFPPrecision()
 
 void CSys::SetFPCW()
 {
-	Sys_SetFPCW();
+	//Sys_SetFPCW(); // TODO
 };
