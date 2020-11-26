@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include <memory>
+
 #include "engine/IEngine.hpp"
 
 class CHost;
@@ -38,7 +40,7 @@ private:
 	IEngineClient *LoadClientModule();
 	void UnloadClientModule();
 private:
-	CHost *mpHost{nullptr};
+	std::unique_ptr<CHost> mpHost;
 	
 	void *mpClientModule{nullptr};
 };

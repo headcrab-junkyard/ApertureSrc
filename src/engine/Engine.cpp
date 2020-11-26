@@ -25,11 +25,13 @@
 
 EXPOSE_SINGLE_INTERFACE(CEngine, IEngine, OGS_ENGINE_INTERFACE_VERSION);
 
-bool CEngine::Init(const InitParams &apInitParams)
+bool CEngine::Init(const InitParams &aInitParams)
 {
-	IEngineClient *pEngineClient{LoadClientModule()};
+	IEngineClient *pEngineClient{aInitParams.bDedicated ? nullptr : LoadClientModule()};
 	
-	return mpHost->Init(pEngineClient);
+	mpHost = std::make_unique<CHost>(pEngineClient);
+	
+	return mpHost->Init();
 };
 
 void CEngine::Shutdown()
@@ -41,7 +43,8 @@ void CEngine::Shutdown()
 
 bool CEngine::Frame()
 {
-	return mpHost->Frame();
+	float fTime{0.0f};
+	return mpHost->Frame(fTime);
 };
 
 IEngineClient *CEngine::LoadClientModule()
