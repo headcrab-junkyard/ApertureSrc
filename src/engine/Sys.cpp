@@ -1,46 +1,6 @@
 #include "quakedef.h"
 #include "Sys.hpp"
 
-int CSys::FileOpenRead(const char *path, int *hndl)
-{
-	return Sys_FileOpenRead(path, hndl);
-};
-
-int CSys::FileOpenWrite(const char *path)
-{
-	return Sys_FileOpenWrite(path);
-};
-
-void CSys::FileClose(int handle)
-{
-	Sys_FileClose(handle);
-};
-
-void CSys::FileSeek(int handle, int position)
-{
-	Sys_FileSeek(handle, position);
-};
-
-int CSys::FileRead(int handle, void *dest, int count)
-{
-	return Sys_FileRead(handle, dest, count);
-};
-
-int CSys::FileWrite(int handle, void *data, int count)
-{
-	return Sys_FileWrite(handle, data, count);
-};
-
-int	CSys::FileTime(const char *path)
-{
-	return Sys_FileTime(path);
-};
-
-void CSys::mkdir(const char *path)
-{
-	Sys_mkdir(path);
-};
-
 void CSys::MakeCodeWriteable(unsigned long startaddr, unsigned long length)
 {
 	Sys_MakeCodeWriteable(startaddr, length);

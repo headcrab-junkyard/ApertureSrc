@@ -20,41 +20,27 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-class CSys
+class CFileSystem
 {
 public:
 	//
-	// memory protection
+	// file IO
 	//
+
+	/// returns the file size
+	/// return -1 if file is not present
+	/// the file should be in BINARY mode for stupid OSs that care
+	IFile *FileOpenRead(const char *path);
+
+	IFile *FileOpenWrite(const char *path);
 	
-	void MakeCodeWriteable(unsigned long startaddr, unsigned long length);
-
-	//
-	// system IO
-	//
+	void FileClose(IFile *handle);
 	
-	void DebugLog(const char *file, char *fmt, ...);
-
-	/// an error will cause the entire program to exit
-	void Error(const char *error, ...);
-
-	/// send text to the console
-	void Printf(const char *fmt, ...);
-
-	void Quit();
-
-	double GetDoubleTime();
-
-	char *GetConsoleInput();
-
-	/// called to yield for a little bit so as
-	/// not to hog cpu when paused or debugging
-	void Sleep();
-
-	/// Perform Key_Event() callbacks until the input que is empty
-	void SendKeyEvents();
-
-	void LowFPPrecision();
-	void HighFPPrecision();
-	void SetFPCW();
+	void FileSeek(IFile *handle, int position);
+	
+	int FileRead(IFile *handle, void *dest, int count);
+	int FileWrite(IFile *handle, void *data, int count);
+	
+	int	FileTime(const char *path);
+	void mkdir(const char *path);
 };
