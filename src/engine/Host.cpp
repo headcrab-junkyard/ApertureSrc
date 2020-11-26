@@ -19,26 +19,32 @@
 */
 
 /// @file
+/// @brief coordinates spawning and killing of local servers
 
 #include "Host.hpp"
 #include "Memory.hpp"
 #include "CmdBuffer.hpp"
 #include "Cmd.hpp"
+#include "Cvar.hpp"
 #include "Sys.hpp"
 #include "Net.hpp"
 #include "Progs.hpp"
 #include "ModelCache.hpp"
 #include "Server.hpp"
-#include "engineclient/IEngineClient.hpp"
 
-bool CHost::Init(IEngineClient *apEngineClient)
+#include "engineclient/IEngineClient.hpp"
+#include "game/server/IGame.hpp"
+
+CHost::CHost(IEngineClient *apEngineClient) : mpEngineClient(apEngineClient){}
+
+bool CHost::Init()
 {
-	mpEngineClient = apEngineClient;
-	
 	mpMemory->Init(nullptr, 0); // TODO
 	mpCmdBuffer->Init();
 	mpCmd->Init();
+	mpCvar->Init();
 	
+	//Host_InitVCR(parms); // TODO ?
 	//COM_Init(); // TODO
 	
 	//mpSystem->Init(); // TODO ?
@@ -48,31 +54,117 @@ bool CHost::Init(IEngineClient *apEngineClient)
 	mpNetwork->Init();
 	//Netchan_Init(); // TODO
 	
-	mpProgs->Init();
 	mpModelCache->Init();
 	
 	mpServer->Init();
 	
-	if(mpEngineClient)
-		if(!mpEngineClient->Init(Sys_GetFactoryThis()))
-			return false;
+	if(!InitClient())
+		return false;
+	
+	LoadGameModule();
+	
+	mpProgs->Init();
+	
+	if(mpGame->Init(Sys_GetFactoryThis()))
+		return false;
 	
 	return true;
 };
 
+/*
+===============
+Host_Shutdown
+
+FIXME: this is a callback from Sys_Quit and Sys_Error.  It would be better
+to run quit through here before the final handoff to the sys code.
+===============
+*/
 void CHost::Shutdown()
 {
-	if(mpEngineClient)
-		mpEngineClient->Shutdown();
+	static bool bDown{false};
+
+	if(bDown)
+	{
+		printf("recursive shutdown\n");
+		return;
+	};
+
+	bDown = true;
+	
+	ShutdownClient();
+	
+	mpGame->Shutdown();
+	
+	UnloadGameModule();
+	
+	//mpServer->Shutdown(); // TODO
 	
 	mpNetwork->Shutdown();
 	
 	mpSystem->Quit();
 };
 
-bool CHost::Frame()
+bool CHost::Frame(float afTime)
 {
-	mpServer->Frame(0.0f); // TODO
+	static double fTimeTotal{0.0};
+	static int nTimeCount{0};
+	
+	bool bProfile = false; // TODO: host_profile.GetValue()
+	if(!bProfile)
+	{
+		_Frame(afTime);
+		return true;
+	};
+	
+	double fTimePreFrame = mpSystem->GetDoubleTime();
+	_Frame(afTime);
+	double fTimePostFrame = mpSystem->GetDoubleTime();
+
+	fTimeTotal += fTimePostFrame - fTimePreFrame;
+	nTimeCount++;
+
+	if(nTimeCount < 1000)
+		return false;
+
+	int m = fTimeTotal * 1000 / nTimeCount;
+	
+	nTimeCount = 0;
+	fTimeTotal = 0.0;
+
+	mpSystem->Printf("host_profile: %2i clients %2i msec\n", mpServer->GetActiveClientsNum(), m);
+	return true;
+};
+
+/*
+==================
+Host_Frame
+
+Runs all active servers
+==================
+*/
+bool CHost::_Frame(float afTime)
+{
+	// keep the random time dependent
+	rand();
+	
+	// process console commands
+	mpCmdBuffer->Execute();
+	
+	//-------------------
+	//
+	// server operations
+	//
+	//-------------------
+	
+	mpServer->Frame(afTime);
+	
+	mpGame->Frame(afTime);
+	
+	//-------------------
+	//
+	// client operations
+	//
+	//-------------------
 	
 	if(mpEngineClient)
 	{
@@ -82,5 +174,48 @@ bool CHost::Frame()
 		mpEngineClient->Frame();
 	};
 
+	++mnFrameCount;
 	return true;
+};
+
+void CHost::InitLocal()
+{
+};
+
+bool CHost::InitClient()
+{
+	if(mpEngineClient)
+		if(mpEngineClient->Init(Sys_GetFactoryThis()))
+			return true;
+	
+	return false;
+};
+
+void CHost::ShutdownClient()
+{
+	if(mpEngineClient)
+		mpEngineClient->Shutdown();
+};
+
+void CHost::LoadGameModule()
+{
+	mpGameModule = Sys_LoadModule("./sandbox/bin/server" /*va("%s/bin/server", com_gamedir)*/); // TODO
+	
+	if(!mpGameModule)
+		mpSystem->Error("Failed to load the game module!");
+	
+	auto pfnGameModuleFactory{Sys_GetFactory(mpGameModule)};
+	
+	if(!pfnGameModuleFactory)
+		mpSystem->Error("Failed to get the factory from the game module!");
+	
+	mpGame = reinterpret_cast<IGame*>(pfnGameModuleFactory(OGS_GAME_INTERFACE_VERSION, nullptr));
+	
+	if(!mpGame)
+		mpSystem->Error("Failed to get the game interface from the game module!");
+};
+
+void CHost::UnloadGameModule()
+{
+	Sys_UnloadModule(mpGameModule);
 };

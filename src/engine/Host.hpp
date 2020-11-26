@@ -26,6 +26,7 @@
 class CMemory;
 class CCmdBuffer;
 class CCmd;
+class CCvar;
 class CSys;
 class CNetwork;
 class CProgs;
@@ -33,20 +34,32 @@ class CModelCache;
 class CServer; //class CGameServer;
 
 interface IEngineClient;
+interface IGame;
 
 class CHost
 {
 public:
-	bool Init(IEngineClient *apEngineClient);
+	CHost(IEngineClient *apEngineClient);
+	
+	bool Init();
 	void Shutdown();
 	
-	bool Frame();
+	bool Frame(float afTime);
 private:
+	bool _Frame(float afTime);
+	
 	void InitLocal();
+	
+	bool InitClient();
+	void ShutdownClient();
+	
+	void LoadGameModule();
+	void UnloadGameModule();
 private:
 	CMemory *mpMemory{nullptr};
 	CCmdBuffer *mpCmdBuffer{nullptr};
 	CCmd *mpCmd{nullptr};
+	CCvar *mpCvar{nullptr};
 	
 	//COM_Init();
 	
@@ -61,4 +74,10 @@ private:
 	/*CGameServer*/ CServer *mpServer{nullptr};
 	
 	IEngineClient *mpEngineClient{nullptr};
+	
+	IGame *mpGame{nullptr};
+	
+	void *mpGameModule{nullptr};
+	
+	int mnFrameCount{0};
 };
