@@ -10,17 +10,17 @@ void CNetChannel::Init()
 
 void CNetChannel::Setup(netsrc_t sock, const netadr_t &adr, int qport)
 {
-	Netchan_Setup(sock, chan, adr, qport);
+	//Netchan_Setup(sock, chan, adr, qport);
 };
 
-bool CNetChannel::NeedReliable()
+bool CNetChannel::NeedReliable() const
 {
-	return Netchan_NeedReliable(chan);
+	return false; //return Netchan_NeedReliable(chan);
 };
 
 void CNetChannel::Transmit(int length, const byte *data)
 {
-	Netchan_Transmit(chan, length, data);
+	//Netchan_Transmit(chan, length, data);
 };
 
 /*
@@ -37,15 +37,15 @@ void CNetChannel::OutOfBandPrint(int net_socket, netadr_t adr, const char *forma
 
 bool CNetChannel::Process(sizebuf_t *msg)
 {
-	return Netchan_Process(chan, msg);
+	return true; //return Netchan_Process(chan, msg);
 };
 
-bool CNetChannel::CanPacket()
+bool CNetChannel::CanPacket() const
 {
-	return Netchan_CanPacket(chan);
+	return true; //return Netchan_CanPacket(chan);
 };
 
-bool CNetChannel::CanReliable()
+bool CNetChannel::CanReliable() const
 {
-	return Netchan_CanReliable(chan);
+	return true; //return Netchan_CanReliable(chan);
 };

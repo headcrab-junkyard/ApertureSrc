@@ -13,17 +13,17 @@ void CProgs::LoadProgs()
 
 void CProgs::ExecuteProgram(func_t fnum)
 {
-	PR_ExecuteProgram(fnum);
+	//PR_ExecuteProgram(fnum);
 };
 
 void CProgs::RunError(const char *error, ...)
 {
-	PR_RunError(error);
+	//PR_RunError(error);
 };
 
 int CProgs::SetString(const char *s)
 {
-	return PR_SetString(s);
+	return 0; //return PR_SetString(s);
 };
 
 char *CProgs::GetString(int num)

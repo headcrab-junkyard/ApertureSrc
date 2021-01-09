@@ -30,14 +30,13 @@ public:
 	void Init();
 	void Shutdown();
 	
-	void Frame(float time);
+	void Frame(float afTime);
 	
-	void ClientPrintf(client_t *host_client, const char *fmt, ...);
-	void SendClientCmd(client_t *host_client, const char *fmt, ...);
-	
-	void BroadcastPrintf(const char *fmt, ...);
+	void BroadcastPrintf(const char *asMsg, ...);
 	
 	void ReconnectAllClients();
+	
+	int GetActiveClientsNum() const;
 public:
 	CClient *clients{nullptr};
 	

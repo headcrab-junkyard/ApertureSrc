@@ -19,3 +19,11 @@
 
 #include "quakedef.h"
 #include "Client.hpp"
+
+void CClient::Printf(const char *asMsg, ...)
+{
+};
+
+void CClient::SendCmd(const char *asCmd, ...)
+{
+};

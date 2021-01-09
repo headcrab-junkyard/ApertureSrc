@@ -1,7 +1,8 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2019-2020 BlackPhrase
+ * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 2020 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,18 +20,16 @@
 
 /// @file
 
-#pragma once
+#include "quakedef.h"
+#include "Server.hpp"
 
-using sizebuf_t = struct sizebuf_s;
-
-class CClient
+int CServer::GetActiveClientsNum() const
 {
-public:
-	void Printf(const char *asMsg, ...);
-	void SendCmd(const char *asCmd, ...);
-public:
-	sizebuf_t message{};
+	int nCount{0};
 	
-	bool active{false};
-	bool spawned{false};
+	for(int i = 0; i < svs.maxclients; ++i)
+		if(svs.clients[i].active)
+			nCount++;
+	
+	return nCount;
 };

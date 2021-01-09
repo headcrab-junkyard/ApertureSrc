@@ -20,9 +20,17 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "CommonTypes.hpp"
+
+using cvar_t = struct cvar_s;
+
+interface IFile;
+
 class CCvar
 {
 public:
+	void Init();
+	
 	/// registers a cvar that already has the name, string, and optionally the
 	/// archive elements set.
 	void RegisterVariable(cvar_t *variable);

@@ -20,16 +20,22 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+using sizebuf_t = struct sizebuf_s;
+
 class CSizeBuffer
 {
 public:
-	void Alloc(sizebuf_t *buf, int startsize);
-	void Free(sizebuf_t *buf);
+	CSizeBuffer(int startsize);
+	~CSizeBuffer();
+	//void Alloc(sizebuf_t *buf, int startsize);
+	//void Free(sizebuf_t *buf);
 	
-	void Clear(sizebuf_t *buf);
+	void Clear();
 	
-	void Write(sizebuf_t *buf, const void *data, int length);
-	void Print(sizebuf_t *buf, char *data); // strcats onto the sizebuf
+	void Write(const void *data, int length);
+	void Print(const char *data); // strcats onto the sizebuf
 	
-	void *GetSpace(sizebuf_t *buf, int length);
+	void *GetSpace(int length);
+private:
+	sizebuf_t *buf;
 };

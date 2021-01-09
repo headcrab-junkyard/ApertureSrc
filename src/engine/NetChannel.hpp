@@ -29,7 +29,7 @@ public:
 	
 	void Setup(netsrc_t sock, const netadr_t &adr, int qport);
 
-	bool NeedReliable();
+	bool NeedReliable() const;
 	
 	void Transmit(int length, const byte *data);
 	
@@ -38,8 +38,8 @@ public:
 	
 	bool Process(sizebuf_t *msg);
 
-	bool CanPacket();
-	bool CanReliable();
+	bool CanPacket() const;
+	bool CanReliable() const;
 private:
 	netchan_t *chan{nullptr};
 };
