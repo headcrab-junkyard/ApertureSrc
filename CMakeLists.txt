@@ -11,9 +11,11 @@ set(MGT_VERSION_PATCH 5)
 # Build number
 set(MGT_VERSION_BUILD 90)
 
+#####################################################################
+
 #configure_file(
 #	${CMAKE_CURRENT_SOURCE_DIR}/VersionInfo.hpp.in
-#	${CMAKE_CURRENT_SOURCE_DIR}/mgt/core/VersionInfo.hpp
+#	${CMAKE_CURRENT_SOURCE_DIR}/src/core/VersionInfo.hpp
 #)
 
 # Set CMake binaries output path
@@ -27,15 +29,21 @@ set(OGS_SDK_PATH ${CMAKE_SOURCE_DIR}/../ogs-sdk/goldsrc
 	"Path to OGS engine SDK"
 )
 
+#####################################################################
 
 # Define available options
-option(MGT_DEDICATED "Build only dedicated server" OFF)
-option(MGT_NDK_BUILD_EXAMPLES "Build engine examples" OFF)
+option(OGS_DEV "Developer Mode" OFF)
+option(OGS_DEDICATED "Build only dedicated server" OFF)
+option(OGS_BUILD_EXAMPLES "Build engine examples" OFF)
+
+#####################################################################
 
 # Set C++ language standard
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #set(CMAKE_CXX_STANDARD_EXTENSIONS ON)
+
+#####################################################################
 
 # Compilation flags
 #-Wall -Wextra -Wpedantic
@@ -49,6 +57,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 #set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2") # -O3 -Os
 #set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}")
 #set(CMAKE_CXX_FLAGS_MINSIZEREL "${CMAKE_CXX_FLAGS_MINSIZEREL}")
+
+#####################################################################
 
 # Add include directories
 include_directories(
@@ -70,6 +80,10 @@ if(NOT CMAKE_BUILD_TYPE)
 	)
 endif()
 
+if(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+	add_definitions(-DOGS_DEBUG)
+endif()
+
 # Add subdirectories
 
 # Add OGS SDK directory
@@ -79,6 +93,6 @@ add_subdirectory(${OGS_SDK_PATH} ${CMAKE_BINARY_DIR}/sdk)
 add_subdirectory(src)
 add_subdirectory(tests)
 
-if(MGT_NDK_BUILD_EXAMPLES)
+if(MGT_BUILD_EXAMPLES)
 	add_subdirectory(examples)
 endif()
