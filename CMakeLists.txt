@@ -1,10 +1,12 @@
 cmake_minimum_required(VERSION 3.12.4)
-project(MagentaEngine)
+project(OGSNext)
+
+#####################################################################
 
 # Version
 set(MGT_VERSION_MAJOR 0)
 set(MGT_VERSION_MINOR 7)
-set(MGT_VERSION_PATCH 0)
+set(MGT_VERSION_PATCH 5)
 
 # Build number
 set(MGT_VERSION_BUILD 90)
@@ -73,7 +75,8 @@ endif()
 # Add OGS SDK directory
 add_subdirectory(${OGS_SDK_PATH} ${CMAKE_BINARY_DIR}/sdk)
 
-add_subdirectory(mgt)
+#add_subdirectory(mgt)
+add_subdirectory(src)
 add_subdirectory(tests)
 
 if(MGT_NDK_BUILD_EXAMPLES)
