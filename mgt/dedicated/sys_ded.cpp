@@ -1,20 +1,20 @@
 /*
-*	This file is part of OGSNext Engine
-*
-*	Copyright (C) 2018-2020 BlackPhrase
-*
-*	OGSNext Engine is free software: you can redistribute it and/or modify
-*	it under the terms of the GNU General Public License as published by
-*	the Free Software Foundation, either version 3 of the License, or
-*	(at your option) any later version.
-*
-*	OGSNext Engine is distributed in the hope that it will be useful,
-*	but WITHOUT ANY WARRANTY; without even the implied warranty of
-*	MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
-*	GNU General Public License for more details.
-*
-*	You should have received a copy of the GNU General Public License
-*	along with OGSNext Engine. If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of OGSNext Engine
+ *
+ * Copyright (C) 2018-2020 BlackPhrase
+ *
+ * OGSNext Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OGSNext Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OGSNext Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /// @file
@@ -31,59 +31,47 @@
 #include "engine/IEngine.hpp"
 #include "filesystem/IFileSystem.hpp"
 
+#ifdef _WIN32
+static bool sc_return_on_enter{false};
+HANDLE hinput, houtput;
+#endif
+
 CreateInterfaceFn gfnFSFactory{nullptr};
 
 IBaseInterface *LauncherFactory(const char *name, int *retval)
 {
 	// Filesystem module factory
-	if(!strcmp(name, MGT_FILESYSTEM_INTERFACE_VERSION))
+	if(!strcmp(name, OGS_FILESYSTEM_INTERFACE_VERSION))
 		return gfnFSFactory(name, retval);
 	
 	auto fnThisFactory{Sys_GetFactoryThis()};
 	return fnThisFactory(name, retval);
 };
 
-bool InitConsole()
+int CreateConsoleWindow()
 {
-// TODO
-/*
 #ifdef _WIN32
 	if(!AllocConsole())
-		Sys_Error("Couldn't create dedicated server console");
+		return 0; // TODO: was Sys_Error("Couldn't create dedicated server console");
 
-	hinput = GetStdHandle (STD_INPUT_HANDLE);
-	houtput = GetStdHandle (STD_OUTPUT_HANDLE);
+	hinput = GetStdHandle(STD_INPUT_HANDLE);
+	houtput = GetStdHandle(STD_OUTPUT_HANDLE);
 
-	// give QHOST a chance to hook into the console
-	if ((t = COM_CheckParm ("-HFILE")) > 0)
-	{
-		if (t < com_argc)
-			hFile = (HANDLE)Q_atoi (com_argv[t+1]);
-	};
-		
-	if ((t = COM_CheckParm ("-HPARENT")) > 0)
-	{
-		if (t < com_argc)
-			heventParent = (HANDLE)Q_atoi (com_argv[t+1]);
-	};
-		
-	if ((t = COM_CheckParm ("-HCHILD")) > 0)
-	{
-		if (t < com_argc)
-			heventChild = (HANDLE)Q_atoi (com_argv[t+1]);
-	};
-
-	InitConProc (hFile, heventParent, heventChild);
+	InitConProc();
 #endif // _WIN32
-*/
 
-	return true;
+	return 1;
 };
 
+void DestroyConsoleWindow()
+{
 #ifdef _WIN32
-static bool sc_return_on_enter{false};
-HANDLE hinput, houtput;
+	FreeConsole();
+	
+	// shutdown QHOST hooks if necessary
+	DeinitConProc();
 #endif
+};
 
 char *Sys_ConsoleInput()
 {
@@ -106,20 +94,23 @@ char *Sys_ConsoleInput()
 			len = 0;
 			return text;
 		};
-		
+
 		if(c == 8)
 		{
-			putch(' ');
-			putch(c);
-			len--;
-			text[len] = 0;
+			//if(len) // TODO
+			{
+				putch(' ');
+				putch(c);
+				len--;
+				text[len] = 0;
+			};
 			continue;
 		};
-		
+
 		text[len] = c;
 		len++;
 		text[len] = 0;
-		
+
 		if(len == sizeof(text))
 			len = 0;
 	};
@@ -244,7 +235,7 @@ char *Sys_ConsoleInput()
 	};
 
 	return 0;
-#endif
+#endif // _WIN32
 };
 
 /*
@@ -283,7 +274,7 @@ bool LoadFileSystemModule(const char *name)
 	return true;
 };
 
-int RunServer()
+int RunServer() // void?
 {
 	constexpr auto FILESYSTEM_MODULE_NAME{"filesystem_stdio"};
 	
@@ -295,19 +286,19 @@ int RunServer()
 	auto pEngineLib{Sys_LoadModule(ENGINE_MODULE_NAME)};
 	
 	if(!pEngineLib)
-		throw std::runtime_error(std::string("Failed to load the engine module(") + ENGINE_MODULE_NAME + ")!");
+		throw std::runtime_error(std::string("Failed to load the engine module (") + ENGINE_MODULE_NAME + ")!");
 	
 	auto pEngineFactory{Sys_GetFactory(pEngineLib)};
 	
 	if(!pEngineFactory)
 		return EXIT_FAILURE;
 	
-	auto pEngine{(IEngine*)pEngineFactory(MGT_ENGINE_INTERFACE_VERSION, nullptr)};
+	auto pEngine{(IEngine*)pEngineFactory(OGS_ENGINE_INTERFACE_VERSION, nullptr)};
 	
 	if(!pEngine)
 		return EXIT_FAILURE;
 	
-	IEngine::SInitData InitParams{};
+	IEngine::InitParams InitParams{};
 	
 	InitParams.sGameDir = "goldsrctest"; // TODO: "."?
 	InitParams.sCmdLine = "";
@@ -339,23 +330,18 @@ main
 
 ==================
 */
-//char *newargv[256]; // TODO: unused??
+//char *newargv[256]; // TODO: unused?
 int main(int argc, char **argv)
 {
 	//CCmdLine CmdLine(argc, argv); // TODO
 	
-	if(!InitConsole())
+	if(!CreateConsoleWindow())
 		return EXIT_FAILURE;
 	
 	if(!RunServer())
 		return EXIT_FAILURE;
 	
-#ifdef _WIN32
-	FreeConsole();
-	
-	// shutdown QHOST hooks if necessary
-	//DeinitConProc(); // TODO
-#endif
+	DestroyConsoleWindow();
 
 	// return success of application
 	return EXIT_SUCCESS;
