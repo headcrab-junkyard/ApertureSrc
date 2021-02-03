@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2020 BlackPhrase
+ * Copyright (C) 2020-2021 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,12 +26,30 @@
 class CInputSystem : public IInputSystem
 {
 public:
-	bool Init(bool abTextConsoleMode) override;
+	bool Init(CreateInterfaceFn afnEngineFactory, bool abTextConsoleMode) override;
+	void Shutdown() override;
 	
-	void Update(float afTimeStep) override;
+	//void Update(float afTimeStep) override;
+	
+	void Reset() override;
+	
+	void Poll() override;
 	
 	void AttachToWindow(void *apWindow) override;
 	void DetachFromWindow() override;
+	
+	bool IsKeyDown(InputKey aeKey) const override;
+	
+	int GetGamepadCount() const override;
+	void SetGamepadActive(int anIndex, bool abState) override;
 private:
-	void *mpWindow{nullptr};
+	void PumpWindowMessages();
+private:
+	bool mvDownKeys[256]{};
+	
+	bool mvGamepads[4]{};
+	
+	HWND mhWindow{nullptr};
+public:
+	static WNDPROC mRootWndProc;
 };

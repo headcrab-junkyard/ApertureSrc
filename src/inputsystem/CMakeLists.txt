@@ -8,6 +8,10 @@ target_sources(${PROJECT_NAME}
 	PRIVATE ${PROJECT_SOURCES}
 )
 
+if(WIN32)
+	add_subdirectory(win)
+endif()
+
 target_link_libraries(${PROJECT_NAME} ogs-tier1)
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
