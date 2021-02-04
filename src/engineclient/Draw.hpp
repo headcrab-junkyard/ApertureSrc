@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2019-2020 BlackPhrase
+Copyright (C) 2019-2021 BlackPhrase
 
 This program is free software: you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,35 +20,36 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-class CDraw
+// TODO: CRenderer2D?
+class CDrawer
 {
 public:
 	void Init();
 	
-	void Character(int x, int y, int num);
-	void DebugChar(char num);
+	void DrawChar(int x, int y, int num);
+	void DrawDebugChar(char num);
 	
-	void SubPic(int x, int y, qpic_t *pic, int srcx, int srcy, int width, int height);
-	void Pic(int x, int y, qpic_t *pic);
+	void DrawSubPic(int x, int y, qpic_t *pic, int srcx, int srcy, int width, int height);
+	void DrawPic(int x, int y, qpic_t *pic);
 	
-	void TransPic(int x, int y, qpic_t *pic);
-	void TransPicTranslate(int x, int y, qpic_t *pic, byte *translation);
+	void DrawTransPic(int x, int y, qpic_t *pic);
+	void DrawTransPicTranslate(int x, int y, qpic_t *pic, byte *translation);
 	
-	void ConsoleBackground(int lines);
+	void DrawConsoleBackground(int lines);
 	
 	void BeginDisc();
 	void EndDisc();
 	
-	void TileClear(int x, int y, int w, int h);
+	void DrawTileClear(int x, int y, int w, int h);
 	
-	void Fill(int x, int y, int w, int h, int c);
+	void FillScreen(int x, int y, int w, int h, int c);
 	void FadeScreen();
 	
-	void String(int x, int y, const char *str);
-	void Alt_String(int x, int y, const char *str);
+	void DrawString(int x, int y, const char *str);
+	void DrawAltString(int x, int y, const char *str);
 	
-	qpic_t *PicFromWad(const char *name);
+	qpic_t *GetPicFromWad(const char *name);
 	qpic_t *CachePic(const char *path);
 	
-	void Crosshair();
+	void DrawCrosshair();
 };

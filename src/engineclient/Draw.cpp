@@ -1,92 +1,92 @@
 #include "quakedef.h"
 #include "Draw.hpp"
 
-void CDraw::Init()
+void CDrawer::Init()
 {
 	Draw_Init();
 };
 
-void CDraw::Character(int x, int y, int num)
+void CDrawer::DrawCharacter(int x, int y, int num)
 {
 	Draw_Character(x, y, num);
 };
 
-void CDraw::DebugChar(char num)
+void CDrawer::DrawDebugChar(char num)
 {
 	Draw_DebugChar(num);
 };
 
-void CDraw::SubPic(int x, int y, qpic_t *pic, int srcx, int srcy, int width, int height)
+void CDrawer::DrawSubPic(int x, int y, qpic_t *pic, int srcx, int srcy, int width, int height)
 {
 	Draw_SubPic(x, y, pic, srcx, srcy, width, height);
 };
 
-void CDraw::Pic(int x, int y, qpic_t *pic)
+void CDrawer::DrawPic(int x, int y, qpic_t *pic)
 {
 	Draw_Pic(x, y, pic);
 };
 
-void CDraw::TransPic(int x, int y, qpic_t *pic)
+void CDrawer::DrawTransPic(int x, int y, qpic_t *pic)
 {
 	Draw_TransPic(x, y, pic);
 };
 
-void CDraw::TransPicTranslate(int x, int y, qpic_t *pic, byte *translation)
+void CDrawer::DrawTransPicTranslate(int x, int y, qpic_t *pic, byte *translation)
 {
 	Draw_TransPicTranslate(x, y, pic, translation);
 };
 
-void CDraw::ConsoleBackground(int lines)
+void CDrawer::DrawConsoleBackground(int lines)
 {
 	Draw_ConsoleBackground(lines);
 };
 
-void CDraw::BeginDisc()
+void CDrawer::BeginDisc()
 {
 	Draw_BeginDisc();
 };
 
-void CDraw::EndDisc()
+void CDrawer::EndDisc()
 {
 	Draw_EndDisc();
 };
 
-void CDraw::TileClear(int x, int y, int w, int h)
+void CDrawer::DrawTileClear(int x, int y, int w, int h)
 {
 	Draw_TileClear(x, y, w, h);
 };
 
-void CDraw::Fill(int x, int y, int w, int h, int c)
+void CDrawer::FillScreen(int x, int y, int w, int h, int c)
 {
 	Draw_Fill(x, y, w, h, c);
 };
 
-void CDraw::FadeScreen()
+void CDrawer::FadeScreen()
 {
 	Draw_FadeScreen();
 };
 
-void CDraw::String(int x, int y, const char *str)
+void CDrawer::DrawString(int x, int y, const char *str)
 {
 	Draw_String(x, y, str);
 };
 
-void CDraw::Alt_String(int x, int y, const char *str)
+void CDrawer::DrawAltString(int x, int y, const char *str)
 {
 	Draw_Alt_String(x, y, str);
 };
 
-qpic_t *CDraw::PicFromWad(const char *name)
+qpic_t *CDrawer::GetPicFromWad(const char *name)
 {
 	return Draw_PicFromWad(name);
 };
 
-qpic_t *CDraw::CachePic(const char *path)
+qpic_t *CDrawer::CachePic(const char *path)
 {
 	return Draw_CachePic(path);
 };
 
-void CDraw::Crosshair()
+void CDrawer::DrawCrosshair()
 {
 	Draw_Crosshair();
 };
