@@ -1,6 +1,6 @@
 #include "quakedef.h"
 
-#include "Wad.hpp"
+#include "WADCache.hpp"
 
 void CWADCache::LoadWadFile(const char *filename)
 {
