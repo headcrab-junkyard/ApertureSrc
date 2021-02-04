@@ -11,6 +11,11 @@ void CScreen::Update()
 	SCR_UpdateScreen();
 };
 
+void CScreen::SetActive(bool abState)
+{
+	disabled_for_loading = abState;
+};
+
 void CScreen::SizeUp()
 {
 	SCR_SizeUp();
