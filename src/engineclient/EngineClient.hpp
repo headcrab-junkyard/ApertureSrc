@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2020 BlackPhrase
+ * Copyright (C) 2020-2021 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,12 +23,51 @@
 
 #include "engineclient/IEngineClient.hpp"
 
+class CVideo;
+class CInput;
+class CSound;
+
+class CScreen;
+class CView;
+class CDraw;
+
+class CWADCache;
+
+class CKeys;
+
+interface IClientGame;
+
 class CEngineClient final : public IEngineClient
 {
 public:
 	bool Init(CreateInterfaceFn afnEngineFactory) override;
 	void Shutdown() override;
 	
+	bool PreFrame() const override;
 	void Frame() override;
 private:
+	void SendKeyEvents();
+	
+	void UpdateScreen();
+
+	void InitGameModule();
+	void ShutdownGameModule();
+	
+	void WriteConfig();
+private:
+	std::unique_ptr<CVideo> mpVideo;
+	std::unique_ptr<CInput> mpInput;
+	std::unique_ptr<CSound> mpSound;
+	
+	std::unique_ptr<CScreen> mpScreen;
+	std::unique_ptr<CView> mpView;
+	std::unique_ptr<CDraw> mpDraw;
+	
+	std::unique_ptr<CWADCache> mpWADCache;
+	
+	std::unique_ptr<CKeys> mpKeys;
+
+	IClientGame *mpClientGame{nullptr};
+	
+	void *mpClientGameModule{nullptr};
 };
