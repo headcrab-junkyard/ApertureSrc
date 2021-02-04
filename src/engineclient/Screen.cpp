@@ -8,6 +8,9 @@ void CScreen::Init()
 
 void CScreen::Update()
 {
+	if(disabled_for_loading)
+		return;
+	
 	SCR_UpdateScreen();
 };
 
