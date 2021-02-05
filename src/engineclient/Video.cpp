@@ -39,6 +39,15 @@ void CVideo::CheckChanges()
 	VID_CheckChanges();
 };
 
+void CVideo::UpdateScreen()
+{
+	// TODO: something else?
+
+	mpScreen->Update();
+	
+	// TODO: something else?
+};
+
 void CVideo::LoadRendererModule(const char *asName)
 {
 	UnloadRendererModule();

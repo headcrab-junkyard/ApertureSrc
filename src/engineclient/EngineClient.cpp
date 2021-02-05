@@ -223,16 +223,6 @@ void CEngineClient::SendKeyEvents()
 	Sys_SendKeyEvents();
 };
 
-void CEngineClient::UpdateScreen()
-{
-	// TODO: something else?
-
-	mpScreen->Update();
-	ClientDLL_HudRedraw(cl.intermission);
-	
-	// TODO: something else?
-};
-
 void CEngineClient::LoadGameModule()
 {
 	mpClientGameModule = Sys_LoadModule(va("%s/bin/client", com_gamedir));

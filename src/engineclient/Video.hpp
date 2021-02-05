@@ -33,6 +33,8 @@ public:
 
 	void CheckChanges();
 private:
+	void UpdateScreen();
+	
 	void LoadRendererModule(const char *asName);
 	void UnloadRendererModule();
 	

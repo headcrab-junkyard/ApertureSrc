@@ -49,8 +49,6 @@ private:
 	void LocalInit();
 	
 	void SendKeyEvents();
-	
-	void UpdateScreen();
 
 	void InitGameModule();
 	void ShutdownGameModule();
