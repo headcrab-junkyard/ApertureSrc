@@ -188,9 +188,6 @@ IN_Accumulate
 */
 void IN_Accumulate()
 {
-	int mx, my;
-	HDC hdc;
-
 	if(mouseactive)
 	{
 		if(!dinput)
