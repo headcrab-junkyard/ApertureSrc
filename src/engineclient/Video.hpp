@@ -20,6 +20,12 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include <memory>
+
+class CScreen;
+class CView;
+class CDraw;
+
 class CVideo
 {
 public:
@@ -38,6 +44,10 @@ private:
 	
 	void LoadRendererModule(const char *asName);
 	void UnloadRendererModule();
+private:
+	std::unique_ptr<CScreen> mpScreen;
+	std::unique_ptr<CView> mpView;
+	std::unique_ptr<CDraw> mpDraw;
 	
 	void *mpRendererModule{nullptr};
 	

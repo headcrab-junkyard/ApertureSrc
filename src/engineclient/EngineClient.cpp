@@ -26,10 +26,6 @@
 #include "Input.hpp"
 #include "Sound.hpp"
 
-#include "Screen.hpp"
-#include "View.hpp"
-#include "Draw.hpp"
-
 #include "Keys.hpp"
 
 #include "ClientState.hpp"
@@ -48,10 +44,6 @@ bool CEngineClient::Init(CreateInterfaceFn afnEngineFactory)
 	mpVideo = std::make_unique<CVideo>();
 	mpInput = std::make_unique<CInput>();
 	mpSound = std::make_unique<CSound>();
-	
-	mpScreen = std::make_unique<CScreen>();
-	mpView = std::make_unique<CView>();
-	mpDraw = std::make_unique<CDraw>();
 	
 	mpKeys = std::make_unique<CKeys>();
 	
@@ -90,10 +82,6 @@ bool CEngineClient::Init(CreateInterfaceFn afnEngineFactory)
 	mpVideo->Init(host_basepal);
 	// TODO: GL_Init() here + no VID_Shutdown in GS (at least for hw)
 	
-	mpDraw->Init();
-	mpScreen->Init();
-	mpRenderer->Init();
-	
 #ifndef _WIN32
 	// on Win32, sound initialization has to come before video initialization, so we
 	// can put up a popup if the sound hardware is in use
@@ -114,8 +102,6 @@ bool CEngineClient::Init(CreateInterfaceFn afnEngineFactory)
 #ifdef _WIN32 // on non win32, mouse comes before video for security reasons
 	mpInput->Init();
 #endif
-
-	mpRenderer->InitTextures();
 	
 	// GUI should be initialized before the client dll start to use it
 	GUI_Startup();

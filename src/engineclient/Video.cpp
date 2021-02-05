@@ -18,16 +18,33 @@
  * along with OGSNext Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
+
 #include "quakedef.h"
+
 #include "Video.hpp"
+
+#include "Screen.hpp"
+#include "View.hpp"
+#include "Draw.hpp"
 
 void CVideo::Init(unsigned char *palette)
 {
 	VID_Init(palette);
+	
 	LoadRendererModule("r_gl");
 	
 	if(!mpRenderer->Init(Sys_GetFactoryThis()))
 		mpSystem->Error("Couldn't initialize the renderer module!");
+	
+	mpScreen = std::make_unique<CScreen>();
+	mpView = std::make_unique<CView>();
+	mpDraw = std::make_unique<CDraw>();
+	
+	mpDraw->Init();
+	mpScreen->Init();
+	mpRenderer->Init();
+	
+	mpRenderer->InitTextures();
 };
 
 void CVideo::Shutdown()
