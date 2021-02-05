@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2019-2020 BlackPhrase
+Copyright (C) 2019-2021 BlackPhrase
 
 This program is free software: you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -30,9 +30,10 @@ public:
 
 	/// Called at shutdown
 	void Shutdown();
-
-	void CheckChanges();
+	
+	void Update();
 private:
+	void CheckChanges();
 	void UpdateScreen();
 	
 	void LoadRendererModule(const char *asName);

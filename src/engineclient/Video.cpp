@@ -1,7 +1,8 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2018-2020 BlackPhrase
+ * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 2018-2021 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,6 +33,12 @@ void CVideo::Init(unsigned char *palette)
 void CVideo::Shutdown()
 {
 	UnloadRendererModule();
+};
+
+void CVideo::Update()
+{
+	UpdateScreen();
+	CheckChanges();
 };
 
 void CVideo::CheckChanges()
