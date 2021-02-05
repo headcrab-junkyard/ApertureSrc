@@ -39,6 +39,8 @@ void CSound::Update()
 
 void CSound::LoadSoundSystemModule()
 {
+	UnloadSoundSystemModule();
+	
 	mpSoundSystemModule = Sys_LoadModule("soundsystem");
 	
 	if(!mpSoundSystemModule)
