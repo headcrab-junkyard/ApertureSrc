@@ -191,7 +191,10 @@ void CEngineClient::Frame()
 	if(host_speeds.GetValue())
 		time1 = mpSystem->GetDoubleTime();
 
-	UpdateScreen(); // TODO: was SCR_UpdateScreen
+	mpVideo->Update();
+	
+	ClientDLL_HudRedraw(cl.intermission);
+	
 	
 	if(host_speeds.GetValue())
 	{
