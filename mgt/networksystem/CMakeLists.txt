@@ -15,7 +15,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES
 	OUTPUT_NAME "networksystem"
 )
 
-target_link_libraries(${PROJECT_NAME} ogs-interface)
+target_link_libraries(${PROJECT_NAME} ogs-tier1)
 
 if(WIN32)
 	# NOTE: looks like wsock32 is loaded dynamically
