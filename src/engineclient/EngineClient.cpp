@@ -209,10 +209,28 @@ void CEngineClient::Frame()
 	};
 };
 
+void CEngineClient::LocalInit()
+{
+	//
+	// register our commands
+	//
+	mpCmd->AddCommand("cmd", Cmd_ForwardToServer_f);
+};
+
 /// Perform Key_Event() callbacks until the input que is empty
 void CEngineClient::SendKeyEvents()
 {
 	Sys_SendKeyEvents();
+};
+
+void CEngineClient::UpdateScreen()
+{
+	// TODO: something else?
+
+	mpScreen->Update();
+	ClientDLL_HudRedraw(cl.intermission);
+	
+	// TODO: something else?
 };
 
 void CEngineClient::LoadGameModule()

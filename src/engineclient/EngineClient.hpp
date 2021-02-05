@@ -46,6 +46,8 @@ public:
 	bool PreFrame() const override;
 	void Frame() override;
 private:
+	void LocalInit();
+	
 	void SendKeyEvents();
 	
 	void UpdateScreen();
