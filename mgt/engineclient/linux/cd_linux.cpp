@@ -2,7 +2,7 @@
 *	This file is part of Magenta Engine
 *
 *	Copyright (C) 1996-1997 Id Software, Inc.
-*	Copyright (C) 2018 BlackPhrase
+*	Copyright (C) 2018-2019 BlackPhrase
 *
 *	Magenta Engine is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -441,4 +441,10 @@ int CCDAudio::GetAudioDiskInfo()
 	maxTrack = tochdr.cdth_trk1;
 
 	return 0;
+};
+
+// TODO: temp
+ICDAudio *CreateCDAudio()
+{
+	return new CCDAudio();
 };

@@ -23,11 +23,11 @@
 
 #pragma once
 
-#define VID_CBITS 6
-#define VID_GRADES (1 << VID_CBITS)
+constexpr auto VID_CBITS{6};
+constexpr auto VID_GRADES{(1 << VID_CBITS)};
 
 // a pixel can be one, two, or four bytes
-typedef byte pixel_t;
+using pixel_t = byte;
 
 typedef struct vrect_s
 {
@@ -35,7 +35,7 @@ typedef struct vrect_s
 	struct vrect_s *pnext;
 } vrect_t;
 
-typedef struct
+typedef struct viddef_s
 {
 	pixel_t *buffer;            // invisible buffer
 	pixel_t *colormap;          // 256 * VID_GRADES size
@@ -59,7 +59,7 @@ typedef struct
 extern viddef_t vid; // global video state
 
 extern unsigned short d_8to16table[256];
-extern unsigned d_8to24table[256];
+extern unsigned int d_8to24table[256];
 
 extern void (*vid_menudrawfn)();
 extern void (*vid_menukeyfn)(int key);

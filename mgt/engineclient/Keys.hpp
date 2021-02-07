@@ -2,7 +2,7 @@
  * This file is part of OGSNext Engine
  *
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2020 BlackPhrase
+ * Copyright (C) 2018-2021 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,21 +26,24 @@
 
 struct IFile;
 
-typedef enum { key_game,
-	           key_console,
-	           key_message,
-	           key_menu } keydest_t;
+enum keydest_t
+{
+	key_game,
+	key_console,
+	key_message,
+	key_menu
+};
 
 extern keydest_t key_dest;
 extern char *keybindings[256];
 extern int key_repeats[256];
-extern int key_count; // incremented every key event
+extern int key_count; ///< incremented every key event
 extern int key_lastpress;
 
-void Key_Event(int key, qboolean down);
+void Key_Event(int anKey, bool abDown);
 void Key_Init();
-void Key_WriteBindings(IFile *f);
-void Key_SetBinding(int keynum, const char *binding);
+void Key_WriteBindings(IFile *apFile);
+void Key_SetBinding(int anKey, const char *asBinding);
 void Key_ClearStates();
-const char *Key_KeynumToString(int keynum);
+const char *Key_KeynumToString(int anKey);
 //int Key_GetKey (); // Q2

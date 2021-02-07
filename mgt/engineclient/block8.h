@@ -19,7 +19,6 @@
 */
 
 /// @file
-/// @brief
 
 LEnter16_8 : movb(% esi), % al movb(% esi, % ebx, ), % cl movb % dh, % ah addl % ebp, % edx movb % dh, % ch leal(% esi, % ebx, 2), % esi movb 0x12345678(% eax), % al LBPatch0 : addl % ebp, % edx movb % al, (% edi)movb 0x12345678(% ecx), % cl LBPatch1 : movb % cl, 1(% edi)addl $0x2, % edi
 

@@ -2,7 +2,7 @@
 *	This file is part of Magenta Engine
 *
 *	Copyright (C) 1996-2001 Id Software, Inc.
-*	Copyright (C) 2018 BlackPhrase
+*	Copyright (C) 2018-2019 BlackPhrase
 *
 *	Magenta Engine is free software: you can redistribute it and/or modify
 *	it under the terms of the GNU General Public License as published by
@@ -19,7 +19,6 @@
 */
 
 /// @file
-/// @brief
 
 #pragma once
 
@@ -34,4 +33,4 @@ void CDAudio_Stop();
 void CDAudio_Pause();
 void CDAudio_Resume();
 
-//void CDAudio_Activate(qboolean active); // Q2
+//void CDAudio_Activate(bool active); // Q2

@@ -25,11 +25,13 @@
 
 #include "null/CDAudioNull.hpp"
 
+//extern ICDAudio *CreateCDAudio();
+
 ICDAudio *gpCDAudio{ nullptr };
 
 int CDAudio_Init()
 {
-	gpCDAudio = new CCDAudioNull();
+	gpCDAudio = new CCDAudioNull();  // TODO: CreateCDAudio()?
 
 	if(gpCDAudio)
 		return gpCDAudio->Init();

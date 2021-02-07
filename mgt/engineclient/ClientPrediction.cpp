@@ -19,7 +19,6 @@
 */
 
 /// @file
-/// @brief
 
 #include "quakedef.h"
 #include "winquake.h"

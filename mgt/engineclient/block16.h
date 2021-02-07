@@ -19,7 +19,6 @@
 */
 
 /// @file
-/// @brief
 
 LEnter16_16:
 	movb	(%esi), %al
