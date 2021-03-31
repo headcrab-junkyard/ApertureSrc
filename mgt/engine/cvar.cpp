@@ -26,6 +26,39 @@
 cvar_t *cvar_vars{nullptr};
 const char *cvar_null_string{""};
 
+/*
+============
+Cvar_List_f
+
+============
+*/
+void Cvar_List_f()
+{
+	cvar_t	*var;
+	int		i;
+
+	i = 0;
+	for (var = cvar_vars ; var ; var = var->next, i++)
+	{
+		Con_Printf ("%s : %s", var->name, var->string);
+		
+		if (var->flags & FCVAR_ARCHIVE)
+			Con_Printf (", a");
+		
+		if (var->flags & FCVAR_USERINFO)
+			Con_Printf (", i");
+		
+		if (var->flags & FCVAR_SERVER)
+			Con_Printf (", sv");
+		
+		Con_Printf ("\n");
+	};
+	
+	Con_Printf("--------------\n");
+	Con_Printf("%i Total CVars\n", i);
+	Con_Printf("CvarList ? for syntax\n");
+};
+
 CConVar::CConVar(const char *asName, const char *asValue, int anFlags, const char *asDesc)
 	: msDefValue(asValue), msDesc(asDesc)
 {
@@ -200,6 +233,13 @@ void Cvar_RegisterVariable(cvar_t *variable)
 	cvar_vars = variable;
 }
 
+cvar_t *Cvar_RegisterClientVariable(const char *name, const char *value, int flags)
+{
+	//flags |= FCVAR_CLIENT;
+	// TODO
+	return nullptr;
+};
+
 /*
 ============
 Cvar_Command
@@ -240,4 +280,15 @@ void Cvar_WriteVariables(IFile *f)
 			f->Printf("%s \"%s\"\n", var->name, var->string);
 };
 
+/*
+============
+Cvar_Init
+
+Reads in all archived cvars
+============
+*/
+void Cvar_Init()
+{
+	//Cmd_AddCommand("set", Cvar_Set_f);
+	Cmd_AddCommand("cvarlist", Cvar_List_f);
 };
