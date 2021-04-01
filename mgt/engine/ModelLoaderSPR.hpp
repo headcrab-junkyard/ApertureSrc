@@ -24,10 +24,21 @@
 
 #include "engine/IModelLoader.hpp"
 
+interface ISystem;
+
 class CModelLoaderSPR final : public IModelLoader
 {
 public:
+	CModelLoaderSPR(ISystem *apSystem) : mpSystem(apSystem){}
+	
 	bool IsExtSupported(const char *asExt) const override;
 	
 	IModel *TryLoad(const char *asName) override;
+private:
+	void Mod_LoadSpriteModel(model_t *mod, void *buffer);
+	
+	void *Mod_LoadSpriteFrame(void *pin, mspriteframe_t **ppframe);
+	void *Mod_LoadSpriteGroup(void *pin, mspriteframe_t **ppframe);
+	
+	ISystem *mpSystem{nullptr};
 };

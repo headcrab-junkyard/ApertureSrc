@@ -24,10 +24,22 @@
 
 #include "engine/IModelLoader.hpp"
 
+interface ISystem;
+
 class CModelLoaderAliasMDL final : public IModelLoader
 {
 public:
+	CModelLoaderAliasMDL(ISystem *apSystem) : mpSystem(apSystem){}
+	
 	bool IsExtSupported(const char *asExt) const override;
 	
 	IModel *TryLoad(const char *asName) override;
+private:
+	void Mod_LoadAliasModel(model_t *mod, void *buffer);
+	
+	void *Mod_LoadAliasGroup(void *pin, int *pframeindex, int numv, trivertx_t *pbboxmin, trivertx_t *pbboxmax, aliashdr_t *pheader, const char *name);
+	void *Mod_LoadAliasSkin(void *pin, int *pskinindex, int skinsize, aliashdr_t *pheader);
+	void *Mod_LoadAliasSkinGroup(void *pin, int *pskinindex, int skinsize, aliashdr_t *pheader);
+	
+	ISystem *mpSystem{nullptr};
 };

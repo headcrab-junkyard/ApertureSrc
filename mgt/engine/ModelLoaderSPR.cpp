@@ -1,6 +1,7 @@
 /*
  * This file is part of Magenta Engine
  *
+ * Copyright (C) 1996-1997 Id Software, Inc.
  * Copyright (C) 2015-2019 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
@@ -29,7 +30,7 @@
 Mod_LoadSpriteFrame
 =================
 */
-void * Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppframe)
+void * CModelLoaderSPR::Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppframe)
 {
 	dspriteframe_t		*pinframe;
 	mspriteframe_t		*pspriteframe;
@@ -69,7 +70,7 @@ void * Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppframe)
 			ppixout[i] = d_8to16table[ppixin[i]];
 	}
 	else
-		gpSystem->Error ("Mod_LoadSpriteFrame: driver set invalid r_pixbytes: %d\n", r_pixbytes);
+		mpSystem->Error ("Mod_LoadSpriteFrame: driver set invalid r_pixbytes: %d\n", r_pixbytes);
 
 	return (void *)((byte *)pinframe + sizeof (dspriteframe_t) + size);
 };
@@ -79,7 +80,7 @@ void * Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppframe)
 Mod_LoadSpriteGroup
 =================
 */
-void * Mod_LoadSpriteGroup (void * pin, mspriteframe_t **ppframe)
+void * CModelLoaderSPR::Mod_LoadSpriteGroup (void * pin, mspriteframe_t **ppframe)
 {
 	dspritegroup_t		*pingroup;
 	mspritegroup_t		*pspritegroup;
@@ -109,7 +110,7 @@ void * Mod_LoadSpriteGroup (void * pin, mspriteframe_t **ppframe)
 	{
 		*poutintervals = LittleFloat (pin_intervals->interval);
 		if (*poutintervals <= 0.0)
-			gpSystem->Error ("Mod_LoadSpriteGroup: interval<=0");
+			mpSystem->Error ("Mod_LoadSpriteGroup: interval<=0");
 
 		poutintervals++;
 		pin_intervals++;
@@ -128,7 +129,7 @@ void * Mod_LoadSpriteGroup (void * pin, mspriteframe_t **ppframe)
 Mod_LoadSpriteModel
 =================
 */
-void Mod_LoadSpriteModel (model_t *mod, void *buffer)
+void CModelLoaderSPR::Mod_LoadSpriteModel (model_t *mod, void *buffer)
 {
 	int					i;
 	int					version;
@@ -142,7 +143,7 @@ void Mod_LoadSpriteModel (model_t *mod, void *buffer)
 
 	version = LittleLong (pin->version);
 	if (version != SPRITE_VERSION)
-		gpSystem->Error ("%s has wrong version number "
+		mpSystem->Error ("%s has wrong version number "
 				 "(%i should be %i)", mod->name, version, SPRITE_VERSION);
 
 	numframes = LittleLong (pin->numframes);
@@ -169,7 +170,7 @@ void Mod_LoadSpriteModel (model_t *mod, void *buffer)
 // load the frames
 //
 	if (numframes < 1)
-		gpSystem->Error ("Mod_LoadSpriteModel: Invalid # of frames: %d\n", numframes);
+		mpSystem->Error ("Mod_LoadSpriteModel: Invalid # of frames: %d\n", numframes);
 
 	mod->numframes = numframes;
 	mod->flags = 0;
@@ -209,5 +210,6 @@ bool CModelLoaderSPR::IsExtSupported(const char *asExt) const
 
 IModel *CModelLoaderSPR::TryLoad(const char *asName)
 {
+	Mod_LoadSpriteModel(TODO);
 	return nullptr;
 };

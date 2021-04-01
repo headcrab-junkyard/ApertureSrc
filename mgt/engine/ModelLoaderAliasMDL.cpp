@@ -1,6 +1,7 @@
 /*
  * This file is part of Magenta Engine
  *
+ * Copyright (C) 1996-1997 Id Software, Inc.
  * Copyright (C) 2015-2019 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
@@ -79,7 +80,7 @@ void * Mod_LoadAliasFrame (void * pin, int *pframeindex, int numv, trivertx_t *p
 Mod_LoadAliasGroup
 =================
 */
-void * Mod_LoadAliasGroup (void * pin, int *pframeindex, int numv, trivertx_t *pbboxmin, trivertx_t *pbboxmax, aliashdr_t *pheader, char *name)
+void * CModelLoaderAliasMDL::Mod_LoadAliasGroup (void * pin, int *pframeindex, int numv, trivertx_t *pbboxmin, trivertx_t *pbboxmax, aliashdr_t *pheader, const char *name)
 {
 	daliasgroup_t		*pingroup;
 	maliasgroup_t		*paliasgroup;
@@ -116,7 +117,7 @@ void * Mod_LoadAliasGroup (void * pin, int *pframeindex, int numv, trivertx_t *p
 	{
 		*poutintervals = LittleFloat (pin_intervals->interval);
 		if (*poutintervals <= 0.0)
-			gpSystem->Error ("Mod_LoadAliasGroup: interval<=0");
+			mpSystem->Error ("Mod_LoadAliasGroup: interval<=0");
 
 		poutintervals++;
 		pin_intervals++;
@@ -142,7 +143,7 @@ void * Mod_LoadAliasGroup (void * pin, int *pframeindex, int numv, trivertx_t *p
 Mod_LoadAliasSkin
 =================
 */
-void * Mod_LoadAliasSkin (void * pin, int *pskinindex, int skinsize, aliashdr_t *pheader)
+void * CModelLoaderAliasMDL::Mod_LoadAliasSkin (void * pin, int *pskinindex, int skinsize, aliashdr_t *pheader)
 {
 	int		i;
 	byte	*pskin, *pinskin;
@@ -162,7 +163,7 @@ void * Mod_LoadAliasSkin (void * pin, int *pskinindex, int skinsize, aliashdr_t 
 			pusskin[i] = d_8to16table[pinskin[i]];
 	}
 	else
-		gpSystem->Error ("Mod_LoadAliasSkin: driver set invalid r_pixbytes: %d\n", r_pixbytes);
+		mpSystem->Error ("Mod_LoadAliasSkin: driver set invalid r_pixbytes: %d\n", r_pixbytes);
 
 	pinskin += skinsize;
 
@@ -174,7 +175,7 @@ void * Mod_LoadAliasSkin (void * pin, int *pskinindex, int skinsize, aliashdr_t 
 Mod_LoadAliasSkinGroup
 =================
 */
-void * Mod_LoadAliasSkinGroup (void * pin, int *pskinindex, int skinsize, aliashdr_t *pheader)
+void * CModelLoaderAliasMDL::Mod_LoadAliasSkinGroup (void * pin, int *pskinindex, int skinsize, aliashdr_t *pheader)
 {
 	daliasskingroup_t		*pinskingroup;
 	maliasskingroup_t		*paliasskingroup;
@@ -205,7 +206,7 @@ void * Mod_LoadAliasSkinGroup (void * pin, int *pskinindex, int skinsize, aliash
 	{
 		*poutskinintervals = LittleFloat (pinskinintervals->interval);
 		if (*poutskinintervals <= 0)
-			gpSystem->Error ("Mod_LoadAliasSkinGroup: interval<=0");
+			mpSystem->Error ("Mod_LoadAliasSkinGroup: interval<=0");
 
 		poutskinintervals++;
 		pinskinintervals++;
@@ -227,7 +228,7 @@ void * Mod_LoadAliasSkinGroup (void * pin, int *pskinindex, int skinsize, aliash
 Mod_LoadAliasModel
 =================
 */
-void Mod_LoadAliasModel (model_t *mod, void *buffer)
+void CModelLoaderAliasMDL::Mod_LoadAliasModel (model_t *mod, void *buffer)
 {
 	int					i;
 	mdl_t				*pmodel, *pinmodel;
@@ -249,7 +250,7 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 
 	version = LittleLong (pinmodel->version);
 	if (version != ALIAS_VERSION)
-		gpSystem->Error ("%s has wrong version number (%i should be %i)",
+		mpSystem->Error ("%s has wrong version number (%i should be %i)",
 				 mod->name, version, ALIAS_VERSION);
 
 //
@@ -279,21 +280,21 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	pmodel->skinheight = LittleLong (pinmodel->skinheight);
 
 	if (pmodel->skinheight > MAX_LBM_HEIGHT)
-		gpSystem->Error ("model %s has a skin taller than %d", mod->name,
+		mpSystem->Error ("model %s has a skin taller than %d", mod->name,
 				   MAX_LBM_HEIGHT);
 
 	pmodel->numverts = LittleLong (pinmodel->numverts);
 
 	if (pmodel->numverts <= 0)
-		gpSystem->Error ("model %s has no vertices", mod->name);
+		mpSystem->Error ("model %s has no vertices", mod->name);
 
 	if (pmodel->numverts > MAXALIASVERTS)
-		gpSystem->Error ("model %s has too many vertices", mod->name);
+		mpSystem->Error ("model %s has too many vertices", mod->name);
 
 	pmodel->numtris = LittleLong (pinmodel->numtris);
 
 	if (pmodel->numtris <= 0)
-		gpSystem->Error ("model %s has no triangles", mod->name);
+		mpSystem->Error ("model %s has no triangles", mod->name);
 
 	pmodel->numframes = LittleLong (pinmodel->numframes);
 	pmodel->size = LittleFloat (pinmodel->size) * ALIAS_BASE_SIZE_RATIO;
@@ -311,7 +312,7 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	numframes = pmodel->numframes;
 
 	if (pmodel->skinwidth & 0x03)
-		gpSystem->Error ("Mod_LoadAliasModel: skinwidth not multiple of 4");
+		mpSystem->Error ("Mod_LoadAliasModel: skinwidth not multiple of 4");
 
 	pheader->model = (byte *)pmodel - (byte *)pheader;
 
@@ -321,7 +322,7 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	skinsize = pmodel->skinheight * pmodel->skinwidth;
 
 	if (numskins < 1)
-		gpSystem->Error ("Mod_LoadAliasModel: Invalid # of skins: %d\n", numskins);
+		mpSystem->Error ("Mod_LoadAliasModel: Invalid # of skins: %d\n", numskins);
 
 	pskintype = (daliasskintype_t *)&pinmodel[1];
 
@@ -394,7 +395,7 @@ void Mod_LoadAliasModel (model_t *mod, void *buffer)
 // load the frames
 //
 	if (numframes < 1)
-		gpSystem->Error ("Mod_LoadAliasModel: Invalid # of frames: %d\n", numframes);
+		mpSystem->Error ("Mod_LoadAliasModel: Invalid # of frames: %d\n", numframes);
 
 	pframetype = (daliasframetype_t *)&pintriangles[pmodel->numtris];
 
@@ -456,5 +457,6 @@ bool CModelLoaderAliasMDL::IsExtSupported(const char *asExt) const
 
 IModel *CModelLoaderAliasMDL::TryLoad(const char *asName)
 {
+	Mod_LoadAliasModel(TODO);
 	return nullptr;
 };

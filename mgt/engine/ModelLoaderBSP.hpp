@@ -24,10 +24,33 @@
 
 #include "engine/IModelLoader.hpp"
 
+interface ISystem;
+
 class CModelLoaderBSP final : public IModelLoader
 {
 public:
+	CModelLoaderBSP(ISystem *apSystem) : mpSystem(apSystem){}
+	
 	bool IsExtSupported(const char *asExt) const override;
 	
 	IModel *TryLoad(const char *asName) override;
+private:
+	void Mod_LoadBrushModel(model_t *model, void *buffer);
+	
+	void CalcSurfaceExtents(msurface_t *s);
+	
+	void Mod_LoadTextures(lump_t *l);
+	void Mod_LoadVertexes(lump_t *l);
+	void Mod_LoadSubmodels(lump_t *l);
+	void Mod_LoadEdges(lump_t *l);
+	void Mod_LoadTexinfo(lump_t *l);
+	void Mod_LoadFaces(lump_t *l);
+	void Mod_LoadNodes(lump_t *l);
+	void Mod_LoadLeafs(lump_t *l);
+	void Mod_LoadClipnodes(lump_t *l);
+	void Mod_LoadMarksurfaces(lump_t *l);
+	void Mod_LoadSurfedges(lump_t *l);
+	void Mod_LoadPlanes(lump_t *l);
+	
+	ISystem *mpSystem{nullptr};
 };

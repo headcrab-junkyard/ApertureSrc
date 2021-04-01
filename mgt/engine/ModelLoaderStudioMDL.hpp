@@ -24,10 +24,16 @@
 
 #include "IModelLoader.hpp"
 
+interface ISystem;
+
 class CModelLoaderStudioMDL final : public IModelLoader
 {
 public:
+	CModelLoaderStudioMDL(ISystem *apSystem) : mpSystem(apSystem){}
+	
 	bool IsExtSupported(const char *asExt) const override;
 	
 	IModel *TryLoad(const char *asName) override;
+private:
+	ISystem *mpSystem{nullptr};
 };
