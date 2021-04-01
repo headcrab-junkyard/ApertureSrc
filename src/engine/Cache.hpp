@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2019-2020 BlackPhrase
+Copyright (C) 2019-2021 BlackPhrase
 
 This program is free software: you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,9 +20,17 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "CommonTypes.hpp"
+
+interface ISystem;
+
+using cache_system_t = struct cache_system_s;
+
 class CCache
 {
 public:
+	CCache(ISystem *apSystem);
+	
 	/// Returns nullptr if all purgable data was tossed and there still
 	/// wasn't enough room
 	void *Alloc(cache_user_t *c, int size, const char *name);
@@ -35,4 +43,11 @@ public:
 
 	void Report();
 	void Flush();
+private:
+	cache_system_t *TryAlloc(int size, bool nobottom);
+	
+	void MakeLRU(cache_system_t *cs);
+	void UnlinkLRU(cache_system_t *cs);
+private:
+	ISystem *mpSystem{nullptr};
 };
