@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2019-2020 BlackPhrase
+Copyright (C) 2019-2021 BlackPhrase
 
 This program is free software: you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,12 +20,20 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "CommonTypes.hpp"
+
+using sizebuf_t = struct sizebuf_s;
+
+interface ISystem;
+
 class CCmdBuffer
 {
 public:
-	/// Allocates an initial text buffer that will grow as needed
-	void Init();
-
+	CCmdBuffer(ISystem *apSystem);
+	~CCmdBuffer();
+	
+	void WaitFrames(uint anFrames){cmd_wait = anFrames;}
+	
 	/// As new commands are generated from the console or keybindings,
 	/// the text is added to the end of the command buffer
 	void AddText(const char *text);
@@ -40,4 +48,13 @@ public:
 	/// Normally called once per frame, but may be explicitly invoked.
 	/// Do not call inside a command function!
 	void Execute();
+private:
+	/// Allocates an initial text buffer that will grow as needed
+	void Init();
+private:
+	ISystem *mpSystem{nullptr};
+	
+	sizebuf_t *cmd_text{nullptr};
+	
+	uint cmd_wait{0};
 };
