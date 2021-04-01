@@ -2,7 +2,7 @@
  * This file is part of OGSNext Engine
  *
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2020 BlackPhrase
+ * Copyright (C) 2020-2021 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,9 @@
 /// @file
 
 #include "quakedef.h"
-#include "Server.hpp"
+#include "GameServer.hpp"
 
-int CServer::GetActiveClientsNum() const
+int CGameServer::GetActiveClientsNum() const
 {
 	int nCount{0};
 	
