@@ -82,20 +82,6 @@ CConVar::~CConVar() //= default;
 
 /*
 ============
-Cvar_FindVar
-============
-*/
-cvar_t *Cvar_FindVar(const char *var_name)
-{
-	for(auto var = cvar_vars; var; var = var->next)
-		if(!Q_strcmp(var_name, var->name))
-			return var;
-
-	return nullptr;
-};
-
-/*
-============
 Cvar_VariableValue
 ============
 */
@@ -139,26 +125,6 @@ const char *Cvar_VariableString(const char *var_name)
 
 /*
 ============
-Cvar_CompleteVariable
-============
-*/
-char *Cvar_CompleteVariable(const char *partial)
-{
-	int len = Q_strlen(partial);
-
-	if(!len)
-		return nullptr;
-
-	// check functions
-	for(auto cvar = cvar_vars; cvar; cvar = cvar->next)
-		if(!Q_strncmp(partial, cvar->name, len))
-			return cvar->name;
-
-	return nullptr;
-};
-
-/*
-============
 Cvar_Set
 ============
 */
@@ -199,40 +165,6 @@ void Cvar_SetValue(const char *var_name, float value)
 	Cvar_Set(var_name, val);
 };
 
-/*
-============
-Cvar_RegisterVariable
-
-Adds a freestanding variable to the variable list.
-============
-*/
-void Cvar_RegisterVariable(cvar_t *variable)
-{
-	// first check to see if it has allready been defined
-	if(Cvar_FindVar(variable->name))
-	{
-		gpSystem->Printf("Can't register variable %s, allready defined\n", variable->name);
-		return;
-	};
-
-	// check for overlap with a command
-	if(Cmd_Exists(variable->name))
-	{
-		gpSystem->Printf("Cvar_RegisterVariable: %s is a command\n", variable->name);
-		return;
-	};
-
-	// copy the value off, because future sets will Z_Free it
-	char *oldstr = variable->string;
-	variable->string = (char*)Z_Malloc(Q_strlen(variable->string) + 1);
-	Q_strcpy(variable->string, oldstr);
-	variable->value = Q_atof(variable->string);
-
-	// link the variable in
-	variable->next = cvar_vars;
-	cvar_vars = variable;
-}
-
 cvar_t *Cvar_RegisterClientVariable(const char *name, const char *value, int flags)
 {
 	//flags |= FCVAR_CLIENT;
@@ -263,21 +195,6 @@ bool Cvar_Command()
 
 	Cvar_Set(v->name, Cmd_Argv(1));
 	return true;
-};
-
-/*
-============
-Cvar_WriteVariables
-
-Writes lines containing "set variable value" for all variables
-with the archive flag set to true.
-============
-*/
-void Cvar_WriteVariables(IFile *f)
-{
-	for(auto var = cvar_vars; var; var = var->next)
-		if(var->flags & FCVAR_ARCHIVE)
-			f->Printf("%s \"%s\"\n", var->name, var->string);
 };
 
 /*
