@@ -146,12 +146,10 @@ Z_Free
 */
 void CZone::Free(void *ptr)
 {
-	memblock_t *block, *other;
-
 	if(!ptr)
 		mpSystem->Error("Z_Free: NULL pointer");
 
-	block = (memblock_t *)((byte *)ptr - sizeof(memblock_t));
+	auto block = (memblock_t *)((byte *)ptr - sizeof(memblock_t));
 	if(block->id != ZONEID)
 		mpSystem->Error("Z_Free: freed a pointer without ZONEID");
 	if(block->tag == 0)
@@ -159,7 +157,7 @@ void CZone::Free(void *ptr)
 
 	block->tag = 0; // mark as free
 
-	other = block->prev;
+	auto other = block->prev;
 	if(!other->tag)
 	{ // merge with previous free block
 		other->size += block->size;
@@ -188,9 +186,7 @@ Z_CheckHeap
 */
 void CZone::CheckHeap()
 {
-	memblock_t *block;
-
-	for(block = mainzone->blocklist.next;; block = block->next)
+	for(auto block = mainzone->blocklist.next;; block = block->next)
 	{
 		if(block->next == &mainzone->blocklist)
 			break; // all blocks have been hit

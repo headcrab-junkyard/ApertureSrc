@@ -21,9 +21,12 @@
 /// @file
 
 #include "quakedef.h"
+
 #include "Hunk.hpp"
 //#include "common.h"
 //#include "Memory.hpp"
+
+#include "engine/ISystem.hpp"
 
 //============================================================================
 
@@ -36,17 +39,17 @@ struct hunk_t
 	char name[8];
 };
 
-byte *hunk_base;
-int hunk_size;
-
-int hunk_low_used;
-int hunk_high_used;
-
 bool hunk_tempactive;
 int hunk_tempmark;
 
 void Cache_FreeLow(int new_low_hunk);
 void Cache_FreeHigh(int new_high_hunk);
+
+CHunk::CHunk(ISystem *apSystem, void *buf, int size) : mpSystem(apSystem)
+{
+	hunk_base = reinterpret_cast<byte*>(buf);
+	hunk_size = size;
+};
 
 /*
 ===================

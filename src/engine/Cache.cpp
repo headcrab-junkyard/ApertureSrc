@@ -161,16 +161,16 @@ Size should already include the header and padding
 */
 cache_system_t *CCache::TryAlloc(int size, bool nobottom)
 {
-	cache_system_t	*cs, *pnew;
+	cache_system_t *pnew{nullptr};
 	
 // is the cache completely empty?
 
 	if (!nobottom && cache_head.prev == &cache_head)
 	{
-		if (hunk_size - hunk_high_used - hunk_low_used < size)
+		if (hunk_size - hunk_high_used - mpHunk->GetLowUsed() < size)
 			mpSystem->Error ("Cache_TryAlloc: %i is greater then free hunk", size);
 
-		pnew = (cache_system_t *) (hunk_base + hunk_low_used);
+		pnew = (cache_system_t *) (hunk_base + mpHunk->GetLowUsed());
 		Q_memset (pnew, 0, sizeof(*pnew));
 		pnew->size = size;
 
@@ -183,8 +183,8 @@ cache_system_t *CCache::TryAlloc(int size, bool nobottom)
 	
 // search from the bottom up for space
 
-	pnew = (cache_system_t *) (hunk_base + hunk_low_used);
-	cs = cache_head.next;
+	pnew = (cache_system_t *) (hunk_base + mpHunk->GetLowUsed());
+	cache_system_t *cs = cache_head.next;
 	
 	do
 	{
