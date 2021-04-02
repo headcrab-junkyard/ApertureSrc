@@ -20,7 +20,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
-class CZone
+class CMemZone
 {
 public:
 	void *Malloc(int size); // returns 0 filled memory

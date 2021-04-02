@@ -29,10 +29,10 @@
 
 interface ISystem;
 
-class CHunk
+class CMemHunk
 {
 public:
-	CHunk(ISystem *apSystem, void *buf, int size);
+	CMemHunk(ISystem *apSystem, void *buf, int size);
 	
 	/// @return 0 filled memory
 	void *Alloc(int size); 

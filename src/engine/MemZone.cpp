@@ -22,7 +22,7 @@
 /// @brief zone memory allocator
 
 #include "quakedef.h"
-#include "Zone.hpp"
+#include "MemZone.hpp"
 
 /**
 ==============================================================================
@@ -67,7 +67,7 @@ memzone_t *mainzone;
 Z_Malloc
 ========================
 */
-void *CZone::Malloc(int size)
+void *CMemZone::Malloc(int size)
 {
 	void *buf;
 
@@ -80,7 +80,7 @@ void *CZone::Malloc(int size)
 	return buf;
 };
 
-void *CZone::TagMalloc(int size, int tag)
+void *CMemZone::TagMalloc(int size, int tag)
 {
 	int extra;
 	memblock_t *start, *rover, *pnew, *base;
@@ -144,7 +144,7 @@ void *CZone::TagMalloc(int size, int tag)
 Z_Free
 ========================
 */
-void CZone::Free(void *ptr)
+void CMemZone::Free(void *ptr)
 {
 	if(!ptr)
 		mpSystem->Error("Z_Free: NULL pointer");
@@ -184,7 +184,7 @@ void CZone::Free(void *ptr)
 Z_CheckHeap
 ========================
 */
-void CZone::CheckHeap()
+void CMemZone::CheckHeap()
 {
 	for(auto block = mainzone->blocklist.next;; block = block->next)
 	{

@@ -43,11 +43,11 @@ typedef struct cache_user_s
 void Cache_FreeHigh(int new_high_hunk);
 void Cache_FreeLow(int new_low_hunk);
 
-class CCache
+class CMemCache
 {
 public:
-	CCache(ISystem *apSystem);
-	//~CCache();
+	CMemCache(ISystem *apSystem);
+	//~CMemCache();
 	
 	/// @return nullptr if all purgable data was tossed and there still
 	/// wasn't enough room

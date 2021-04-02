@@ -22,7 +22,7 @@
 
 #include "quakedef.h"
 
-#include "Hunk.hpp"
+#include "MemHunk.hpp"
 //#include "common.h"
 //#include "Memory.hpp"
 
@@ -45,7 +45,7 @@ int hunk_tempmark;
 void Cache_FreeLow(int new_low_hunk);
 void Cache_FreeHigh(int new_high_hunk);
 
-CHunk::CHunk(ISystem *apSystem, void *buf, int size) : mpSystem(apSystem)
+CMemHunk::CMemHunk(ISystem *apSystem, void *buf, int size) : mpSystem(apSystem)
 {
 	hunk_base = reinterpret_cast<byte*>(buf);
 	hunk_size = size;
@@ -56,7 +56,7 @@ CHunk::CHunk(ISystem *apSystem, void *buf, int size) : mpSystem(apSystem)
 Hunk_Alloc
 ===================
 */
-void *CHunk::Alloc(int size)
+void *CMemHunk::Alloc(int size)
 {
 	return AllocName(size, "unknown");
 };
@@ -66,7 +66,7 @@ void *CHunk::Alloc(int size)
 Hunk_AllocName
 ===================
 */
-void *CHunk::AllocName(int size, const char *name)
+void *CMemHunk::AllocName(int size, const char *name)
 {
 #ifdef PARANOID
 	Check();
@@ -99,7 +99,7 @@ void *CHunk::AllocName(int size, const char *name)
 Hunk_HighAllocName
 ===================
 */
-void *CHunk::HighAllocName(int size, const char *name)
+void *CMemHunk::HighAllocName(int size, const char *name)
 {
 	hunk_t *h;
 
@@ -144,7 +144,7 @@ Hunk_TempAlloc
 Return space from the top of the hunk
 =================
 */
-void *CHunk::TempAlloc(int size)
+void *CMemHunk::TempAlloc(int size)
 {
 	size = (size + 15) & ~15;
 
@@ -163,7 +163,7 @@ void *CHunk::TempAlloc(int size)
 	return buf;
 };
 
-void CHunk::FreeToHighMark(int mark)
+void CMemHunk::FreeToHighMark(int mark)
 {
 	if(hunk_tempactive)
 	{
@@ -176,7 +176,7 @@ void CHunk::FreeToHighMark(int mark)
 	hunk_high_used = mark;
 };
 
-void CHunk::FreeToLowMark(int mark)
+void CMemHunk::FreeToLowMark(int mark)
 {
 	if(mark < 0 || mark > hunk_low_used)
 		mpSystem->Error("Hunk_FreeToLowMark: bad mark %i", mark);
@@ -191,7 +191,7 @@ Hunk_Check
 Run consistancy and sentinel trashing checks
 ==============
 */
-void CHunk::Check()
+void CMemHunk::Check()
 {
 	hunk_t *h;
 
@@ -205,7 +205,7 @@ void CHunk::Check()
 	};
 };
 
-int	CHunk::GetHighMark()
+int	CMemHunk::GetHighMark()
 {
 	if(hunk_tempactive)
 	{
@@ -216,7 +216,7 @@ int	CHunk::GetHighMark()
 	return hunk_high_used;
 };
 
-int	CHunk::GetLowMark() const
+int	CMemHunk::GetLowMark() const
 {
 	return hunk_low_used;
 };

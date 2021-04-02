@@ -21,7 +21,7 @@
 /// @file
 
 #include "quakedef.h"
-#include "Cache.hpp"
+#include "MemCache.hpp"
 
 #include "engine/ISystem.hpp"
 
@@ -44,14 +44,14 @@ typedef struct cache_system_s
 
 cache_system_t	cache_head;
 
-CCache::CCache(ISystem *apSystem) : mpSystem(apSystem){}
+CMemCache::CMemCache(ISystem *apSystem) : mpSystem(apSystem){}
 
 /*
 ==============
 Cache_Alloc
 ==============
 */
-void *CCache::Alloc(cache_user_t *c, int size, const char *name)
+void *CMemCache::Alloc(cache_user_t *c, int size, const char *name)
 {
 	cache_system_t	*cs;
 
@@ -92,7 +92,7 @@ Cache_Free
 Frees the memory and removes it from the LRU list
 ==============
 */
-void CCache::Free(cache_user_t *c)
+void CMemCache::Free(cache_user_t *c)
 {
 	if(!c->data)
 		mpSystem->Error("Cache_Free: not allocated");
@@ -113,7 +113,7 @@ void CCache::Free(cache_user_t *c)
 Cache_Check
 ==============
 */
-void *CCache::Check(cache_user_t *c)
+void *CMemCache::Check(cache_user_t *c)
 {
 	if (!c->data)
 		return nullptr;
@@ -133,7 +133,7 @@ Cache_Report
 
 ============
 */
-void CCache::Report()
+void CMemCache::Report()
 {
 	mpSystem->DevPrintf ("%4.1f megabyte data cache\n", (hunk_size - hunk_high_used - hunk_low_used) / (float)(1024*1024) );
 };
@@ -145,7 +145,7 @@ Cache_Flush
 Throw everything out, so new data will be demand cached
 ============
 */
-void CCache::Flush()
+void CMemCache::Flush()
 {
 	while (cache_head.next != &cache_head)
 		Free( cache_head.next->user );	// reclaim the space
@@ -159,7 +159,7 @@ Looks for a free block of memory between the high and low hunk marks
 Size should already include the header and padding
 ============
 */
-cache_system_t *CCache::TryAlloc(int size, bool nobottom)
+cache_system_t *CMemCache::TryAlloc(int size, bool nobottom)
 {
 	cache_system_t *pnew{nullptr};
 	
@@ -232,7 +232,7 @@ cache_system_t *CCache::TryAlloc(int size, bool nobottom)
 	return nullptr;		// couldn't allocate
 };
 
-void CCache::MakeLRU (cache_system_t *cs)
+void CMemCache::MakeLRU (cache_system_t *cs)
 {
 	if (cs->lru_next || cs->lru_prev)
 		mpSystem->Error ("Cache_MakeLRU: active link");
@@ -243,7 +243,7 @@ void CCache::MakeLRU (cache_system_t *cs)
 	cache_head.lru_next = cs;
 };
 
-void CCache::UnlinkLRU (cache_system_t *cs)
+void CMemCache::UnlinkLRU (cache_system_t *cs)
 {
 	if (!cs->lru_next || !cs->lru_prev)
 		mpSystem->Error ("Cache_UnlinkLRU: NULL link");
