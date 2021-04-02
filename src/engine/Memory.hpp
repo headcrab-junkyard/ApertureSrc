@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2019-2020 BlackPhrase
+Copyright (C) 2019-2021 BlackPhrase
 
 This program is free software: you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,8 +20,22 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include <memory>
+
+#include "CommonTypes.hpp"
+
+interface ISystem;
+
+class CHunk;
+
 class CMemory
 {
 public:
+	CMemory(ISystem *apSystem);
+	
 	void Init(void *buf, int size);
+private:
+	ISystem *mpSystem{nullptr};
+	
+	std::unique_ptr<CHunk> mpHunk;
 };
