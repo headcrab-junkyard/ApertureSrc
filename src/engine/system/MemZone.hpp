@@ -20,13 +20,21 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "CommonTypes.hpp"
+
+interface ISystem;
+
 class CMemZone
 {
 public:
+	CMemZone(ISystem *apSystem);
+	
 	void *Malloc(int size); // returns 0 filled memory
 	void *TagMalloc(int size, int tag);
 
 	void Free(void *ptr);
 
 	void CheckHeap();
+private:
+	ISystem *mpSystem{nullptr};
 };

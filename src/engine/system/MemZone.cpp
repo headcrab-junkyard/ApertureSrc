@@ -24,6 +24,8 @@
 #include "quakedef.h"
 #include "MemZone.hpp"
 
+#include "engine/ISystem.hpp"
+
 /**
 ==============================================================================
 
@@ -55,6 +57,8 @@ typedef struct memblock_s
 
 struct memzone_t
 {
+	void Clear(int anSize);
+	
 	int size;             // total bytes malloced, including header
 	memblock_t blocklist; // start / end cap for linked list
 	memblock_t *rover;
@@ -64,15 +68,39 @@ memzone_t *mainzone;
 
 /*
 ========================
+Z_ClearZone
+========================
+*/
+void memzone_t::Clear(int size)
+{
+	memblock_t *block{nullptr};
+
+	// set the entire zone to one free block
+
+	this->blocklist.next = this->blocklist.prev = block =
+	(memblock_t *)((byte *)this + sizeof(memzone_t));
+	this->blocklist.tag = 1; // in use block
+	this->blocklist.id = 0;
+	this->blocklist.size = 0;
+	this->rover = block;
+
+	block->prev = block->next = &this->blocklist;
+	block->tag = 0; // free block
+	block->id = ZONEID;
+	block->size = size - sizeof(memzone_t);
+};
+
+CMemZone::CMemZone(ISystem *apSystem) : mpSystem(apSystem){}
+
+/*
+========================
 Z_Malloc
 ========================
 */
 void *CMemZone::Malloc(int size)
 {
-	void *buf;
-
 	CheckHeap(); // DEBUG
-	buf = TagMalloc(size, 1);
+	void *buf{TagMalloc(size, 1)};
 	if(!buf)
 		mpSystem->Error("Z_Malloc: failed on allocation of %i bytes", size);
 	Q_memset(buf, 0, size);
@@ -82,9 +110,6 @@ void *CMemZone::Malloc(int size)
 
 void *CMemZone::TagMalloc(int size, int tag)
 {
-	int extra;
-	memblock_t *start, *rover, *pnew, *base;
-
 	if(!tag)
 		mpSystem->Error("Z_TagMalloc: tried to use a 0 tag");
 
@@ -96,8 +121,9 @@ void *CMemZone::TagMalloc(int size, int tag)
 	size += 4;                  // space for memory trash tester
 	size = (size + 7) & ~7;     // align to 8-byte boundary
 
+	memblock_t *rover, *base;
 	base = rover = mainzone->rover;
-	start = base->prev;
+	auto start = base->prev;
 
 	do
 	{
@@ -113,10 +139,10 @@ void *CMemZone::TagMalloc(int size, int tag)
 	//
 	// found a block big enough
 	//
-	extra = base->size - size;
+	int extra = base->size - size;
 	if(extra > MINFRAGMENT)
 	{ // there will be a free fragment after the allocated block
-		pnew = (memblock_t *)((byte *)base + size);
+		auto pnew = (memblock_t *)((byte *)base + size);
 		pnew->size = extra;
 		pnew->tag = 0; // free block
 		pnew->prev = base;
@@ -149,7 +175,7 @@ void CMemZone::Free(void *ptr)
 	if(!ptr)
 		mpSystem->Error("Z_Free: NULL pointer");
 
-	auto block = (memblock_t *)((byte *)ptr - sizeof(memblock_t));
+	auto block{(memblock_t *)((byte *)ptr - sizeof(memblock_t))};
 	if(block->id != ZONEID)
 		mpSystem->Error("Z_Free: freed a pointer without ZONEID");
 	if(block->tag == 0)
@@ -157,7 +183,7 @@ void CMemZone::Free(void *ptr)
 
 	block->tag = 0; // mark as free
 
-	auto other = block->prev;
+	auto other{block->prev};
 	if(!other->tag)
 	{ // merge with previous free block
 		other->size += block->size;
@@ -191,10 +217,10 @@ void CMemZone::CheckHeap()
 		if(block->next == &mainzone->blocklist)
 			break; // all blocks have been hit
 		if((byte *)block + block->size != (byte *)block->next)
-			gpSystem->Error("Z_CheckHeap: block size does not touch the next block\n");
+			mpSystem->Error("Z_CheckHeap: block size does not touch the next block\n");
 		if(block->next->prev != block)
-			gpSystem->Error("Z_CheckHeap: next block doesn't have proper back link\n");
+			mpSystem->Error("Z_CheckHeap: next block doesn't have proper back link\n");
 		if(!block->tag && !block->next->tag)
-			gpSystem->Error("Z_CheckHeap: two consecutive free blocks\n");
+			mpSystem->Error("Z_CheckHeap: two consecutive free blocks\n");
 	};
 };

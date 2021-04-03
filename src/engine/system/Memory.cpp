@@ -3,37 +3,53 @@
 #include "quakedef.h"
 
 #include "Memory.hpp"
-#include "Hunk.hpp"
-#include "Cache.hpp"
+#include "MemHunk.hpp"
+#include "MemCache.hpp"
+#include "MemZone.hpp"
 
 #include "engine/ISystem.hpp"
 
 //============================================================================
 
-CMemory::CMemory(ISystem *apSystem) : mpSystem(apSystem){}
+CMemory::CMemory(ISystem *apSystem, int anHeapSize) : mpSystem(apSystem)
+{
+	mpMemBase = malloc(anHeapSize);
+	
+	Init(anHeapSize);
+};
+
+CMemory::~CMemory()
+{
+	free(mpMemBase);
+};
 
 /*
 ========================
 Memory_Init
 ========================
 */
-void CMemory::Init(void *buf, int size)
-{
-	mpHunk = std::make_unique<CHunk>(mpSystem, buf, size);
+void CMemory::Init(int anHeapSize)
+{	
+	mpHunk = std::make_unique<CMemHunk>(mpSystem, mpMemBase, anHeapSize);
 
-	Cache_Init();
+	mpCache = std::make_unique<CMemCache>(mpSystem);
 	
-	int zonesize{DYNAMIC_SIZE};
+	mpCache->Init();
 	
-	int p{COM_CheckParm("-zone")};
+	int nZoneSize{DYNAMIC_SIZE};
+	
+	auto pStartupArgs{mpSystem->GetStartupArgs()};
+	int p{pStartupArgs->CheckParm("-zone")};
 	if(p)
 	{
-		if(p < com_argc - 1)
-			zonesize = Q_atoi(com_argv[p + 1]) * 1024;
+		if(p < pStartupArgs->GetCount() - 1)
+			nZoneSize = Q_atoi(pStartupArgs->GetByIndex(p + 1)) * 1024;
 		else
 			mpSystem->Error("Memory_Init: you must specify a size in KB after -zone");
 	};
 	
-	mainzone = reinterpret_cast<memzone_t*>(mpHunk->AllocName(zonesize, "zone"));
-	Z_ClearZone(mainzone, zonesize);
+	mpZone = std::make_unique<CMemZone>(mpSystem);
+	
+	mainzone = reinterpret_cast<memzone_t*>(mpHunk->AllocName(nZoneSize, "zone"));
+	mainzone->Clear(nZoneSize);
 };

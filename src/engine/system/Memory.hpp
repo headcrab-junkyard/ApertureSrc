@@ -26,16 +26,27 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 interface ISystem;
 
-class CHunk;
+class CMemHunk;
+class CMemCache;
+class CMemZone;
 
 class CMemory
 {
 public:
-	CMemory(ISystem *apSystem);
+	CMemory(ISystem *apSystem, int anHeapSize);
+	~CMemory();
 	
-	void Init(void *buf, int size);
+	CMemZone *GetZone() const {return mpZone.get();}
+	CMemHunk *GetHunk() const {return mpHunk.get();}
+	CMemCache *GetCache() const {return mpCache.get();}
+private:
+	void Init(int anHeapSize);
 private:
 	ISystem *mpSystem{nullptr};
 	
-	std::unique_ptr<CHunk> mpHunk;
+	void *mpMemBase{nullptr};
+	
+	std::unique_ptr<CMemHunk> mpHunk;
+	std::unique_ptr<CMemCache> mpCache;
+	std::unique_ptr<CMemZone> mpZone;
 };
