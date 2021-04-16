@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2015-2020 BlackPhrase
+ * Copyright (C) 2015-2021 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,30 @@
 #pragma once
 
 #include "CommonTypes.hpp"
+#include "tier1/interface.h"
 
-constexpr auto MGT_SYSTEM_INTERFACE_VERSION{"MGTSystem003Alpha"};
+constexpr auto OGS_SYSTEM_INTERFACE_VERSION{"OGSSystem003"};
 
 interface ISystemEventListener;
+interface ICmdArgs;
+
+interface IRegistry
+{
+	///
+	virtual bool SetString(const char *asKey, const char *asValue) = 0;
+	
+	///
+	virtual bool GetString(const char *asKey, char *asValue, int anLen) const = 0;
+	
+	///
+	virtual bool SetInteger(const char *asKey, int anValue) = 0;
+	
+	///
+	virtual bool GetInteger(const char *asKey, int &value) const = 0;
+	
+	///
+	virtual bool DeleteKey(const char *keyName) = 0;
+};
 
 // IPlatform?
 interface ISystem : public IBaseInterface
@@ -37,6 +57,9 @@ interface ISystem : public IBaseInterface
 	///
 	virtual void RemoveEventListener(ISystemEventListener *apListener) = 0;
 	
+	/// the system console is shown when a dedicated server is running
+	//virtual void DisplaySystemConsole(bool abShow) = 0;
+
 	///
 	virtual void Printf(const char *asMsg, ...) = 0;
 	
@@ -44,7 +67,7 @@ interface ISystem : public IBaseInterface
 	virtual void DevPrintf(const char *asMsg, ...) = 0;
 	
 	///
-	virtual void SafePrintf(const char *asMsg, ...) = 0; // TODO: temp?
+	//virtual void SafePrintf(const char *asMsg, ...) = 0; // TODO: temp?
 	
 	///
 	virtual void Warning(const char *asMsg, ...) = 0;
@@ -56,9 +79,37 @@ interface ISystem : public IBaseInterface
 	virtual void Quit() = 0;
 	
 	///
+	//virtual void ShellExecute(const char *asCmd, const char *asFile) = 0;
+	
+	///
 	virtual double GetFloatTime() const = 0;
 	
 	///
 	virtual double GetRealTime() const = 0;
 	
+	enum class PlatformType : int
+	{
+		Unknown = -1,
+		
+		Windows,
+		Linux,
+		MacOS,
+		Android,
+		Emscripten
+	};
+	
+	struct Info
+	{
+		PlatformType mePlatform{PlatformType::Unknown};
+		uint mnProcessorCount{0};
+	};
+	
+	///
+	//virtual void GetInfo(Info &apInfo) = 0;
+	
+	///
+	//virtual IRegistry *GetRegistry() const = 0;
+	
+	///
+	virtual ICmdArgs *GetStartupArgs() const = 0;
 };
