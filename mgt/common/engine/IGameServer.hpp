@@ -24,10 +24,19 @@
 
 #include "CommonTypes.hpp"
 
-constexpr auto MGT_GAMESERVER_INTERFACE_VERSION{"MGTGameServer003Alpha"};
+constexpr auto OGS_GAMESERVER_INTERFACE_VERSION{"OGSGameServer003"};
 
 interface IGameClient;
 interface IGameClientEventListener;
+
+interface IGameServerEventListener
+{
+	///
+	virtual void OnActivate() = 0;
+	
+	///
+	virtual void OnDeactivate() = 0;
+};
 
 interface IGameServer : public IBaseInterface
 {
@@ -37,6 +46,12 @@ interface IGameServer : public IBaseInterface
 	
 	///
 	virtual uint GetMaxClients() const = 0;
+	
+	///
+	virtual void AddEventListener(IGameServerEventListener *apListener) = 0;
+	
+	///
+	virtual void RemoveEventListener(IGameServerEventListener *apListener) = 0;
 	
 	///
 	virtual void AddClientEventListener(IGameClientEventListener *apListener) = 0;
