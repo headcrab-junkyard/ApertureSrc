@@ -5,7 +5,7 @@
 #include "CommonTypes.hpp"
 #include "tier1/interface.h"
 
-constexpr auto MGT_UTILS_INTERFACE_VERSION{"MGTUtils0001Alpha"};
+constexpr auto OGS_UTILS_INTERFACE_VERSION{"OGSUtils0001"};
 
 interface IUtils : public IBaseInterface
 {

@@ -27,8 +27,9 @@
 
 using pfnCmdCallback = void (*)();
 
-constexpr auto MGT_CLIENTCMDREGISTRY_INTERFACE_VERSION{"MGTClientCmdRegistry001Alpha"};
-constexpr auto MGT_SERVERCMDREGISTRY_INTERFACE_VERSION{"MGTServerCmdRegistry001Alpha"};
+constexpr auto OGS_CMDREGISTRY_INTERFACE_VERSION{"OGSCmdRegistry001"};
+//constexpr auto OGS_CLIENTCMDREGISTRY_INTERFACE_VERSION{"OGSClientCmdRegistry001"};
+//constexpr auto OGS_SERVERCMDREGISTRY_INTERFACE_VERSION{"OGSServerCmdRegistry001"};
 
 interface ICmdRegistry
 {

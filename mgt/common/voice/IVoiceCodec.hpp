@@ -24,7 +24,7 @@
 #include "CommonTypes.hpp"
 #include "tier1/interface.h"
 
-constexpr auto MGT_VOICECODEC_INTERFACE_VERSION{"MGTVoiceCodec001"};
+constexpr auto OGS_VOICECODEC_INTERFACE_VERSION{"OGSVoiceCodec001"};
 
 interface IVoiceCodec : public IBaseInterface
 {

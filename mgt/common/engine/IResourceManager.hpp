@@ -23,8 +23,8 @@
 
 #include "CommonTypes.hpp"
 
-constexpr auto MGT_CLIENTRESOURCEMANAGER_INTERFACE_VERSION{"MGTClientResourceManager001Alpha"};
-constexpr auto MGT_SERVERRESOURCEMANAGER_INTERFACE_VERSION{"MGTServerResourceManager001Alpha"};
+constexpr auto OGS_CLIENTRESOURCEMANAGER_INTERFACE_VERSION{"OGSClientResourceManager001"};
+constexpr auto OGS_SERVERRESOURCEMANAGER_INTERFACE_VERSION{"OGSServerResourceManager001"};
 
 interface IResourceManager : public IBaseInterface
 {

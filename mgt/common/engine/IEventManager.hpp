@@ -24,7 +24,7 @@
 
 #include "CommonTypes.hpp"
 
-constexpr auto MGT_EVENTMANAGER_INTERFACE_VERSION{"MGTEventManager001Alpha"};
+constexpr auto OGS_EVENTMANAGER_INTERFACE_VERSION{"OGSEventManager001"};
 // TODO: server/client versions?
 
 using pfnEventHookCallback = void (*)(struct event_args_s *pArgs);

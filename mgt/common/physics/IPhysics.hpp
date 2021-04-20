@@ -25,7 +25,7 @@
 #include "CommonTypes.hpp"
 #include "tier1/interface.h"
 
-constexpr auto MGT_PHYSICS_INTERFACE_VERSION{"MGTPhysics001Alpha"};
+constexpr auto OGS_PHYSICS_INTERFACE_VERSION{"OGSPhysics001"};
 
 struct IPhysicsWorld;
 

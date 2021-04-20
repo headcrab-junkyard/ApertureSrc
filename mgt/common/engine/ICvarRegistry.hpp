@@ -25,8 +25,9 @@
 #include "CommonTypes.hpp"
 #include "tier1/interface.h"
 
-constexpr auto MGT_CLIENTCVARREGISTRY_INTERFACE_VERSION{"MGTClientCvarRegistry001Alpha"};
-constexpr auto MGT_SERVERCVARREGISTRY_INTERFACE_VERSION{"MGTServerCvarRegistry001Alpha"};
+constexpr auto OGS_CVARREGISTRY_INTERFACE_VERSION{"OGSCvarRegistry001"};
+//constexpr auto OGS_CVARREGISTRY_CLIENT_INTERFACE_VERSION{"OGSCvarRegistryClient001"};
+//constexpr auto OGS_CVARREGISTRY_SERVER_INTERFACE_VERSION{"OGSCvarRegistryServer001"};
 
 interface IFile;
 

@@ -25,7 +25,7 @@
 #include "CommonTypes.hpp"
 #include "tier1/interface.h"
 
-constexpr auto MGT_ENGINECLIENT_INTERFACE_VERSION{"MGTEngineClient001Alpha"};
+constexpr auto OGS_ENGINECLIENT_INTERFACE_VERSION{"OGSEngineClient001"};
 
 interface ICmdArgs;
 

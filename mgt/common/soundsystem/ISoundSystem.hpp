@@ -25,7 +25,7 @@
 #include "CommonTypes.hpp"
 #include "tier1/interface.h"
 
-constexpr auto MGT_SOUNDSYSTEM_INTERFACE_VERSION{"MGTSoundSystem001Alpha"};
+constexpr auto OGS_SOUNDSYSTEM_INTERFACE_VERSION{"OGSSoundSystem001"};
 
 struct ISoundWorld;
 

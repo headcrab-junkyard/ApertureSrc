@@ -26,7 +26,7 @@
 #include "CommonTypes.hpp"
 #include "tier1/interface.h"
 
-constexpr auto MGT_MEMORY_INTERFACE_VERSION{"MGTMemory001Alpha"};
+constexpr auto OGS_MEMORY_INTERFACE_VERSION{"OGSMemory001"};
 
 typedef struct cache_user_s
 {

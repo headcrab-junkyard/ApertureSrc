@@ -29,7 +29,7 @@
 
 #define PORT_ANY -1
 
-constexpr auto MGT_NETWORK_INTERFACE_VERSION{"MGTNetwork003Alpha"};
+constexpr auto OGS_NETWORKSYSTEM_INTERFACE_VERSION{"OGSNetworkSystem004"};
 
 interface INetwork : public IBaseInterface
 {

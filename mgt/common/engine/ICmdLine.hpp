@@ -25,7 +25,7 @@
 #include "CommonTypes.hpp"
 #include "Interface.hpp"
 
-constexpr auto MGT_CMDLINE_INTERFACE_VERSION{"MGTCmdLine001Alpha"};
+constexpr auto OGS_CMDLINE_INTERFACE_VERSION{"OGSCmdLine001"};
 
 /*
 interface ICommandLine
