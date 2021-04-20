@@ -23,7 +23,7 @@
 #pragma once
 
 #include "CommonTypes.hpp"
-#include "Interface.hpp"
+#include "tier1/interface.h"
 
 constexpr auto MGT_ENGINECLIENT_INTERFACE_VERSION{"MGTEngineClient001Alpha"};
 

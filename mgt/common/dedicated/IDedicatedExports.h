@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "public/interface.h"
+#include "tier1/interface.h"
 
 const char VENGINE_DEDICATEDEXPORTS_API_VERSION[] = "VENGINE_DEDICATEDEXPORTS_API_VERSION001";
 

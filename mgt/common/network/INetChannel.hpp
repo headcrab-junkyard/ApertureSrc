@@ -22,8 +22,11 @@
 
 #pragma once
 
-#include "common/CommonTypes.hpp"
-//#include "network/NetworkTypes.hpp"
+#include "CommonTypes.hpp"
+//#include "networksystem/NetworkTypes.hpp"
+#include "enums.h"
+#include "netadr.h"
+#include "tier1/SizeBuffer.hpp"
 
 // TODO
 #ifndef MAX_MSGLEN

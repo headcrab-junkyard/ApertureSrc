@@ -23,7 +23,7 @@
 #pragma once
 
 #include "CommonTypes.hpp"
-#include "Interface.hpp"
+#include "tier1/interface.h"
 
 constexpr auto OGS_SCRIPTSYSTEM_INTERFACE_VERSION{"OGSScriptSystem001"};
 

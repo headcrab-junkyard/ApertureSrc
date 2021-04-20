@@ -23,7 +23,7 @@
 #pragma once
 
 #include "CommonTypes.hpp"
-#include "Interface.hpp"
+#include "tier1/interface.h"
 #include "netadr.h"
 #include "enums.h"
 

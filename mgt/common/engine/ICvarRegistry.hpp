@@ -23,6 +23,7 @@
 #pragma once
 
 #include "CommonTypes.hpp"
+#include "tier1/interface.h"
 
 constexpr auto MGT_CLIENTCVARREGISTRY_INTERFACE_VERSION{"MGTClientCvarRegistry001Alpha"};
 constexpr auto MGT_SERVERCVARREGISTRY_INTERFACE_VERSION{"MGTServerCvarRegistry001Alpha"};

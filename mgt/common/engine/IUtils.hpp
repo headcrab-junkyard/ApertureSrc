@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CommonTypes.hpp"
-#include "Interface.hpp"
+#include "tier1/interface.h"
 
 constexpr auto MGT_UTILS_INTERFACE_VERSION{"MGTUtils0001Alpha"};
 

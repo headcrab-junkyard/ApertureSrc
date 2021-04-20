@@ -23,7 +23,7 @@
 #pragma once
 
 #include "CommonTypes.hpp"
-#include "Interface.hpp"
+#include "tier1/interface.h"
 
 constexpr auto MGT_SOUNDSYSTEM_INTERFACE_VERSION{"MGTSoundSystem001Alpha"};
 

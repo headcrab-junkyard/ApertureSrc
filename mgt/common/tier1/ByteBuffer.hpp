@@ -23,9 +23,10 @@
 
 #pragma once
 
+#include "CommonTypes.hpp"
 #include "qcommon.h"
-#include "network/IReadBuffer.hpp"
-#include "network/IWriteBuffer.hpp"
+#include "networksystem/IReadBuffer.hpp"
+#include "networksystem/IWriteBuffer.hpp"
 
 using sizebuf_t = struct sizebuf_s;
 

@@ -22,7 +22,8 @@
 
 #pragma once
 
-#include "common/CommonTypes.hpp"
+#include "CommonTypes.hpp"
+
 
 interface IPhysicsBody
 {

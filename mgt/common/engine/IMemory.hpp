@@ -24,7 +24,7 @@
 
 #include <cstring>
 #include "CommonTypes.hpp"
-#include "Interface.hpp"
+#include "tier1/interface.h"
 
 constexpr auto MGT_MEMORY_INTERFACE_VERSION{"MGTMemory001Alpha"};
 
