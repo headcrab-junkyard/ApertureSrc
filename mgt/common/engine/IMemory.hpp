@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2018-2020 BlackPhrase
+ * Copyright (C) 2017-2021 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,10 +23,11 @@
 #pragma once
 
 #include <cstring>
+
 #include "CommonTypes.hpp"
 #include "tier1/interface.h"
 
-constexpr auto OGS_MEMORY_INTERFACE_VERSION{"OGSMemory001"};
+constexpr auto OGS_MEMORY_INTERFACE_VERSION{"OGSMemory002"};
 
 typedef struct cache_user_s
 {
@@ -41,27 +42,31 @@ interface IZone
 
 interface IMemory : public IBaseInterface
 {
-	///
-	virtual void *Z_Malloc(size_t anSize) = 0;
+	/// Allocate anNum*anSize bytes and zero it
+	/// @return pointer to allocated memory
+	virtual void *Calloc(int anNum, size_t anSize) = 0;
 	
 	///
-	virtual void Z_Free(void *apData) = 0;
+	//virtual void *Z_Malloc(size_t anSize) = 0;
 	
 	///
-	virtual void *Hunk_AllocName(int size, const char *name) = 0;
+	//virtual void Z_Free(void *apData) = 0;
 	
 	///
-	virtual void *Hunk_TempAlloc(int size) = 0;
+	//virtual void *Hunk_AllocName(int size, const char *name) = 0;
 	
 	///
-	virtual void Hunk_Check() = 0;
+	//virtual void *Hunk_TempAlloc(int size) = 0;
 	
 	///
-	virtual void *Cache_Alloc(cache_user_t *c, int size, const char *name) = 0;
+	//virtual void Hunk_Check() = 0;
 	
 	///
-	virtual void *Cache_Check(cache_user_t *c) = 0;
+	//virtual void *Cache_Alloc(cache_user_t *c, int size, const char *name) = 0;
 	
 	///
-	virtual void *Cache_Report() = 0;
+	virtual void *CheckCache(cache_user_t *c) = 0;
+	
+	///
+	//virtual void *Cache_Report() = 0;
 };
