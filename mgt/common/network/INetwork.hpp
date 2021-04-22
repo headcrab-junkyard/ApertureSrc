@@ -33,7 +33,7 @@ constexpr auto OGS_NETWORKSYSTEM_INTERFACE_VERSION{"OGSNetworkSystem004"};
 
 interface INetMsg;
 
-interface INetwork : public IBaseInterface
+interface INetworkSystem : public IBaseInterface
 {
 	/**/
 	virtual bool Init(CreateInterfaceFn afnEngineFactory) = 0;
