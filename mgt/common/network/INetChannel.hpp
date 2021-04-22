@@ -33,12 +33,12 @@
 #define MAX_MSGLEN 8000   // max length of a reliable message
 #endif
 
-// TODO: temporary exposing this instead of the actual interface to reduce porting efforts
+// TODO: temporarily exposing this instead of the actual interface to reduce porting efforts
 #define MAX_LATENT 32
 
-struct INetAdr;
-struct INetMessage;
-struct INetMsgHandler;
+interface INetAdr;
+interface INetMsg;
+interface INetMsgHandler;
 
 typedef struct netchan_s
 {
@@ -88,16 +88,25 @@ typedef struct netchan_s
 
 interface INetChannel
 {
+	///
 	virtual void Setup(netsrc_t sock, netchan_t *chan, netadr_t adr, int qport) = 0;
 
+	///
 	virtual void Transmit(int length, byte *data) = 0;
 	
 	//virtual void OutOfBand(netadr_t adr, int length, byte *data) = 0;
 	//virtual void OutOfBandPrint(netadr_t adr, const char *format, ...) = 0;
 	
-	virtual bool Process(INetMessage *net_message) = 0;
+	///
+	virtual void SendMsg(const INetMsg &apMsg) = 0;
+	
+	///
+	virtual bool ProcessMsg(INetMsg *net_message) = 0;
 
-	virtual bool CanPacket() const = 0;
+	///
+	virtual bool CanPacket() const = 0; // TODO: CanSendPacket?
+	
+	///
 	virtual bool CanReliable() const = 0;
 
 	/**/
@@ -117,9 +126,6 @@ interface INetChannel
 	
 	/**/
 	//virtual void SetDataRate(float afRate) = 0;
-	
-	/**/
-	//virtual bool CanSendPacket() const = 0;
 	
 	/**/
 	//virtual bool IsOverflowed() const = 0;
@@ -146,14 +152,14 @@ interface INetChannel
 	//virtual eConnectionState GetConnectionState() const = 0;
 	
 	///
-	//virtual bool RegisterMessage(INetMessage *apMsg) = 0;
+	//virtual bool RegisterMessage(INetMsg *apMsg) = 0;
 	
 	/**/
 	//virtual bool AddNetMsg(INetMsg *apMsg, bool abForceReliable = false) = 0;
 	
 	/**
 	*/
-	//virtual bool SendNetMsg(const INetMessage &apMsg, bool abForceReliable = false, bool abVoice = false) = 0;
+	//virtual bool SendMsg(const INetMsg &apMsg, bool abForceReliable = false, bool abVoice = false) = 0;
 	
 	/**/
 	//virtual void SetCompressionActive(bool abActive) = 0;

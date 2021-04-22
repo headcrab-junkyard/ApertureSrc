@@ -24,7 +24,7 @@
 
 #include "CommonTypes.hpp"
 
-struct INetChannel;
+interface INetChannel;
 interface IReadBuffer;
 interface IWriteBuffer;
 
@@ -34,10 +34,10 @@ interface INetMsg
 	*/
 	//virtual void Release() = 0;
 	
-	/** Returns true if parsing was OK */
+	/// @return true if parsing was OK
 	virtual bool ReadFromBuffer(/*const*/ IReadBuffer &aBuffer) = 0;
 	
-	/** Returns true if writing was OK */
+	/// @return true if writing was OK
 	virtual bool WriteToBuffer(IWriteBuffer &aBuffer) = 0;
 	
 	/** Calles the recently set handler to process this message */

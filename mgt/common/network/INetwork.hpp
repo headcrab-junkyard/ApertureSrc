@@ -27,9 +27,11 @@
 #include "netadr.h"
 #include "enums.h"
 
-#define PORT_ANY -1
+constexpr auto PORT_ANY{-1};
 
 constexpr auto OGS_NETWORKSYSTEM_INTERFACE_VERSION{"OGSNetworkSystem004"};
+
+interface INetMsg;
 
 interface INetwork : public IBaseInterface
 {
@@ -39,38 +41,45 @@ interface INetwork : public IBaseInterface
 	/// Shuts down network, closes all UPD/TCP channels
 	virtual void Shutdown() = 0;
 	
-	///
-	virtual void Config(bool abEnableNetworking) = 0;
-	
-	// TODO
-	
-	virtual bool GetPacket(netsrc_t sock, netadr_t *net_from, sizebuf_t *net_message) = 0;
-	virtual void SendPacket(netsrc_t sock, int length, void *data, netadr_t to) = 0;
-	
-	virtual bool StringToAdr(const char *s, netadr_t &a) = 0;
-	
-	//
-	
 	/**
 	* Must be called each system frame to do any async TCP stuff
 	*/
 	//virtual void Update(float afTimeStep /*double afTime*/) = 0;
 	
-	/// @return true if the network is in use
-	//virtual bool IsEnabled() const = 0;
+	///
+	virtual void Config(bool abEnableNetworking) = 0;
+	//virtual void SetMultiplayer(bool abMultiplayer) = 0;
 	
-	/**/
-	//virtual void SetMultiplayer(bool abMultiplayer) = 0; // Config
-	
-	/**
-	* @return true = full MP mode, false = loopback SP mode
-	*/
+	/// @return true = full MP mode, false = loopback SP mode
 	//virtual bool IsMultiplayer() const = 0;
+	
+	// TODO
+	
+	///
+	virtual void SendPacket(netsrc_t aeSock, int anLength, const void *apData, const netadr_t &aNetAdrTo) = 0;
+	
+	///
+	virtual bool GetPacket(netsrc_t aeSock, netadr_t &aNetAdrFrom, sizebuf_t &aNetMessage) = 0;
+	
+	///
+	virtual void SendMsg(netsrc_t aeSock, const INetMsg &aMsg, const netadr_t &aNetAdrTo) = 0;
+	
+	///
+	virtual bool GetMsg(netsrc_t aeSock, netadr_t &aNetAdrFrom, INetMsg &aMsg) = 0;
+	
+	///
+	//virtual INetSocket *GetSocket(netsrc_t aeType) = 0;
 	
 	/**
 	* Address conversion
 	*/
 	//virtual INetAdr *StringToNetAdr(const char *asString)= 0;
+	virtual bool StringToAdr(const char *s, netadr_t &a) = 0;
+	
+	//
+	
+	/// @return true if the network is in use
+	//virtual bool IsEnabled() const = 0;
 	
 	//virtual INetServer *StartServer(int anPort) = 0;
 	//virtual INetClient *StartClient() = 0;
