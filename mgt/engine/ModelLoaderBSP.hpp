@@ -53,4 +53,6 @@ private:
 	void Mod_LoadPlanes(lump_t *l);
 	
 	ISystem *mpSystem{nullptr};
+	model_t *loadmodel{nullptr};
+	byte *mod_base{nullptr};
 };

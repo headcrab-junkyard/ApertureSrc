@@ -31,8 +31,6 @@
 ===============================================================================
 */
 
-byte *mod_base{nullptr};
-
 /*
 =================
 Mod_LoadTextures
@@ -824,6 +822,8 @@ void CModelLoaderBSP::Mod_LoadBrushModel (model_t *mod, void *buffer)
 	int			i, j;
 	dheader_t	*header;
 	dmodel_t 	*bm;
+	
+	loadmodel = mod;
 	
 	loadmodel->type = mod_brush;
 	
