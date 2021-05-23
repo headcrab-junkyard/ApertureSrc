@@ -20,11 +20,20 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+interface IRenderer;
+
 class CRenderer
 {
 public:
 	void Init();
+	void Shutdown();
 	
 	void InitTextures();
 private:
+	void LoadRendererModule(const char *asName);
+	void UnloadRendererModule();
+private:
+	void *mpRendererModule{nullptr};
+	
+	IRenderer *mpRenderer{nullptr};
 };
