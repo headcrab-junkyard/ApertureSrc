@@ -8,8 +8,19 @@
 *.gch
 *.pch
 
+# Compiled Dynamic libraries
+#*.so
+#*.dylib
+#*.dll
+
 # Fortran module files
 *.mod
+
+# Compiled Static libraries
+#*.lai
+#*.la
+#*.a
+#*.lib
 
 # Executables
 *.exe
@@ -17,10 +28,14 @@
 *.app
 
 # Visual Studio files
+ipch/
 *.user
-*.suo
-*.sdf
 *.db
+*.sdf
+*.suo
+*.opensdf
+*.opensuo
+*.opendb
 
 # Temporary files
 *.tmp
@@ -32,5 +47,4 @@
 [Rr]elease/
 [Mm]erge/
 [Pp]rojects/
-[Ww]iki/
 [Rr]edist/
