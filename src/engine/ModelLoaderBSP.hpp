@@ -29,28 +29,28 @@ interface ISystem;
 class CModelLoaderBSP final : public IModelLoader
 {
 public:
-	CModelLoaderBSP(ISystem *apSystem) : mpSystem(apSystem){}
+	CModelLoaderBSP(ISystem *apSystem);
 	
 	bool IsExtSupported(const char *asExt) const override;
 	
 	IModel *TryLoad(const char *asName) override;
 private:
-	void Mod_LoadBrushModel(model_t *model, void *buffer);
+	void LoadBrushModel(model_t *model, void *buffer);
 	
 	void CalcSurfaceExtents(msurface_t *s);
 	
-	void Mod_LoadTextures(lump_t *l);
-	void Mod_LoadVertexes(lump_t *l);
-	void Mod_LoadSubmodels(lump_t *l);
-	void Mod_LoadEdges(lump_t *l);
-	void Mod_LoadTexinfo(lump_t *l);
-	void Mod_LoadFaces(lump_t *l);
-	void Mod_LoadNodes(lump_t *l);
-	void Mod_LoadLeafs(lump_t *l);
-	void Mod_LoadClipnodes(lump_t *l);
-	void Mod_LoadMarksurfaces(lump_t *l);
-	void Mod_LoadSurfedges(lump_t *l);
-	void Mod_LoadPlanes(lump_t *l);
+	void LoadTextures(lump_t *l);
+	void LoadVertexes(lump_t *l);
+	void LoadSubmodels(lump_t *l);
+	void LoadEdges(lump_t *l);
+	void LoadTexinfo(lump_t *l);
+	void LoadFaces(lump_t *l);
+	void LoadNodes(lump_t *l);
+	void LoadLeafs(lump_t *l);
+	void LoadClipnodes(lump_t *l);
+	void LoadMarksurfaces(lump_t *l);
+	void LoadSurfedges(lump_t *l);
+	void LoadPlanes(lump_t *l);
 	
 	ISystem *mpSystem{nullptr};
 	model_t *loadmodel{nullptr};

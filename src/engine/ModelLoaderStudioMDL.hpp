@@ -29,11 +29,13 @@ interface ISystem;
 class CModelLoaderStudioMDL final : public IModelLoader
 {
 public:
-	CModelLoaderStudioMDL(ISystem *apSystem) : mpSystem(apSystem){}
+	CModelLoaderStudioMDL(ISystem *apSystem);
 	
 	bool IsExtSupported(const char *asExt) const override;
 	
 	IModel *TryLoad(const char *asName) override;
 private:
+	void Mod_LoadStudioModel(model_t *mod, void *buffer);
+	
 	ISystem *mpSystem{nullptr};
 };

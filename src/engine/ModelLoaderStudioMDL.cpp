@@ -22,7 +22,7 @@
 #include "quakedef.h"
 #include "ModelLoaderStudioMDL.hpp"
 
-void Mod_LoadStudioModel(model_t *mod, void *buffer);
+CModelLoaderStudioMDL::CModelLoaderStudioMDL(ISystem *apSystem) : mpSystem(apSystem){}
 
 bool CModelLoaderStudioMDL::IsExtSupported(const char *asExt) const
 {

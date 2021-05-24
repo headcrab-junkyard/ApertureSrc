@@ -31,31 +31,32 @@
 ===============================================================================
 */
 
+CModelLoaderBSP::CModelLoaderBSP(ISystem *apSystem) : mpSystem(apSystem){}
+
 /*
 =================
 Mod_LoadTextures
 =================
 */
-void CModelLoaderBSP::Mod_LoadTextures (lump_t *l)
+void CModelLoaderBSP::LoadTextures (lump_t *l)
 {
 	int		i, j, pixels, num, max, altmax;
 	miptex_t	*mt;
 	texture_t	*tx, *tx2;
 	texture_t	*anims[10];
 	texture_t	*altanims[10];
-	dmiptexlump_t *m;
 
 	if (!l->filelen)
 	{
 		loadmodel->textures = nullptr;
 		return;
 	};
-	m = (dmiptexlump_t *)(mod_base + l->fileofs);
+	auto m = (dmiptexlump_t *)(mod_base + l->fileofs);
 	
 	m->nummiptex = LittleLong (m->nummiptex);
 	
 	loadmodel->numtextures = m->nummiptex;
-	loadmodel->textures = (texture_t**)Hunk_AllocName (m->nummiptex * sizeof(*loadmodel->textures) , loadname);
+	loadmodel->textures = (texture_t**)mpMemory->GetHunk()->AllocName (m->nummiptex * sizeof(*loadmodel->textures) , loadname);
 
 	for (i=0 ; i<m->nummiptex ; i++)
 	{
@@ -71,7 +72,7 @@ void CModelLoaderBSP::Mod_LoadTextures (lump_t *l)
 		if ( (mt->width & 15) || (mt->height & 15) )
 			mpSystem->Error ("Texture %s is not 16 aligned", mt->name);
 		pixels = mt->width*mt->height/64*85;
-		tx = (texture_t*)Hunk_AllocName (sizeof(texture_t) +pixels, loadname );
+		tx = (texture_t*)mpMemory->GetHunk()->AllocName (sizeof(texture_t) +pixels, loadname );
 		loadmodel->textures[i] = tx;
 
 		Q_memcpy (tx->name, mt->name, sizeof(tx->name));
@@ -186,14 +187,14 @@ void CModelLoaderBSP::Mod_LoadTextures (lump_t *l)
 Mod_LoadLighting
 =================
 */
-void Mod_LoadLighting (lump_t *l)
+void CModelLoaderBSP::LoadLighting (lump_t *l)
 {
 	if (!l->filelen)
 	{
 		loadmodel->lightdata = nullptr;
 		return;
 	};
-	loadmodel->lightdata = (byte*)Hunk_AllocName ( l->filelen, loadname);	
+	loadmodel->lightdata = (byte*)mpMemory->GetHunk()->AllocName ( l->filelen, loadname);	
 	Q_memcpy (loadmodel->lightdata, mod_base + l->fileofs, l->filelen);
 };
 
@@ -202,14 +203,14 @@ void Mod_LoadLighting (lump_t *l)
 Mod_LoadVisibility
 =================
 */
-void Mod_LoadVisibility (lump_t *l)
+void CModelLoaderBSP::LoadVisibility (lump_t *l)
 {
 	if (!l->filelen)
 	{
 		loadmodel->visdata = nullptr;
 		return;
 	};
-	loadmodel->visdata = (byte*)Hunk_AllocName ( l->filelen, loadname);	
+	loadmodel->visdata = (byte*)mpMemory->GetHunk()->AllocName ( l->filelen, loadname);	
 	Q_memcpy (loadmodel->visdata, mod_base + l->fileofs, l->filelen);
 };
 
@@ -218,14 +219,14 @@ void Mod_LoadVisibility (lump_t *l)
 Mod_LoadEntities
 =================
 */
-void Mod_LoadEntities (lump_t *l)
+void CModelLoaderBSP::LoadEntities (lump_t *l)
 {
 	if (!l->filelen)
 	{
 		loadmodel->entities = nullptr;
 		return;
 	};
-	loadmodel->entities = (char*)Hunk_AllocName ( l->filelen, loadname);	
+	loadmodel->entities = (char*)mpMemory->GetHunk()->AllocName ( l->filelen, loadname);	
 	Q_memcpy (loadmodel->entities, mod_base + l->fileofs, l->filelen);
 };
 
@@ -234,17 +235,15 @@ void Mod_LoadEntities (lump_t *l)
 Mod_LoadVertexes
 =================
 */
-void CModelLoaderBSP::Mod_LoadVertexes (lump_t *l)
+void CModelLoaderBSP::LoadVertexes (lump_t *l)
 {
-	dvertex_t	*in;
-	mvertex_t	*out;
-	int			i, count;
+	int			i;
 
-	in = (dvertex_t *)(mod_base + l->fileofs);
+	auto in = (dvertex_t *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		mpSystem->Error ("MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
-	count = l->filelen / sizeof(*in);
-	out = (mvertex_t*)Hunk_AllocName ( count*sizeof(*out), loadname);	
+	int count = l->filelen / sizeof(*in);
+	auto out = (mvertex_t*)mpMemory->GetHunk()->AllocName ( count*sizeof(*out), loadname);	
 
 	loadmodel->vertexes = out;
 	loadmodel->numvertexes = count;
@@ -262,17 +261,15 @@ void CModelLoaderBSP::Mod_LoadVertexes (lump_t *l)
 Mod_LoadSubmodels
 =================
 */
-void CModelLoaderBSP::Mod_LoadSubmodels (lump_t *l)
+void CModelLoaderBSP::LoadSubmodels (lump_t *l)
 {
-	dmodel_t	*in;
-	dmodel_t	*out;
-	int			i, j, count;
+	int			i, j;
 
-	in = (dmodel_t *)(mod_base + l->fileofs);
+	auto in = (dmodel_t *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		mpSystem->Error ("MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
-	count = l->filelen / sizeof(*in);
-	out = (dmodel_t*)Hunk_AllocName ( count*sizeof(*out), loadname);	
+	int count = l->filelen / sizeof(*in);
+	auto out = (dmodel_t*)mpMemory->GetHunk()->AllocName ( count*sizeof(*out), loadname);	
 
 	loadmodel->submodels = out;
 	loadmodel->numsubmodels = count;
@@ -298,17 +295,15 @@ void CModelLoaderBSP::Mod_LoadSubmodels (lump_t *l)
 Mod_LoadEdges
 =================
 */
-void CModelLoaderBSP::Mod_LoadEdges (lump_t *l)
+void CModelLoaderBSP::LoadEdges (lump_t *l)
 {
-	dedge_t *in;
-	medge_t *out;
-	int 	i, count;
+	int 	i;
 
-	in = (dedge_t *)(mod_base + l->fileofs);
+	auto in = (dedge_t *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		mpSystem->Error ("MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
-	count = l->filelen / sizeof(*in);
-	out = (medge_t*)Hunk_AllocName ( (count + 1) * sizeof(*out), loadname);	
+	int count = l->filelen / sizeof(*in);
+	auto out = (medge_t*)mpMemory->GetHunk()->AllocName ( (count + 1) * sizeof(*out), loadname);	
 
 	loadmodel->edges = out;
 	loadmodel->numedges = count;
@@ -325,19 +320,17 @@ void CModelLoaderBSP::Mod_LoadEdges (lump_t *l)
 Mod_LoadTexinfo
 =================
 */
-void CModelLoaderBSP::Mod_LoadTexinfo (lump_t *l)
+void CModelLoaderBSP::LoadTexinfo (lump_t *l)
 {
-	texinfo_t *in;
-	mtexinfo_t *out;
-	int 	i, j, count;
+	int 	i, j;
 	int		miptex;
 	float	len1, len2;
 
-	in = (texinfo_t *)(mod_base + l->fileofs);
+	auto in = (texinfo_t *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		mpSystem->Error ("MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
-	count = l->filelen / sizeof(*in);
-	out = (mtexinfo_t*)Hunk_AllocName ( count*sizeof(*out), loadname);	
+	int count = l->filelen / sizeof(*in);
+	auto out = (mtexinfo_t*)mpMemory->GetHunk()->AllocName ( count*sizeof(*out), loadname);	
 
 	loadmodel->texinfo = out;
 	loadmodel->numtexinfo = count;
@@ -444,18 +437,16 @@ void CModelLoaderBSP::CalcSurfaceExtents (msurface_t *s)
 Mod_LoadFaces
 =================
 */
-void CModelLoaderBSP::Mod_LoadFaces (lump_t *l)
+void CModelLoaderBSP::LoadFaces (lump_t *l)
 {
-	dface_t		*in;
-	msurface_t 	*out;
-	int			i, count, surfnum;
+	int			i, surfnum;
 	int			planenum, side;
 
-	in = (dface_t *)(mod_base + l->fileofs);
+	auto in = (dface_t *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		mpSystem->Error ("MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
-	count = l->filelen / sizeof(*in);
-	out = (msurface_t*)Hunk_AllocName ( count*sizeof(*out), loadname);	
+	int count = l->filelen / sizeof(*in);
+	auto out = (msurface_t*)mpMemory->GetHunk()->AllocName ( count*sizeof(*out), loadname);	
 
 	loadmodel->surfaces = out;
 	loadmodel->numsurfaces = count;
@@ -527,17 +518,15 @@ void Mod_SetParent (mnode_t *node, mnode_t *parent)
 Mod_LoadNodes
 =================
 */
-void CModelLoaderBSP::Mod_LoadNodes (lump_t *l)
+void CModelLoaderBSP::LoadNodes (lump_t *l)
 {
-	int			i, j, count, p;
-	dnode_t		*in;
-	mnode_t 	*out;
+	int			i, j, p;
 
-	in = (dnode_t *)(mod_base + l->fileofs);
+	auto in = (dnode_t *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		mpSystem->Error ("MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
-	count = l->filelen / sizeof(*in);
-	out = (mnode_t*)Hunk_AllocName ( count*sizeof(*out), loadname);	
+	int count = l->filelen / sizeof(*in);
+	auto out = (mnode_t*)mpMemory->GetHunk()->AllocName ( count*sizeof(*out), loadname);	
 
 	loadmodel->nodes = out;
 	loadmodel->numnodes = count;
@@ -574,17 +563,15 @@ void CModelLoaderBSP::Mod_LoadNodes (lump_t *l)
 Mod_LoadLeafs
 =================
 */
-void CModelLoaderBSP::Mod_LoadLeafs (lump_t *l)
+void CModelLoaderBSP::LoadLeafs (lump_t *l)
 {
-	dleaf_t 	*in;
-	mleaf_t 	*out;
-	int			i, j, count, p;
+	int			i, j, p;
 
-	in = (dleaf_t *)(mod_base + l->fileofs);
+	auto in = (dleaf_t *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		mpSystem->Error ("MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
-	count = l->filelen / sizeof(*in);
-	out = (mleaf_t*)Hunk_AllocName ( count*sizeof(*out), loadname);	
+	int count = l->filelen / sizeof(*in);
+	auto out = (mleaf_t*)mpMemory->GetHunk()->AllocName ( count*sizeof(*out), loadname);	
 
 	loadmodel->leafs = out;
 	loadmodel->numleafs = count;
@@ -621,17 +608,16 @@ void CModelLoaderBSP::Mod_LoadLeafs (lump_t *l)
 Mod_LoadClipnodes
 =================
 */
-void CModelLoaderBSP::Mod_LoadClipnodes (lump_t *l)
+void CModelLoaderBSP::LoadClipnodes (lump_t *l)
 {
-	dclipnode_t *in, *out;
-	int			i, count;
+	int			i;
 	hull_t		*hull;
 
-	in = (dclipnode_t *)(mod_base + l->fileofs);
+	auto in = (dclipnode_t *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		mpSystem->Error ("MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
-	count = l->filelen / sizeof(*in);
-	out = (dclipnode_t*)Hunk_AllocName ( count*sizeof(*out), loadname);	
+	int count = l->filelen / sizeof(*in);
+	auto out = (dclipnode_t*)mpMemory->GetHunk()->AllocName ( count*sizeof(*out), loadname);	
 
 	loadmodel->clipnodes = out;
 	loadmodel->numclipnodes = count;
@@ -675,7 +661,7 @@ Mod_MakeHull0
 Deplicate the drawing hull structure as a clipping hull
 =================
 */
-void Mod_MakeHull0 ()
+void CModelLoaderBSP::MakeHull0 ()
 {
 	mnode_t		*in, *child;
 	dclipnode_t *out;
@@ -686,7 +672,7 @@ void Mod_MakeHull0 ()
 	
 	in = loadmodel->nodes;
 	count = loadmodel->numnodes;
-	out = (dclipnode_t*)Hunk_AllocName ( count*sizeof(*out), loadname);	
+	out = (dclipnode_t*)mpMemory->GetHunk()->AllocName ( count*sizeof(*out), loadname);	
 
 	hull->clipnodes = out;
 	hull->firstclipnode = 0;
@@ -712,17 +698,15 @@ void Mod_MakeHull0 ()
 Mod_LoadMarksurfaces
 =================
 */
-void CModelLoaderBSP::Mod_LoadMarksurfaces (lump_t *l)
+void CModelLoaderBSP::LoadMarksurfaces (lump_t *l)
 {	
-	int		i, j, count;
-	short		*in;
-	msurface_t **out;
+	int		i, j;
 	
-	in = (short *)(mod_base + l->fileofs);
+	auto in = (short *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		mpSystem->Error ("MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
-	count = l->filelen / sizeof(*in);
-	out = (msurface_t**)Hunk_AllocName ( count*sizeof(*out), loadname);	
+	int count = l->filelen / sizeof(*in);
+	auto out = (msurface_t**)mpMemory->GetHunk()->AllocName ( count*sizeof(*out), loadname);	
 
 	loadmodel->marksurfaces = out;
 	loadmodel->nummarksurfaces = count;
@@ -741,16 +725,15 @@ void CModelLoaderBSP::Mod_LoadMarksurfaces (lump_t *l)
 Mod_LoadSurfedges
 =================
 */
-void CModelLoaderBSP::Mod_LoadSurfedges (lump_t *l)
+void CModelLoaderBSP::LoadSurfedges (lump_t *l)
 {	
-	int		i, count;
-	int		*in, *out;
+	int		i;
 	
-	in = (int *)(mod_base + l->fileofs);
+	auto in = (int *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		mpSystem->Error ("MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
-	count = l->filelen / sizeof(*in);
-	out = (int*)Hunk_AllocName ( count*sizeof(*out), loadname);	
+	int count = l->filelen / sizeof(*in);
+	auto out = (int*)mpMemory->GetHunk()->AllocName ( count*sizeof(*out), loadname);	
 
 	loadmodel->surfedges = out;
 	loadmodel->numsurfedges = count;
@@ -764,19 +747,16 @@ void CModelLoaderBSP::Mod_LoadSurfedges (lump_t *l)
 Mod_LoadPlanes
 =================
 */
-void CModelLoaderBSP::Mod_LoadPlanes (lump_t *l)
+void CModelLoaderBSP::LoadPlanes (lump_t *l)
 {
 	int			i, j;
-	mplane_t	*out;
-	dplane_t 	*in;
-	int			count;
 	int			bits;
 	
-	in = (dplane_t *)(mod_base + l->fileofs);
+	auto in = (dplane_t *)(mod_base + l->fileofs);
 	if (l->filelen % sizeof(*in))
 		mpSystem->Error ("MOD_LoadBmodel: funny lump size in %s",loadmodel->name);
-	count = l->filelen / sizeof(*in);
-	out = (mplane_t*)Hunk_AllocName ( count*2*sizeof(*out), loadname);	
+	int count = l->filelen / sizeof(*in);
+	auto out = (mplane_t*)mpMemory->GetHunk()->AllocName ( count*2*sizeof(*out), loadname);	
 	
 	loadmodel->planes = out;
 	loadmodel->numplanes = count;
@@ -817,17 +797,16 @@ float RadiusFromBounds (vec3_t mins, vec3_t maxs)
 Mod_LoadBrushModel
 =================
 */
-void CModelLoaderBSP::Mod_LoadBrushModel (model_t *mod, void *buffer)
+void CModelLoaderBSP::LoadBrushModel (model_t *mod, void *buffer)
 {
 	int			i, j;
-	dheader_t	*header;
 	dmodel_t 	*bm;
 	
 	loadmodel = mod;
 	
 	loadmodel->type = mod_brush;
 	
-	header = (dheader_t *)buffer;
+	auto header = (dheader_t *)buffer;
 
 	i = LittleLong (header->version);
 	if (i != BSPVERSION)
@@ -841,23 +820,23 @@ void CModelLoaderBSP::Mod_LoadBrushModel (model_t *mod, void *buffer)
 
 // load into heap
 	
-	Mod_LoadVertexes (&header->lumps[LUMP_VERTEXES]);
-	Mod_LoadEdges (&header->lumps[LUMP_EDGES]);
-	Mod_LoadSurfedges (&header->lumps[LUMP_SURFEDGES]);
-	Mod_LoadTextures (&header->lumps[LUMP_TEXTURES]);
-	Mod_LoadLighting (&header->lumps[LUMP_LIGHTING]);
-	Mod_LoadPlanes (&header->lumps[LUMP_PLANES]);
-	Mod_LoadTexinfo (&header->lumps[LUMP_TEXINFO]);
-	Mod_LoadFaces (&header->lumps[LUMP_FACES]);
-	Mod_LoadMarksurfaces (&header->lumps[LUMP_MARKSURFACES]);
-	Mod_LoadVisibility (&header->lumps[LUMP_VISIBILITY]);
-	Mod_LoadLeafs (&header->lumps[LUMP_LEAFS]);
-	Mod_LoadNodes (&header->lumps[LUMP_NODES]);
-	Mod_LoadClipnodes (&header->lumps[LUMP_CLIPNODES]);
-	Mod_LoadEntities (&header->lumps[LUMP_ENTITIES]);
-	Mod_LoadSubmodels (&header->lumps[LUMP_MODELS]);
+	LoadVertexes (&header->lumps[LUMP_VERTEXES]);
+	LoadEdges (&header->lumps[LUMP_EDGES]);
+	LoadSurfedges (&header->lumps[LUMP_SURFEDGES]);
+	LoadTextures (&header->lumps[LUMP_TEXTURES]);
+	LoadLighting (&header->lumps[LUMP_LIGHTING]);
+	LoadPlanes (&header->lumps[LUMP_PLANES]);
+	LoadTexinfo (&header->lumps[LUMP_TEXINFO]);
+	LoadFaces (&header->lumps[LUMP_FACES]);
+	LoadMarksurfaces (&header->lumps[LUMP_MARKSURFACES]);
+	LoadVisibility (&header->lumps[LUMP_VISIBILITY]);
+	LoadLeafs (&header->lumps[LUMP_LEAFS]);
+	LoadNodes (&header->lumps[LUMP_NODES]);
+	LoadClipnodes (&header->lumps[LUMP_CLIPNODES]);
+	LoadEntities (&header->lumps[LUMP_ENTITIES]);
+	LoadSubmodels (&header->lumps[LUMP_MODELS]);
 
-	Mod_MakeHull0 ();
+	MakeHull0 ();
 	
 	mod->numframes = 2;		// regular and alternate animation
 	mod->flags = 0;
@@ -908,5 +887,6 @@ bool CModelLoaderBSP::IsExtSupported(const char *asExt) const
 
 IModel *CModelLoaderBSP::TryLoad(const char *asName)
 {
+	LoadBrushModel(TODO);
 	return nullptr;
 };

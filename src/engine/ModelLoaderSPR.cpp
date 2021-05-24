@@ -25,32 +25,31 @@
 
 //=============================================================================
 
+CModelLoaderSPR::CModelLoaderSPR(ISystem *apSystem) : mpSystem(apSystem){}
+
 /*
 =================
 Mod_LoadSpriteFrame
 =================
 */
-void * CModelLoaderSPR::Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppframe)
+void * CModelLoaderSPR::LoadSpriteFrame (void * pin, mspriteframe_t **ppframe)
 {
-	dspriteframe_t		*pinframe;
-	mspriteframe_t		*pspriteframe;
-	int					i, width, height, size, origin[2];
-	unsigned short		*ppixout;
-	byte				*ppixin;
+	auto pinframe = (dspriteframe_t *)pin;
 
-	pinframe = (dspriteframe_t *)pin;
+	int width = LittleLong (pinframe->width);
+	int height = LittleLong (pinframe->height);
+	int size = width * height;
 
-	width = LittleLong (pinframe->width);
-	height = LittleLong (pinframe->height);
-	size = width * height;
-
-	pspriteframe = (mspriteframe_t*)Hunk_AllocName (sizeof (mspriteframe_t) + size*r_pixbytes, loadname);
+	auto pspriteframe = (mspriteframe_t*)mpMemory->GetHunk()->AllocName (sizeof (mspriteframe_t) + size*r_pixbytes, loadname);
 
 	Q_memset (pspriteframe, 0, sizeof (mspriteframe_t) + size);
 	*ppframe = pspriteframe;
 
 	pspriteframe->width = width;
 	pspriteframe->height = height;
+	
+	int origin[2];
+	
 	origin[0] = LittleLong (pinframe->origin[0]);
 	origin[1] = LittleLong (pinframe->origin[1]);
 
@@ -63,10 +62,10 @@ void * CModelLoaderSPR::Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppfram
 		Q_memcpy (&pspriteframe->pixels[0], (byte *)(pinframe + 1), size);
 	else if (r_pixbytes == 2)
 	{
-		ppixin = (byte *)(pinframe + 1);
-		ppixout = (unsigned short *)&pspriteframe->pixels[0];
+		auto ppixin = (byte *)(pinframe + 1);
+		auto ppixout = (unsigned short *)&pspriteframe->pixels[0];
 
-		for (i=0 ; i<size ; i++)
+		for (int i=0 ; i<size ; i++)
 			ppixout[i] = d_8to16table[ppixin[i]];
 	}
 	else
@@ -80,29 +79,24 @@ void * CModelLoaderSPR::Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppfram
 Mod_LoadSpriteGroup
 =================
 */
-void * CModelLoaderSPR::Mod_LoadSpriteGroup (void * pin, mspriteframe_t **ppframe)
+void * CModelLoaderSPR::LoadSpriteGroup (void * pin, mspriteframe_t **ppframe)
 {
-	dspritegroup_t		*pingroup;
-	mspritegroup_t		*pspritegroup;
-	int					i, numframes;
-	dspriteinterval_t	*pin_intervals;
-	float				*poutintervals;
-	void				*ptemp;
+	int					i;
 
-	pingroup = (dspritegroup_t *)pin;
+	auto pingroup = (dspritegroup_t *)pin;
 
-	numframes = LittleLong (pingroup->numframes);
+	int numframes = LittleLong (pingroup->numframes);
 
-	pspritegroup = (mspritegroup_t*)Hunk_AllocName (sizeof (mspritegroup_t) +
+	auto pspritegroup = (mspritegroup_t*)mpMemory->GetHunk()->AllocName (sizeof (mspritegroup_t) +
 				(numframes - 1) * sizeof (pspritegroup->frames[0]), loadname);
 
 	pspritegroup->numframes = numframes;
 
 	*ppframe = (mspriteframe_t *)pspritegroup;
 
-	pin_intervals = (dspriteinterval_t *)(pingroup + 1);
+	auto pin_intervals = (dspriteinterval_t *)(pingroup + 1);
 
-	poutintervals = (float*)Hunk_AllocName (numframes * sizeof (float), loadname);
+	auto poutintervals = (float*)mpMemory->GetHunk()->AllocName (numframes * sizeof (float), loadname);
 
 	pspritegroup->intervals = poutintervals;
 
@@ -116,10 +110,10 @@ void * CModelLoaderSPR::Mod_LoadSpriteGroup (void * pin, mspriteframe_t **ppfram
 		pin_intervals++;
 	};
 
-	ptemp = (void *)pin_intervals;
+	auto ptemp = (void *)pin_intervals;
 
 	for (i=0 ; i<numframes ; i++)
-		ptemp = Mod_LoadSpriteFrame (ptemp, &pspritegroup->frames[i]);
+		ptemp = LoadSpriteFrame (ptemp, &pspritegroup->frames[i]);
 
 	return ptemp;
 };
@@ -129,7 +123,7 @@ void * CModelLoaderSPR::Mod_LoadSpriteGroup (void * pin, mspriteframe_t **ppfram
 Mod_LoadSpriteModel
 =================
 */
-void CModelLoaderSPR::Mod_LoadSpriteModel (model_t *mod, void *buffer)
+void CModelLoaderSPR::LoadSpriteModel (model_t *mod, void *buffer)
 {
 	int					i;
 	int					version;
@@ -150,7 +144,7 @@ void CModelLoaderSPR::Mod_LoadSpriteModel (model_t *mod, void *buffer)
 
 	size = sizeof (msprite_t) +	(numframes - 1) * sizeof (psprite->frames);
 
-	psprite = (msprite_t*)Hunk_AllocName (size, loadname);
+	psprite = (msprite_t*)mpMemory->GetHunk()->AllocName (size, loadname);
 
 	mod->cache.data = psprite;
 
@@ -187,13 +181,13 @@ void CModelLoaderSPR::Mod_LoadSpriteModel (model_t *mod, void *buffer)
 		if (frametype == SPR_SINGLE)
 		{
 			pframetype = (dspriteframetype_t *)
-					Mod_LoadSpriteFrame (pframetype + 1,
+					LoadSpriteFrame (pframetype + 1,
 										 &psprite->frames[i].frameptr);
 		}
 		else
 		{
 			pframetype = (dspriteframetype_t *)
-					Mod_LoadSpriteGroup (pframetype + 1,
+					LoadSpriteGroup (pframetype + 1,
 										 &psprite->frames[i].frameptr);
 		};
 	};
@@ -210,6 +204,6 @@ bool CModelLoaderSPR::IsExtSupported(const char *asExt) const
 
 IModel *CModelLoaderSPR::TryLoad(const char *asName)
 {
-	Mod_LoadSpriteModel(TODO);
+	LoadSpriteModel(TODO);
 	return nullptr;
 };

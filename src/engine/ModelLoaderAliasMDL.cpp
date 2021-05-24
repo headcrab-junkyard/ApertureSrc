@@ -31,18 +31,18 @@ ALIAS MODELS
 ==============================================================================
 */
 
+CModelLoaderAliasMDL::CModelLoaderAliasMDL(ISystem *apSystem) : mpSystem(apSystem){}
+
 /*
 =================
 Mod_LoadAliasFrame
 =================
 */
-void * Mod_LoadAliasFrame (void * pin, int *pframeindex, int numv, trivertx_t *pbboxmin, trivertx_t *pbboxmax, aliashdr_t *pheader, const char *name)
+void *CModelLoaderAliasMDL::LoadAliasFrame (void * pin, int *pframeindex, int numv, trivertx_t *pbboxmin, trivertx_t *pbboxmax, aliashdr_t *pheader, const char *name)
 {
-	trivertx_t		*pframe, *pinframe;
 	int				i, j;
-	daliasframe_t	*pdaliasframe;
 
-	pdaliasframe = (daliasframe_t *)pin;
+	auto pdaliasframe = (daliasframe_t *)pin;
 
 	Q_strcpy (name, pdaliasframe->name);
 
@@ -54,8 +54,8 @@ void * Mod_LoadAliasFrame (void * pin, int *pframeindex, int numv, trivertx_t *p
 		pbboxmax->v[i] = pdaliasframe->bboxmax.v[i];
 	};
 
-	pinframe = (trivertx_t *)(pdaliasframe + 1);
-	pframe = (trivertx_t*)Hunk_AllocName (numv * sizeof(*pframe), loadname);
+	auto pinframe = (trivertx_t *)(pdaliasframe + 1);
+	auto pframe = (trivertx_t*)mpMemory->GetHunk()->AllocName (numv * sizeof(*pframe), loadname);
 
 	*pframeindex = (byte *)pframe - (byte *)pheader;
 
@@ -80,7 +80,7 @@ void * Mod_LoadAliasFrame (void * pin, int *pframeindex, int numv, trivertx_t *p
 Mod_LoadAliasGroup
 =================
 */
-void * CModelLoaderAliasMDL::Mod_LoadAliasGroup (void * pin, int *pframeindex, int numv, trivertx_t *pbboxmin, trivertx_t *pbboxmax, aliashdr_t *pheader, const char *name)
+void * CModelLoaderAliasMDL::LoadAliasGroup (void * pin, int *pframeindex, int numv, trivertx_t *pbboxmin, trivertx_t *pbboxmax, aliashdr_t *pheader, const char *name)
 {
 	daliasgroup_t		*pingroup;
 	maliasgroup_t		*paliasgroup;
@@ -93,7 +93,7 @@ void * CModelLoaderAliasMDL::Mod_LoadAliasGroup (void * pin, int *pframeindex, i
 
 	numframes = LittleLong (pingroup->numframes);
 
-	paliasgroup = (maliasgroup_t*)Hunk_AllocName (sizeof (maliasgroup_t) +
+	paliasgroup = (maliasgroup_t*)mpMemory->GetHunk()->AllocName (sizeof (maliasgroup_t) +
 			(numframes - 1) * sizeof (paliasgroup->frames[0]), loadname);
 
 	paliasgroup->numframes = numframes;
@@ -109,7 +109,7 @@ void * CModelLoaderAliasMDL::Mod_LoadAliasGroup (void * pin, int *pframeindex, i
 
 	pin_intervals = (daliasinterval_t *)(pingroup + 1);
 
-	poutintervals = (float*)Hunk_AllocName (numframes * sizeof (float), loadname);
+	poutintervals = (float*)mpMemory->GetHunk()->AllocName (numframes * sizeof (float), loadname);
 
 	paliasgroup->intervals = (byte *)poutintervals - (byte *)pheader;
 
@@ -127,7 +127,7 @@ void * CModelLoaderAliasMDL::Mod_LoadAliasGroup (void * pin, int *pframeindex, i
 
 	for (i=0 ; i<numframes ; i++)
 	{
-		ptemp = Mod_LoadAliasFrame (ptemp,
+		ptemp = LoadAliasFrame (ptemp,
 									&paliasgroup->frames[i].frame,
 									numv,
 									&paliasgroup->frames[i].bboxmin,
@@ -143,13 +143,13 @@ void * CModelLoaderAliasMDL::Mod_LoadAliasGroup (void * pin, int *pframeindex, i
 Mod_LoadAliasSkin
 =================
 */
-void * CModelLoaderAliasMDL::Mod_LoadAliasSkin (void * pin, int *pskinindex, int skinsize, aliashdr_t *pheader)
+void * CModelLoaderAliasMDL::LoadAliasSkin (void * pin, int *pskinindex, int skinsize, aliashdr_t *pheader)
 {
 	int		i;
 	byte	*pskin, *pinskin;
 	unsigned short	*pusskin;
 
-	pskin = (byte*)Hunk_AllocName (skinsize * r_pixbytes, loadname);
+	pskin = (byte*)mpMemory->GetHunk()->AllocName (skinsize * r_pixbytes, loadname);
 	pinskin = (byte *)pin;
 	*pskinindex = (byte *)pskin - (byte *)pheader;
 
@@ -175,7 +175,7 @@ void * CModelLoaderAliasMDL::Mod_LoadAliasSkin (void * pin, int *pskinindex, int
 Mod_LoadAliasSkinGroup
 =================
 */
-void * CModelLoaderAliasMDL::Mod_LoadAliasSkinGroup (void * pin, int *pskinindex, int skinsize, aliashdr_t *pheader)
+void * CModelLoaderAliasMDL::LoadAliasSkinGroup (void * pin, int *pskinindex, int skinsize, aliashdr_t *pheader)
 {
 	daliasskingroup_t		*pinskingroup;
 	maliasskingroup_t		*paliasskingroup;
@@ -188,7 +188,7 @@ void * CModelLoaderAliasMDL::Mod_LoadAliasSkinGroup (void * pin, int *pskinindex
 
 	numskins = LittleLong (pinskingroup->numskins);
 
-	paliasskingroup = (maliasskingroup_t*)Hunk_AllocName (sizeof (maliasskingroup_t) +
+	paliasskingroup = (maliasskingroup_t*)mpMemory->GetHunk()->AllocName (sizeof (maliasskingroup_t) +
 			(numskins - 1) * sizeof (paliasskingroup->skindescs[0]),
 			loadname);
 
@@ -198,7 +198,7 @@ void * CModelLoaderAliasMDL::Mod_LoadAliasSkinGroup (void * pin, int *pskinindex
 
 	pinskinintervals = (daliasskininterval_t *)(pinskingroup + 1);
 
-	poutskinintervals = (float*)Hunk_AllocName (numskins * sizeof (float),loadname);
+	poutskinintervals = (float*)mpMemory->GetHunk()->AllocName (numskins * sizeof (float),loadname);
 
 	paliasskingroup->intervals = (byte *)poutskinintervals - (byte *)pheader;
 
@@ -216,7 +216,7 @@ void * CModelLoaderAliasMDL::Mod_LoadAliasSkinGroup (void * pin, int *pskinindex
 
 	for (i=0 ; i<numskins ; i++)
 	{
-		ptemp = Mod_LoadAliasSkin (ptemp,
+		ptemp = LoadAliasSkin (ptemp,
 				&paliasskingroup->skindescs[i].skin, skinsize, pheader);
 	};
 
@@ -228,27 +228,27 @@ void * CModelLoaderAliasMDL::Mod_LoadAliasSkinGroup (void * pin, int *pskinindex
 Mod_LoadAliasModel
 =================
 */
-void CModelLoaderAliasMDL::Mod_LoadAliasModel (model_t *mod, void *buffer)
+void CModelLoaderAliasMDL::LoadAliasModel (model_t *mod, void *buffer)
 {
 	int					i;
-	mdl_t				*pmodel, *pinmodel;
+	mdl_t				*pmodel;
 	stvert_t			*pstverts, *pinstverts;
 	aliashdr_t			*pheader;
 	mtriangle_t			*ptri;
 	dtriangle_t			*pintriangles;
-	int					version, numframes, numskins;
+	int					numframes, numskins;
 	int					size;
 	daliasframetype_t	*pframetype;
 	daliasskintype_t	*pskintype;
 	maliasskindesc_t	*pskindesc;
 	int					skinsize;
-	int					start, end, total;
+	int					end, total;
 	
-	start = Hunk_LowMark ();
+	int start = Hunk_LowMark ();
 
-	pinmodel = (mdl_t *)buffer;
+	auto pinmodel = (mdl_t *)buffer;
 
-	version = LittleLong (pinmodel->version);
+	int version = LittleLong (pinmodel->version);
 	if (version != ALIAS_VERSION)
 		mpSystem->Error ("%s has wrong version number (%i should be %i)",
 				 mod->name, version, ALIAS_VERSION);
@@ -263,7 +263,7 @@ void CModelLoaderAliasMDL::Mod_LoadAliasModel (model_t *mod, void *buffer)
 			LittleLong (pinmodel->numverts) * sizeof (stvert_t) +
 			LittleLong (pinmodel->numtris) * sizeof (mtriangle_t);
 
-	pheader = (aliashdr_t*)Hunk_AllocName (size, loadname);
+	pheader = (aliashdr_t*)mpMemory->GetHunk()->AllocName (size, loadname);
 	pmodel = (mdl_t *) ((byte *)&pheader[1] +
 			(LittleLong (pinmodel->numframes) - 1) *
 			 sizeof (pheader->frames[0]));
@@ -326,7 +326,7 @@ void CModelLoaderAliasMDL::Mod_LoadAliasModel (model_t *mod, void *buffer)
 
 	pskintype = (daliasskintype_t *)&pinmodel[1];
 
-	pskindesc = (maliasskindesc_t*)Hunk_AllocName (numskins * sizeof (maliasskindesc_t),
+	pskindesc = (maliasskindesc_t*)mpMemory->GetHunk()->AllocName (numskins * sizeof (maliasskindesc_t),
 								loadname);
 
 	pheader->skindesc = (byte *)pskindesc - (byte *)pheader;
@@ -341,14 +341,14 @@ void CModelLoaderAliasMDL::Mod_LoadAliasModel (model_t *mod, void *buffer)
 		if (skintype == ALIAS_SKIN_SINGLE)
 		{
 			pskintype = (daliasskintype_t *)
-					Mod_LoadAliasSkin (pskintype + 1,
+					LoadAliasSkin (pskintype + 1,
 									   &pskindesc[i].skin,
 									   skinsize, pheader);
 		}
 		else
 		{
 			pskintype = (daliasskintype_t *)
-					Mod_LoadAliasSkinGroup (pskintype + 1,
+					LoadAliasSkinGroup (pskintype + 1,
 											&pskindesc[i].skin,
 											skinsize, pheader);
 		};
@@ -409,7 +409,7 @@ void CModelLoaderAliasMDL::Mod_LoadAliasModel (model_t *mod, void *buffer)
 		if (frametype == ALIAS_SINGLE)
 		{
 			pframetype = (daliasframetype_t *)
-					Mod_LoadAliasFrame (pframetype + 1,
+					LoadAliasFrame (pframetype + 1,
 										&pheader->frames[i].frame,
 										pmodel->numverts,
 										&pheader->frames[i].bboxmin,
@@ -419,7 +419,7 @@ void CModelLoaderAliasMDL::Mod_LoadAliasModel (model_t *mod, void *buffer)
 		else
 		{
 			pframetype = (daliasframetype_t *)
-					Mod_LoadAliasGroup (pframetype + 1,
+					LoadAliasGroup (pframetype + 1,
 										&pheader->frames[i].frame,
 										pmodel->numverts,
 										&pheader->frames[i].bboxmin,
@@ -445,7 +445,7 @@ void CModelLoaderAliasMDL::Mod_LoadAliasModel (model_t *mod, void *buffer)
 		return;
 	Q_memcpy (mod->cache.data, pheader, total);
 
-	Hunk_FreeToLowMark (start);
+	mpMemory->GetHunk()->FreeToLowMark (start);
 };
 
 bool CModelLoaderAliasMDL::IsExtSupported(const char *asExt) const
@@ -457,6 +457,6 @@ bool CModelLoaderAliasMDL::IsExtSupported(const char *asExt) const
 
 IModel *CModelLoaderAliasMDL::TryLoad(const char *asName)
 {
-	Mod_LoadAliasModel(TODO);
+	LoadAliasModel(TODO);
 	return nullptr;
 };
