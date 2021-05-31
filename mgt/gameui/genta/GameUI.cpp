@@ -56,7 +56,7 @@ bool CGameUI::Init(CreateInterfaceFn *factories, int count)
 	// initialize the menu system
 	Menu_Cache();
 
-	uis.activemenu = NULL;
+	uis.activemenu = nullptr;
 	uis.menusp     = 0;
 	return true;
 };
@@ -95,7 +95,7 @@ void CGameUI::RunFrame(/*int realtime*/)
 	uis.frametime = realtime - uis.realtime;
 	uis.realtime  = realtime;
 
-	if ( !( trap_Key_GetCatcher() & KEYCATCH_UI ) )
+	if ( !( gpEngine->Key_GetCatcher() & KEYCATCH_UI ) )
 		return;
 
 	UI_UpdateCvars();
@@ -226,7 +226,7 @@ void CGameUI::ConnectToServer(const char *game, int IP, int port) // bool overla
 	case CA_CONNECTED: {
 		char downloadName[MAX_INFO_VALUE];
 
-			trap_Cvar_VariableStringBuffer( "cl_downloadName", downloadName, sizeof(downloadName) );
+			gpEngine->Cvar_VariableStringBuffer( "cl_downloadName", downloadName, sizeof(downloadName) );
 			if (*downloadName) {
 				UI_DisplayDownloadInfo( downloadName );
 				return;
