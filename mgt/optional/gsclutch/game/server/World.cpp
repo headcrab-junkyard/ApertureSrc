@@ -174,7 +174,7 @@ void SV_TouchLinks(edict_t *ent, areanode_t *node)
 			continue;
 
 		gGlobalVariables.time = sv.time;
-		gpEntityEventDispatcher->DispatchTouch(touch, ent);
+		gpEntityEventDispatcher->DispatchTouch(touch, ent); // TODO: was gEntityInterface.pfnTouch(touch, ent);
 	};
 
 	// recurse down both sides

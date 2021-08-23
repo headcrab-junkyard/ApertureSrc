@@ -27,13 +27,13 @@
 class CEntity final : public IEntity
 {
 public:
-	CEntity(edict_t *apEdict, IGameEntity *apGameEntity);
+	CEntity(edict_t *apEdict/*, IGameEntity *apGameEntity*/);
 	~CEntity();
 	
 	void Think();
 	
-	void SetGameEntity(IGameEntity *apGameEntity) override {mpGameEntity = apGameEntity;}
-	IGameEntity *GetGameEntity() const override {return mpGameEntity;}
+	//void SetGameEntity(IGameEntity *apGameEntity) override {mpGameEntity = apGameEntity;}
+	//IGameEntity *GetGameEntity() const override {return mpGameEntity;}
 	
 	void SetOrigin(const float *org) override;
 	void SetSize(const float *mins, const float *maxs) override;
@@ -53,5 +53,5 @@ private:
 	void SetMinMaxSize(const float *avMins, const float *avMaxs, bool abRotate);
 	
 	edict_t *e{nullptr};
-	IGameEntity *mpGameEntity{nullptr};
+	//IGameEntity *mpGameEntity{nullptr};
 };

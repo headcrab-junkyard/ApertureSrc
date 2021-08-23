@@ -40,8 +40,11 @@ extern server_t sv;
 
 //===========================================================
 
-void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume, float attenuation);
+void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume, float attenuation, int pitch);
 
+//
+// sv_phys.c
+//
 void SV_Physics(double frametime);
 bool SV_RunThink(edict_t *ent);
 

@@ -25,6 +25,11 @@
 
 char *pr_strings{nullptr};
 
+globalvars_t gGlobalVariables;
+
+DLL_FUNCTIONS gEntityInterface; // TODO: wrong place?
+NEW_DLL_FUNCTIONS gNewDLLFunctions; // TODO: wrong place?
+
 /*
 =================
 ED_ClearEdict
@@ -55,7 +60,7 @@ angles and bad trails.
 edict_t *ED_Alloc()
 {
 	if(!sv.edicts)
-		Sys_Error("ED_Alloc: No edicts yet");
+		gpSystem->Error("ED_Alloc: No edicts yet");
 
 	int i{0};
 	edict_t *e{nullptr};
@@ -111,6 +116,10 @@ void ED_Free(edict_t *ed)
 
 //===========================================================================
 
+// TODO: unused?
+typedef void (*dfunction_t)(entvars_t *pev);
+extern void *gamedll;
+
 /*
 ============
 ED_FindFunction
@@ -118,7 +127,7 @@ ED_FindFunction
 */
 dfunction_t *ED_FindFunction(const char *name)
 {
-	dfunction_t *func = (dfunction_t)Sys_GetExport_Wrapper(gamedll, name);
+	dfunction_t func = (dfunction_t)Sys_GetExport(gamedll, name);
 	if(func)
 		return func;
 
@@ -251,7 +260,10 @@ void ED_PrintEdicts ()
 	
 	gpSystem->Printf ("%i entities\n", sv.num_edicts);
 	for (i=0 ; i<sv.num_edicts ; i++)
+	{
+		//gpSystem->Printf ("\nEDICT %i:\n",i); // TODO: qw
 		ED_PrintNum (i);
+	};
 };
 */
 
@@ -387,6 +399,9 @@ char *ED_ParseEdict(char *data, edict_t *ent)
 		if(keyname[0] == '_')
 			continue;
 
+		//if(!Q_strcmp(keyname, "classname"))
+			//PR_SetString(ent->v.classname, com_token);
+
 		//if (!key)
 		{
 			//gpSystem->Printf ("'%s' is not a field\n", keyname);
@@ -429,7 +444,7 @@ void ED_LoadFromFile(char *data)
 {
 	edict_t *ent{nullptr};
 	int inhibit{0};
-	//dfunction_t	*func;
+	dfunction_t func; // TODO: ptr?
 
 	gGlobalVariables.time = sv.time;
 
@@ -471,7 +486,9 @@ void ED_LoadFromFile(char *data)
 		//
 		if(!ent->v.classname)
 		{
-			gpSystem->Printf("No classname for:\n");
+			gpSystem->Printf("No classname for: %s\n", ent->v.netname); // TODO: use its id at least...
+			// TODO: original below
+			//gpSystem->Printf("No classname for:\n");
 			//ED_Print(ent); // TODO: actually unused in gs, should i fix it?
 			ED_Free(ent);
 			continue;
@@ -482,14 +499,17 @@ void ED_LoadFromFile(char *data)
 
 		if (!func)
 		{
-			gpSystem->Printf("No spawn function for:\n");
+			gpSystem->Printf("No spawn function for: %s\n", ent->v.classname);
+			// TODO: original below
+			//gpSystem->Printf("No spawn function for:\n");
 			//ED_Print(ent); // TODO: actually unused in gs, should i fix it?
 			ED_Free(ent);
 			continue;
 		};
 
-		//gGlobalVariables.self = EDICT_TO_PROG(ent);
-		//PR_ExecuteProgram (func - pr_functions); // TODO: actually call the function
+		func(&ent->v); // NOTE: this will only bind the entity's variables to a C++ class, we need to explicitly call a spawn function for the entity (see below)
+		
+		gEntityInterface.pfnSpawn(ent); // TODO: bad place?
 	};
 
 	gpSystem->DevPrintf("%i entities inhibited\n", inhibit);

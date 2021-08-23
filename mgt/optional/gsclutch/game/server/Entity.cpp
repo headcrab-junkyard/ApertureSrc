@@ -25,7 +25,7 @@
 
 int SV_ModelIndex(const char *name);
 
-CEntity::CEntity(edict_t *apEdict, IGameEntity *apGameEntity) : e(apEdict), mpGameEntity(apGameEntity)
+CEntity::CEntity(edict_t *apEdict/*, IGameEntity *apGameEntity*/) : e(apEdict) //, mpGameEntity(apGameEntity)
 {
 	//if(mpGameEntity)
 		//mpGameEntity->OnSpawn();
@@ -91,7 +91,7 @@ void CEntity::SetModel(const char *m)
 	e->v.model = m - pr_strings;
 	e->v.modelindex = i; //SV_ModelIndex (m);
 
-	model_t *mod = sv.models[(int)e->v.modelindex]; // Mod_ForName (m, true);
+	auto mod = sv.models[(int)e->v.modelindex]; // Mod_ForName (m, true);
 
 	if(mod)
 		SetMinMaxSize(mod->mins, mod->maxs, true);
@@ -108,13 +108,13 @@ float(float yaw, float dist) walkmove
 */
 int CEntity::WalkMove(float yaw, float dist, int nMode) // TODO: nMode support
 {
-	vec3_t move;
-
 	if(!((int)e->v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM)))
 		return 0;
 
 	yaw = yaw * M_PI * 2 / 360;
 
+	vec3_t move;
+	
 	move[0] = cos(yaw) * dist;
 	move[1] = sin(yaw) * dist;
 	move[2] = 0;
@@ -132,16 +132,14 @@ This was a major timewaster in progs, so it was converted to C
 // TODO: required by ServerMove code
 void PF_changeyaw(edict_t *e)
 {
-	float ideal, current, move, speed;
-
-	current = anglemod(e->v.angles[1]);
-	ideal = e->v.ideal_yaw;
-	speed = e->v.yaw_speed;
+	float current = anglemod(e->v.angles[1]);
+	float ideal = e->v.ideal_yaw;
+	float speed = e->v.yaw_speed;
 
 	if(current == ideal)
 		return;
 	
-	move = ideal - current;
+	float move = ideal - current;
 	
 	if(ideal > current)
 	{
@@ -293,8 +291,6 @@ void CEntity::SetMinMaxSize(const float *min, const float *max, bool rotate)
 /*
 void CEntity::MakeStatic(edict_t *ent)
 {
-	int i;
-
 	sv.signon->WriteByte(svc_spawnstatic);
 
 	sv.signon->WriteByte(SV_ModelIndex(pr_strings + ent->v.model));
@@ -303,7 +299,7 @@ void CEntity::MakeStatic(edict_t *ent)
 	sv.signon->WriteByte(ent->v.colormap);
 	sv.signon->WriteByte(ent->v.skin);
 
-	for(i = 0; i < 3; i++)
+	for(int i = 0; i < 3; i++)
 	{
 		sv.signon->WriteCoord(ent->v.origin[i]);
 		sv.signon->WriteAngle(ent->v.angles[i]);
@@ -339,12 +335,11 @@ void() droptofloor
 int CEntity::DropToFloor(/* edict_t *e */)
 {
 	vec3_t end;
-	trace_t trace;
 
 	VectorCopy(e->v.origin, end);
 	end[2] -= 256;
 
-	trace = SV_Move(e->v.origin, e->v.mins, e->v.maxs, end, false, e);
+	trace_t trace = SV_Move(e->v.origin, e->v.mins, e->v.maxs, end, false, e);
 
 	if(trace.fraction == 1 || trace.allsolid)
 		return 0;
