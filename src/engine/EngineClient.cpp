@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2021 BlackPhrase
+ * Copyright (C) 2021-2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,35 +21,3 @@
 
 #include "quakedef.h"
 #include "EngineClient.hpp"
-#include "engineclient/IEngineClient.hpp"
-
-CEngineClient::CEngineClient(IEngineClient *apEngineClient)
-	: mpEngineClient(apEngineClient){}
-
-bool CEngineClient::Init()
-{
-	if(!mpEngineClient)
-		return false;
-	
-	return mpEngineClient->Init(Sys_GetFactoryThis());
-};
-
-void CEngineClient::Shutdown()
-{
-	if(mpEngineClient)
-		mpEngineClient->Shutdown();
-};
-
-bool CEngineClient::PreFrame()
-{
-	if(!mpEngineClient)
-		return false;
-	
-	return mpEngineClient->PreFrame();
-};
-
-void CEngineClient::Frame(float afTimeStep)
-{
-	if(mpEngineClient)
-		mpEngineClient->Frame(afTimeStep);
-};

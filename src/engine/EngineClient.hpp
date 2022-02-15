@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2021 BlackPhrase
+ * Copyright (C) 2021-2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,20 +19,16 @@
 
 /// @file
 
-#include "CommonTypes.hpp"
+#pragma once
 
-interface IEngineClient;
+#include "engineclient/IEngineClient.hpp"
 
-class CEngineClient
+class CEngineClientNull : public IEngineClient
 {
 public:
-	CEngineClient(IEngineClient *apEngineClient);
+	bool Init(CreateInterfaceFn afnEngineFactory) override {return true;}
+	void Shutdown() override {}
 	
-	bool Init();
-	void Shutdown();
-	
-	bool PreFrame();
-	void Frame(float afTimeStep);
-private:
-	IEngineClient *mpEngineClient{nullptr};
+	bool PreFrame() override {return true;}
+	void Frame(float afTimeStep) override {}
 };
