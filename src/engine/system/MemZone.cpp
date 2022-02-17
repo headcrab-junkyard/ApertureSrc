@@ -23,6 +23,7 @@
 
 #include "quakedef.h"
 #include "MemZone.hpp"
+#include "MemHunk.hpp"
 
 #include "engine/ISystem.hpp"
 
@@ -41,30 +42,15 @@ all big things are allocated on the hunk.
 ==============================================================================
 */
 
-#define DYNAMIC_SIZE 0xc000
-
 #define ZONEID 0x1d4a11
 #define MINFRAGMENT 64
 
-typedef struct memblock_s
+CMemZone::CMemZone(ISystem *apSystem, CMemHunk *apMemHunk, int anSize) : mpSystem(apSystem)
 {
-	int size; // including the header and possibly tiny fragments
-	int tag;  // a tag of 0 is a free block
-	int id;   // should be ZONEID
-	struct memblock_s *next, *prev;
-	int pad; // pad to 64 bit boundary
-} memblock_t;
-
-struct memzone_t
-{
-	void Clear(int anSize);
+	mpZone = reinterpret_cast<memzone_t*>(apMemHunk->AllocName(anSize, "zone"));
 	
-	int size;             // total bytes malloced, including header
-	memblock_t blocklist; // start / end cap for linked list
-	memblock_t *rover;
+	Clear(anSize);
 };
-
-memzone_t *mainzone;
 
 /*
 ========================
@@ -89,9 +75,6 @@ void memzone_t::Clear(int size)
 	block->id = ZONEID;
 	block->size = size - sizeof(memzone_t);
 };
-
-CMemZone::CMemZone(ISystem *apSystem) : mpSystem(apSystem){}
-
 /*
 ========================
 Z_Malloc
@@ -122,7 +105,7 @@ void *CMemZone::TagMalloc(int size, int tag)
 	size = (size + 7) & ~7;     // align to 8-byte boundary
 
 	memblock_t *rover, *base;
-	base = rover = mainzone->rover;
+	base = rover = mpZone->rover;
 	auto start = base->prev;
 
 	do
@@ -155,7 +138,7 @@ void *CMemZone::TagMalloc(int size, int tag)
 
 	base->tag = tag; // no longer a free block
 
-	mainzone->rover = base->next; // next allocation will start looking here
+	mpZone->rover = base->next; // next allocation will start looking here
 
 	base->id = ZONEID;
 
@@ -189,8 +172,8 @@ void CMemZone::Free(void *ptr)
 		other->size += block->size;
 		other->next = block->next;
 		other->next->prev = other;
-		if(block == mainzone->rover)
-			mainzone->rover = other;
+		if(block == mpZone->rover)
+			mpZone->rover = other;
 		block = other;
 	};
 
@@ -200,8 +183,8 @@ void CMemZone::Free(void *ptr)
 		block->size += other->size;
 		block->next = other->next;
 		block->next->prev = block;
-		if(other == mainzone->rover)
-			mainzone->rover = block;
+		if(other == mpZone->rover)
+			mpZone->rover = block;
 	};
 };
 
@@ -212,9 +195,9 @@ Z_CheckHeap
 */
 void CMemZone::CheckHeap()
 {
-	for(auto block = mainzone->blocklist.next;; block = block->next)
+	for(auto block = mpZone->blocklist.next;; block = block->next)
 	{
-		if(block->next == &mainzone->blocklist)
+		if(block->next == &mpZone->blocklist)
 			break; // all blocks have been hit
 		if((byte *)block + block->size != (byte *)block->next)
 			mpSystem->Error("Z_CheckHeap: block size does not touch the next block\n");

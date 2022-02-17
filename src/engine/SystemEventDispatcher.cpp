@@ -19,6 +19,7 @@
 
 /// @file
 
+#include "quakedef.h"
 #include "SystemEventDispatcher.hpp"
 #include "engine/ISystemEventListener.hpp"
 

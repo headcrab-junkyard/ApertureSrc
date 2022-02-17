@@ -19,6 +19,7 @@
 */
 
 /// @file
+/// @brief engine's interface to the networking layer
 
 #pragma once
 
@@ -30,17 +31,17 @@ interface INetworkSystem;
 using netadr_t = struct netadr_s;
 using sizebuf_t = struct sizebuf_s;
 
-class CSys;
+class CSystem;
 
 class CNetwork
 {
 public:
-	CNetwork(CSys *apSystem);
+	CNetwork(CSystem *apSystem);
 	
 	void Init();
 	void Shutdown();
 
-	void Config(bool multiplayer);
+	void Config(bool abMultiplayer);
 
 	void Sleep(int msec);
 	

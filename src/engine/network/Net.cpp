@@ -18,9 +18,11 @@
  * along with OGSNext Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
+/// @file
+
 #include "quakedef.h"
 #include "Net.hpp"
-#include "Sys.hpp"
+#include "System.hpp"
 
 CNetwork::CNetwork(CSys *apSystem) : mpSystem(apSystem){}
 

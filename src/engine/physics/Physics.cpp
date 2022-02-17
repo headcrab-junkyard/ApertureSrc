@@ -62,7 +62,7 @@ void CPhysics::LoadModule()
 		mpSystem->Error("");
 };
 
-void CNetwork::UnloadModule()
+void CPhysics::UnloadModule()
 {
 	if(mpPhysicsSystemModule)
 	{

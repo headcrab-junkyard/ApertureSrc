@@ -25,11 +25,12 @@
 #include "CommonTypes.hpp"
 
 interface ISystem;
+class CMemHunk;
 
 class CMemZone
 {
 public:
-	CMemZone(ISystem *apSystem);
+	CMemZone(ISystem *apSystem, CMemHunk *apMemHunk, int anSize);
 	
 	void *Malloc(int size); // returns 0 filled memory
 	void *TagMalloc(int size, int tag);
@@ -38,5 +39,25 @@ public:
 
 	void CheckHeap();
 private:
+	void Clear(int anSize);
+private:
 	ISystem *mpSystem{nullptr};
+	
+	struct memblock_t
+	{
+		int size; ///< including the header and possibly tiny fragments
+		int tag;  ///< a tag of 0 is a free block
+		int id;   ///< should be ZONEID
+		memblock_t *next, *prev;
+		int pad; ///< pad to 64 bit boundary
+	};
+
+	struct memzone_t
+	{
+		int size;             ///< total bytes malloced, including header
+		memblock_t blocklist; ///< start / end cap for linked list
+		memblock_t *rover;
+	};
+	
+	memzone_t *mpZone{nullptr};
 };

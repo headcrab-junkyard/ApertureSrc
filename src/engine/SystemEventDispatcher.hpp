@@ -22,6 +22,7 @@
 #pragma once
 
 #include <list>
+
 #include "CommonTypes.hpp"
 
 interface ISystemEventListener;

@@ -36,7 +36,7 @@ public:
 	CMemory(ISystem *apSystem, int anHeapSize);
 	~CMemory();
 	
-	CMemZone *GetZone() const {return mpZone.get();}
+	CMemZone *GetZone() const {return mpMainZone.get();}
 	CMemHunk *GetHunk() const {return mpHunk.get();}
 	CMemCache *GetCache() const {return mpCache.get();}
 private:
@@ -48,5 +48,5 @@ private:
 	
 	std::unique_ptr<CMemHunk> mpHunk;
 	std::unique_ptr<CMemCache> mpCache;
-	std::unique_ptr<CMemZone> mpZone;
+	std::unique_ptr<CMemZone> mpMainZone;
 };

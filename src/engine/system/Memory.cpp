@@ -11,6 +11,8 @@
 
 //============================================================================
 
+constexpr auto DYNAMIC_SIZE{0xc000};
+
 CMemory::CMemory(ISystem *apSystem, int anHeapSize) : mpSystem(apSystem)
 {
 	mpMemBase = malloc(anHeapSize);
@@ -48,8 +50,5 @@ void CMemory::Init(int anHeapSize)
 			mpSystem->Error("Memory_Init: you must specify a size in KB after -zone");
 	};
 	
-	mpZone = std::make_unique<CMemZone>(mpSystem);
-	
-	mainzone = reinterpret_cast<memzone_t*>(mpHunk->AllocName(nZoneSize, "zone"));
-	mainzone->Clear(nZoneSize);
+	mpMainZone = std::make_unique<CMemZone>(mpSystem, mpHunk.get(), nZoneSize);
 };
