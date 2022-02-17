@@ -22,13 +22,13 @@
 
 #pragma once
 
-class CEdict
+class CEntityDict
 {
 public:
-	void Print(edict_t *ed);
-	void Write(FILE *f, edict_t *ed);
+	void Print();
+	void WriteToFile(FILE *apFile);
 	
 	char *ParseEdict(char *data, edict_t *ent);
 
-	//eval_t *GetEdictFieldValue(edict_t *ed, const char *field);
+	//eval_t *GetFieldValue(const char *field) const;
 };
