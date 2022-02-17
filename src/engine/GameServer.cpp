@@ -23,6 +23,51 @@
 #include "quakedef.h"
 #include "GameServer.hpp"
 
+void CGameServer::Init()
+{
+};
+
+void CGameServer::Shutdown()
+{
+};
+
+void CGameServer::Frame(float afTime)
+{
+};
+
+void CGameServer::Activate()
+{
+	mpEventBroadcaster->OnServerActivate();
+};
+
+void CGameServer::Deactivate()
+{
+	mpEventBroadcaster->OnServerDeactivate();
+};
+
+void CGameServer::BroadcastPrintf(/*int level,*/ const char *asMsg, ...)
+{
+	va_list ArgList{};
+	char sFmtMsg[1024]{};
+	
+	va_start(ArgList, asMsg);
+	vsprintf(sFmtMsg, asMsg, ArgList);
+	va_end(ArgList);
+	
+	for(auto It : mvClients)
+		It->SendPrint(sFmtMsg);
+};
+
+void CGameServer::BroadcastCmd(const char *asCmd, ...)
+{
+};
+
+void CGameServer::ReconnectAllClients()
+{
+	for(auto It : mvClients)
+		It->Reconnect();
+};
+
 int CGameServer::GetActiveClientsNum() const
 {
 	int nCount{0};

@@ -1,44 +1,111 @@
 /*
-Copyright (C) 2019-2021 BlackPhrase
-
-This program is free software: you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation, either version 3
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of OGSNext Engine
+ *
+ * Copyright (C) 1996-2005 Id Software, Inc.
+ * Copyright (C) 2018-2021 BlackPhrase
+ *
+ * OGSNext Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OGSNext Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OGSNext Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /// @file
 
 #pragma once
 
-class CGameClient;
+#include <vector>
+
+#include "CommonTypes.hpp"
+
+#include "netadr.h"
+
+//#include "engine/IGameServer.hpp"
+
+// MAX_CHALLENGES is made large to prevent a denial
+// of service attack that could cycle all of them
+// out before legitimate users connected
+#define MAX_CHALLENGES 1024
 
 using client_t = struct client_s;
 
-class CGameServer
+//=============================================================================
+
+struct challenge_t
+{
+	netadr_t adr;
+	int challenge;
+	int time; // time the last packet was sent to the autherize server
+	// TODO: q3
+	//int			pingTime;			// time the challenge response was sent to client
+	//int			firstTime;			// time the adr was first used, for authorize timeout checks
+	//bool	connected;
+};
+
+//=============================================================================
+
+struct svstats_t
+{
+	double active;
+	double idle;
+	int count;
+	int packets;
+
+	double latched_active;
+	double latched_idle;
+	int latched_packets;
+};
+
+//=============================================================================
+
+interface IGameClient;
+using tGameClientVec = std::vector<IGameClient*>;
+
+class CGameServer //final : public IGameServer
 {
 public:
+	//CGameServer(server_t *apsv, server_static_t *apsvs);
+	//~CGameServer();
+	
 	void Init();
 	void Shutdown();
 	
 	void Frame(float afTime);
 	
-	void BroadcastPrintf(const char *asMsg, ...);
+	void Activate();
+	void Deactivate();
+	
+	void BroadcastPrintf(/*int level,*/ const char *asMsg, ...);
+	void BroadcastCmd(const char *asCmd, ...);
 	
 	void ReconnectAllClients();
+	//void DisconnectAllClients();
 	
 	int GetActiveClientsNum() const;
+	
+	IGameClient *GetClient(int anIndex) const /*override*/ {return mvClients.at(anIndex);}
+private:
+	void SendClientMessages();
+private:
+	//server_t *mpsv{nullptr};
+	//server_static_t *mpsvs{nullptr};
 public:
-	CGameClient *clients{nullptr};
+	challenge_t challenges[MAX_CHALLENGES]; // to prevent invalid IPs from connecting
+	
+	svstats_t stats;
+	
+	tGameClientVec mvClients;
+	//CGameClient *clients{nullptr}; // [maxclients]
+	
+	int maxclients;
 	
 	bool active{false};
 };

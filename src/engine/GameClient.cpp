@@ -17,6 +17,8 @@
  * along with OGSNext Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
+/// @file
+
 #include "quakedef.h"
 #include "GameClient.hpp"
 
@@ -25,5 +27,21 @@ void CGameClient::Printf(const char *asMsg, ...)
 };
 
 void CGameClient::SendCmd(const char *asCmd, ...)
+{
+};
+
+void CGameClient::SendMsg(const INetMsg &aMsg)
+{
+};
+
+void CGameClient::Drop(bool abCrash, const char *asReason, ...)
+{
+};
+
+void CGameClient::QueryCvarValue(const char *asCvarName)
+{
+};
+
+void CGameClient::QueryCvarValueEx(const char *asCvarName, int anRequestID)
 {
 };
