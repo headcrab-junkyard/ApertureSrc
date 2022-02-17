@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2019-2020, 2022 BlackPhrase
+ * Copyright (C) 2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -18,17 +18,23 @@
 */
 
 /// @file
-/// @brief entity dictionary class
+/// @brief entity dictionary pool class
 
 #pragma once
 
-class CEdict
+class CEntityDict;
+
+class CEntityDictPool
 {
 public:
-	void Print(edict_t *ed);
-	void Write(FILE *f, edict_t *ed);
-	
-	char *ParseEdict(char *data, edict_t *ent);
+	CEntityDict *Alloc();
+	void Free(CEntityDict *apDict);
 
-	//eval_t *GetEdictFieldValue(edict_t *ed, const char *field);
+	void WriteGlobals(FILE *apFile);
+	void ParseGlobals(char *asData);
+
+	void LoadFromFile(char *asData);
+
+	void PrintEdicts();
+	void PrintNum(int anEnt);
 };
