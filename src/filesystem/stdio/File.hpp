@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2018-2020 BlackPhrase
+ * Copyright (C) 2018-2021 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,35 +36,34 @@ public:
 	
 	// IFile interface methods implementation
 	
-	/*int*/ void Write(const void *apData, int anCount) override; // TODO: return int?
-	int Read(void *apDest, int anCount) const override;
+	size_t Write(const void *apData, size_t anCount) override;
+	size_t Read(void *apDest, size_t anCount) const override;
 
-	//char *ReadLine(char *pOutput, int maxChars) override;
+	//char *ReadLine(char *asOutput, int anMaxChars) override;
 	
-	/*int*/ void Printf(const char *asText, ...) override;
+	int Printf(const char *asText, ...) override;
 	
-	//int SetVBuf(char *apBuffer, int anMode, long anSize) override;
+	int Seek(long anOffset, SeekMode aeMode) const override;
+	
+	/*uint*/ long Tell() const override;
+	
+	void Flush() override;
+	
+	int SetVBuf(char *apBuffer, int anMode, size_t anSize) override;
 	
 	//void *GetReadBuffer(int *outBufferSize, bool abFailIfNotInCache) override;
 	//void ReleaseReadBuffer(void *apReadBuffer) override;
 	
-	void Flush() override;
-	
-	/*void*/ //int Seek(int anPos, FileSystemSeek_t aeSeekType) const; //override; // TODO
-	int Seek(int anPos) const override;
-	
-	uint Tell() const override;
-	
-	bool IsOK() const override {return mpHandle != nullptr;} // TODO: IsValid?
+	bool IsOk() const override {return mpHandle != nullptr;} // TODO: IsValid?
 	bool IsEOF() const override;
 	
 	const char *GetPath() const override {return msPath.c_str();} // TODO: GetRelPath?
-	const char *GetName() const override {return msName.c_str();} // TODO: GetFileName?
+	const char *GetName() const override; // TODO: GetFileName?
 	const char *GetExt() const override {return msExt.c_str();}
 
-	int GetTime() const override;
-	uint GetSize() const override;
-	
+	int GetTime() const; //override;
+	/*u*/ int GetSize() const override;
+public:
 	// Other public methods
 	
 	void Open(const char *asPath, const char *asMode);
@@ -72,6 +71,8 @@ public:
 	
 	/// Like fprintf but with argument pointer
 	int VPrintf(const char *asMsg, va_list alstArgs);
+private:
+	int SeekModeToInt(SeekMode aeMode) const;
 private:
 	tString msPath{""};
 	tString msName{""};
