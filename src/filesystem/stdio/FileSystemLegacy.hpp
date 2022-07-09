@@ -25,25 +25,14 @@
 
 #include <cstdio>
 
+#include <CommonTypes.hpp>
+
+// TODO: fix
+#define IFileSystem IFileSystem009
+
 #include <public/FileSystem.h>
 
-// directory searching
-#define SFF_ARCH    0x01
-#define SFF_HIDDEN  0x02
-#define SFF_RDONLY  0x04
-#define SFF_SUBDIR  0x08
-#define SFF_SYSTEM  0x10
-
-#define MAX_OSPATH 128 // max length of a filesystem pathname
-
-typedef struct pack_s pack_t;
-
-/*
-** pass in an attribute mask of things you wish to REJECT
-*/
-char *Sys_FindFirst(const char *path, unsigned int musthave, unsigned int canthave);
-char *Sys_FindNext(unsigned int musthave, unsigned int canthave);
-void Sys_FindClose();
+interface IFile;
 
 // TODO: CFileSystem009?
 class CFileSystemLegacy final : public IFileSystem
@@ -142,28 +131,6 @@ public:
 	void AddSearchPathNoWrite(const char *sPath, const char *sPathID) override;
 private:
 	IFile *ToFile(FileHandle_t anFileHandle) const;
-private:
-	static constexpr auto MAX_HANDLES{10};
-	
-	FileHandle_t FindFile(const char *filename);
-	
-	pack_t *LoadPackFile(const char *packfile);
-	void AddGameDirectory(const char *dir);
-	
-	int findhandle() const;
-	int filelength(FILE *f);
-	
-#ifdef _WIN32
-	//FILE sys_handles[MAX_HANDLES]{};
-#elif sun
-	struct MEMFILE
-	{
-		FILE *hFile{nullptr};
-		char *pMap{nullptr};
-		int nLen{0};
-		int nPos{0};
-	};
-
-	//MEMFILE sys_handles[MAX_HANDLES]{};
-#endif
 };
+
+#undef IFileSystem

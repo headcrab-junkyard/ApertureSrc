@@ -22,6 +22,8 @@
 #include "FileSystemLegacy.hpp"
 #include "FileSystem.hpp"
 
+#include <filesystem/IFile.hpp>
+
 extern CFileSystem *gpFileSystem;
 
 CFileSystemLegacy::CFileSystemLegacy() = default;
@@ -76,7 +78,9 @@ bool CFileSystemLegacy::IsDirectory(const char *asFileName)
 
 FileHandle_t CFileSystemLegacy::Open(const char *asFileName, const char *asOptions, const char *asPathID)
 {
-	return reinterpret_cast<FileHandle_t>(gpFileSystem->OpenFile(asFileName, asOptions, asPathID));
+	// TODO
+	//return reinterpret_cast<FileHandle_t>(gpFileSystem->OpenFile(asFileName, asOptions, asPathID));
+	return 0;
 };
 
 void CFileSystemLegacy::Close(FileHandle_t anHandle)
@@ -86,7 +90,7 @@ void CFileSystemLegacy::Close(FileHandle_t anHandle)
 
 void CFileSystemLegacy::Seek(FileHandle_t anHandle, int anPos, FileSystemSeek_t aeSeekType)
 {
-	ToFile(anHandle)->Seek(anPos, aeSeekType);
+	ToFile(anHandle)->Seek(anPos, static_cast<IFile::SeekMode>(aeSeekType));
 };
 
 unsigned int CFileSystemLegacy::Tell(FileHandle_t anHandle)
