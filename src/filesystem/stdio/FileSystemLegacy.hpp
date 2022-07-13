@@ -1,7 +1,6 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 1996-2001 Id Software, Inc.
  * Copyright (C) 2016-2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
@@ -23,7 +22,7 @@
 
 #pragma once
 
-#include <cstdio>
+//#include <cstdio>
 
 #include <CommonTypes.hpp>
 
@@ -46,46 +45,46 @@ public:
 
 	void RemoveAllSearchPaths() override;
 
-	void AddSearchPath(const char *pPath, const char *pathID) override;
-	bool RemoveSearchPath(const char *pPath) override;
+	void AddSearchPath(const char *asPath, const char *asPathID) override;
+	bool RemoveSearchPath(const char *asPath) override;
 
-	void RemoveFile(const char *pRelativePath, const char *pathID) override;
+	void RemoveFile(const char *asRelativePath, const char *asPathID) override;
 
-	void CreateDirHierarchy(const char *path, const char *pathID) override;
+	void CreateDirHierarchy(const char *asPath, const char *asPathID) override;
 
-	bool FileExists(const char *pFileName) override;
-	bool IsDirectory(const char *sFileName) override;
+	bool FileExists(const char *asFileName) override;
+	bool IsDirectory(const char *asFileName) override;
 
-	FileHandle_t Open(const char *sFileName, const char *pOptions, const char *pathID) override;
-	void Close(FileHandle_t file) override;
+	FileHandle_t Open(const char *asFileName, const char *asOptions, const char *asPathID) override;
+	void Close(FileHandle_t anHandle) override;
 
-	void Seek(FileHandle_t file, int pos, FileSystemSeek_t seekType) override;
-	unsigned int Tell(FileHandle_t file) override;
+	void Seek(FileHandle_t anHandle, int anPos, FileSystemSeek_t aeSeekType) override;
+	unsigned int Tell(FileHandle_t anHandle) override;
 
-	unsigned int Size(FileHandle_t file) override;
-	unsigned int Size(const char *sFileName) override;
+	unsigned int Size(FileHandle_t anHandle) override;
+	unsigned int Size(const char *asFileName) override;
 
-	long GetFileTime(const char *sFileName) override;
+	long GetFileTime(const char *asFileName) override;
 	void FileTimeToString(char *pStrip, int maxCharsIncludingTerminator, long fileTime) override;
 
-	bool IsOk(FileHandle_t file) override;
+	bool IsOk(FileHandle_t anHandle) override;
 
-	void Flush(FileHandle_t file) override;
-	bool EndOfFile(FileHandle_t file) override;
+	void Flush(FileHandle_t anHandle) override;
+	bool EndOfFile(FileHandle_t anHandle) override;
 
-	int Read(void *pOutput, int size, FileHandle_t file) override;
-	int Write(void const *pInput, int size, FileHandle_t file) override; // void const
-	char *ReadLine(char *pOutput, int maxChars, FileHandle_t file) override;
-	int FPrintf(FileHandle_t file, char *pFormat, ...) override;
+	int Read(void *pOutput, int size, FileHandle_t anHandle) override;
+	int Write(void const *pInput, int size, FileHandle_t anHandle) override; // void const
+	char *ReadLine(char *pOutput, int maxChars, FileHandle_t anHandle) override;
+	int FPrintf(FileHandle_t anHandle, char *pFormat, ...) override;
 
-	void *GetReadBuffer(FileHandle_t file, int *outBufferSize, bool failIfNotInCache) override;
-	void ReleaseReadBuffer(FileHandle_t file, void *readBuffer) override;
+	void *GetReadBuffer(FileHandle_t anHandle, int *outBufferSize, bool failIfNotInCache) override;
+	void ReleaseReadBuffer(FileHandle_t anHandle, void *readBuffer) override;
 
 	const char *FindFirst(const char *sWildCard, FileFindHandle_t *pHandle, const char *sPathID) override;
-	const char *FindNext(FileFindHandle_t handle) override;
+	const char *FindNext(FileFindHandle_t anHandle) override;
 	
-	bool FindIsDirectory(FileFindHandle_t handle) override;
-	void FindClose(FileFindHandle_t handle) override;
+	bool FindIsDirectory(FileFindHandle_t anHandle) override;
+	void FindClose(FileFindHandle_t anHandle) override;
 
 	void GetLocalCopy(const char *sFileName) override;
 
@@ -93,44 +92,45 @@ public:
 
 	char *ParseFile(char *pFileBytes, char *pToken, bool *pWasQuoted) override;
 
-	bool FullPathToRelativePath(const char *sFullpath, char *pRelative) override;
+	bool FullPathToRelativePath(const char *asFullpath, char *pRelative) override;
 
-	bool GetCurrentDirectory(char *sDirectory, int maxlen) override;
+	bool GetCurrentDirectory(char *asDirectory, int maxlen) override;
 
 	void PrintOpenedFiles() override;
 
 	void SetWarningFunc(void (*pfnWarning)(const char *fmt, ...)) override;
 	void SetWarningLevel(FileWarningLevel_t level) override;
 
-	void LogLevelLoadStarted(const char *sName) override;
-	void LogLevelLoadFinished(const char *sName) override;
+	void LogLevelLoadStarted(const char *asName) override;
+	void LogLevelLoadFinished(const char *asName) override;
 	
-	int HintResourceNeed(const char *sHintList, int nForgetEverything) override;
+	int HintResourceNeed(const char *asHintList, int anForgetEverything) override;
 	
 	int PauseResourcePreloading() override;
 	int ResumeResourcePreloading() override;
 	
-	int SetVBuf(FileHandle_t stream, char *buffer, int mode, long size) override;
+	int SetVBuf(FileHandle_t stream, char *buffer, int anMode, long anSize) override;
 	
-	void GetInterfaceVersion(char *p, int maxlen) override;
+	void GetInterfaceVersion(char *p, int anMaxLen) override;
 	
-	bool IsFileImmediatelyAvailable(const char *sFileName) override;
+	bool IsFileImmediatelyAvailable(const char *asFileName) override;
 
-	WaitForResourcesHandle_t WaitForResources(const char *sResourceList) override;
-	bool GetWaitForResourcesProgress(WaitForResourcesHandle_t handle,
+	WaitForResourcesHandle_t WaitForResources(const char *asResourceList) override;
+	bool GetWaitForResourcesProgress(WaitForResourcesHandle_t anHandle,
 	                                 float *progress /* out */,
 	                                 bool *complete /* out */) override;
-	void CancelWaitForResources(WaitForResourcesHandle_t handle) override;
+	void CancelWaitForResources(WaitForResourcesHandle_t anHandle) override;
 
-	bool IsAppReadyForOfflinePlay(int nAppID) override;
+	bool IsAppReadyForOfflinePlay(int anAppID) override;
 
-	bool AddPackFile(const char *sFullPath, const char *sPathID) override;
+	bool AddPackFile(const char *asFullPath, const char *asPathID) override;
 
-	FileHandle_t OpenFromCacheForRead(const char *sFileName, const char *sOptions, const char *sPathID) override;
+	FileHandle_t OpenFromCacheForRead(const char *asFileName, const char *asOptions, const char *asPathID) override;
 
-	void AddSearchPathNoWrite(const char *sPath, const char *sPathID) override;
+	void AddSearchPathNoWrite(const char *asPath, const char *asPathID) override;
 private:
 	IFile *ToFile(FileHandle_t anFileHandle) const;
 };
 
+// TODO: fix
 #undef IFileSystem

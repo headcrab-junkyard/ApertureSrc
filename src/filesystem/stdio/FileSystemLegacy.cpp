@@ -26,6 +26,8 @@
 
 extern CFileSystem *gpFileSystem;
 
+EXPOSE_SINGLE_INTERFACE(CFileSystemLegacy, IFileSystem009, FILESYSTEM_INTERFACE_VERSION);
+
 CFileSystemLegacy::CFileSystemLegacy() = default;
 CFileSystemLegacy::~CFileSystemLegacy() = default;
 
@@ -56,8 +58,7 @@ bool CFileSystemLegacy::RemoveSearchPath(const char *asPath)
 
 void CFileSystemLegacy::RemoveFile(const char *asRelativePath, const char *asPathID)
 {
-	// TODO
-	//gpFileSystem->RemoveFile(asRelativePath, asPathID);
+	gpFileSystem->RemoveFile(asRelativePath, asPathID);
 };
 
 void CFileSystemLegacy::CreateDirHierarchy(const char *asPath, const char *asPathID)
@@ -117,6 +118,7 @@ void CFileSystemLegacy::FileTimeToString(char *asStrip, int anMaxCharsIncludingT
 {
 	// TODO
 	//gpFileSystem->FileTimeToString(asStrip, anMaxCharsIncludingTerminator, anFileTime);
+	// TODO: gpFileSystem->GetFileTime(...)->ToString()?
 };
 
 bool CFileSystemLegacy::IsOk(FileHandle_t anHandle)
@@ -157,17 +159,14 @@ int CFileSystemLegacy::FPrintf(FileHandle_t anHandle, char *asFormat, ...)
 	return ToFile(anHandle)->Printf(asFormat);
 };
 
-void *CFileSystemLegacy::GetReadBuffer(FileHandle_t anHandle, int *anOutBufferSize, bool abFailIfNotInCache)
+void *CFileSystemLegacy::GetReadBuffer(FileHandle_t anHandle, int *apOutBufferSize, bool abFailIfNotInCache)
 {
-	// TODO
-	//return ToFile(anHandle)->GetReadBuffer(anOutBufferSize, abFailIfNotInCache);
-	return nullptr;
+	return ToFile(anHandle)->GetReadBuffer(anOutBufferSize, abFailIfNotInCache);
 };
 
 void CFileSystemLegacy::ReleaseReadBuffer(FileHandle_t anHandle, void *apBuffer)
 {
-	// TODO
-	//ToFile(anHandle)->ReleaseReadBuffer(apBuffer);
+	ToFile(anHandle)->ReleaseReadBuffer(apBuffer);
 };
 
 const char *CFileSystemLegacy::FindFirst(const char *asWildCard, FileFindHandle_t *apHandle, const char *asPathID)
@@ -213,7 +212,7 @@ const char *CFileSystemLegacy::GetLocalPath(const char *asFileName, char *asLoca
 char *CFileSystemLegacy::ParseFile(char *pFileBytes, char *pToken, bool *pWasQuoted)
 {
 	// TODO
-	//return gpFileSystem->ParseFile();
+	//return gpFileSystem->ParseFile(pFileBytes, pToken, pWasQuoteds);
 	return nullptr;
 };
 
