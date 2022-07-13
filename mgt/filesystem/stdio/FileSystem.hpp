@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2016-2020 BlackPhrase
+ * Copyright (C) 2016-2020, 2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -17,45 +17,13 @@
  * along with OGSNext Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
-/// @file
-/// @brief IFileSystem interface implementation
-
-#pragma once
-
 #include <cstdio>
-#include <string>
-#include <list>
+
 #include <unordered_map>
-#include "filesystem/IFileSystem.hpp"
-
-typedef struct pack_s pack_t;
-
-struct SSearchPathEntry
-{
-	std::string name{""};
-	
-	bool readonly{true}; // TODO: nowrite
-};
-
-using tSearchPathEntryList = std::list<SSearchPathEntry>;
-
-struct SSearchPathGroup
-{
-	std::string name{""}; // TODO: pathid
-	tSearchPathEntryList mlstSearchPaths;
-};
-
-using tSearchPathGroupList = std::list<SSearchPathGroup>;
 
 class CFileSystem final : public IFileSystem
 {
 public:
-	CFileSystem();
-	~CFileSystem();
-	
-	void Mount() override;
-	void Unmount() override;
-	
 	void PrintOpenedFiles() override;
 	
 	//void SetWarningFunc(void (*pfnWarning)(const char *fmt, ...)) override;
@@ -119,31 +87,4 @@ public:
 	//WaitForResourcesHandle_t WaitForResources(const char *resourcelist) override;
 	//bool GetWaitForResourcesProgress(WaitForResourcesHandle_t handle, float *progress /* out */, bool *complete /* out */) override;
 	//void CancelWaitForResources(WaitForResourcesHandle_t handle) override;
-private:
-	static constexpr auto MAX_HANDLES{10};
-	
-	FileHandle_t FindFile(const char *filename);
-	
-	pack_t *LoadPackFile(const char *packfile);
-	void AddGameDirectory(const char *dir);
-	
-	int findhandle() const;
-	int filelength(FILE *f);
-	
-	tSearchPathGroupList mlstSearchPaths;
-
-#ifdef _WIN32
-	// TODO: if WIN only?
-	FILE *sys_handles[MAX_HANDLES]{nullptr};
-#elif sun
-	struct MEMFILE
-	{
-		FILE *hFile{nullptr};
-		char *pMap{nullptr};
-		int nLen{0};
-		int nPos{0};
-	};
-
-	MEMFILE sys_handles[MAX_HANDLES]{};
-#endif
 };
