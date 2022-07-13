@@ -2,7 +2,7 @@
  * This file is part of OGSNext Engine
  *
  * Copyright (C) 1996-2001 Id Software, Inc.
- * Copyright (C) 2020, 2022 BlackPhrase
+ * Copyright (C) 2016-2020, 2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,15 @@
 #define SFF_SUBDIR  0x08
 #define SFF_SYSTEM  0x10
 
-#define MAX_OSPATH 128 // max length of a filesystem pathname
+constexpr auto MAX_OSPATH{128}; ///< Max length of a filesystem pathname
+
+#ifndef MAX_QPATH
+constexpr auto MAX_QPATH{64};
+#endif
+
+#ifndef MAX_OSPATH
+constexpr auto MAX_OSPATH{256};
+#endif
 
 using pack_t = struct pack_s;
 
@@ -97,6 +105,8 @@ private:
 	
 	int findhandle() const;
 	int filelength(FILE *f);
+private:	
+	static constexpr auto MAX_HANDLES{10};
 	
 	tSearchPathGroupList mlstSearchPaths;
 
@@ -114,4 +124,38 @@ private:
 
 	MEMFILE sys_handles[MAX_HANDLES]{};
 #endif
+
+	std::filesystem::path mRootDir{"."};
+	
+	//
+	// in memory
+	//
+
+	struct packfile_t
+	{
+		char name[MAX_QPATH]{};
+		int filepos{0}, filelen{0};
+	};
+
+	typedef struct pack_s
+	{
+		char filename[MAX_OSPATH]{};
+		IFile *handle{nullptr}; // FILE *handle; // TODO
+		int numfiles{0};
+		packfile_t *files{nullptr};
+	} pack_t;
+	
+	// search paths
+	typedef struct searchpath_s
+	{
+		char filename[MAX_OSPATH];
+		pack_t *pack; // only one of filename / pack will be used
+		struct searchpath_s *next;
+	} searchpath_t;
+	
+	searchpath_t *com_searchpaths{nullptr};
+	
+	int com_filesize{0};
+	
+	char com_cachedir[MAX_OSPATH]{};
 };
