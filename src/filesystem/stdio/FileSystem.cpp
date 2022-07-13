@@ -21,6 +21,7 @@
 
 #include "FileSystem.hpp"
 
+namespace fs = std::filesystem;
 CFileSystem gFileSystem;
 CFileSystem *gpFileSystem{&gFileSystem};
 
@@ -69,6 +70,11 @@ void CFileSystem::CloseFile(IFile *apFile)
 {
 };
 
+void CFileSystem::RemoveFile(const char *asRelativePath, const char *asAlias)
+{
+	fs::remove(mRootDir/asRelativePath); // TODO: remove_all?
+};
+
 int CFileSystem::GetFileTime(const char *asPath) const
 {
 	return -1;
@@ -76,15 +82,18 @@ int CFileSystem::GetFileTime(const char *asPath) const
 
 uint CFileSystem::GetFileSize(const char *asPath) const
 {
-	return 0;
+	//return filelength();
+	return fs::file_size(mRootDir/asPath);
 };
 
 bool CFileSystem::IsFileExists(const char *asFileName) const
 {
-	return false;
+	return fs::exists(mRootDir/asFileName);
 };
 
 bool CFileSystem::IsDirectory(const char *asFileName) const
 {
-	return false;
+	return fs::is_directory(mRootDir/asFileName);
+};
+
 };
