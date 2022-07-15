@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2018-2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 #include <cstdio>
 
 #include "CommonTypes.hpp"
-#include "filesystem/IFile.hpp"
+#include <filesystem/IFile.hpp>
 
 class CFile /*final*/ : public IFile
 {
@@ -38,7 +38,7 @@ public:
 	
 	size_t Write(const void *apData, size_t anCount) override;
 	size_t Read(void *apDest, size_t anCount) const override;
-
+	
 	//char *ReadLine(char *asOutput, int anMaxChars) override;
 	
 	int Printf(const char *asText, ...) override;
@@ -51,8 +51,8 @@ public:
 	
 	int SetVBuf(char *apBuffer, int anMode, size_t anSize) override;
 	
-	//void *GetReadBuffer(int *outBufferSize, bool abFailIfNotInCache) override;
-	//void ReleaseReadBuffer(void *apReadBuffer) override;
+	void *GetReadBuffer(int *apOutBufferSize, bool abFailIfNotInCache) const override;
+	void ReleaseReadBuffer(void *apBuffer) override;
 	
 	bool IsOk() const override {return mpHandle != nullptr;} // TODO: IsValid?
 	bool IsEOF() const override;

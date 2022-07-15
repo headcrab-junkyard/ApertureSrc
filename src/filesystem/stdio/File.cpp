@@ -1,7 +1,8 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2018, 2020-2021 BlackPhrase
+ * Copyright (C) 1996-1997 Id Software, Inc.
+ * Copyright (C) 2018, 2020-2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -34,8 +35,9 @@ CFile::CFile(FILE *apHandle) : mpHandle(apHandle)
 };
 
 CFile::CFile(const char *asName, const char *asMode)
-	: msName(asName), mpHandle(fopen(asName, asMode))
 {
+	Open(asName, asMode);
+	
 	assert(mpHandle);
 	
 	//if(!mpHandle)
@@ -52,13 +54,28 @@ size_t CFile::Write(const void *data, size_t count)
 	if(!data)
 		return -1;
 	
-	if(!mpHandle)
-		return -1;
+	//if(!mpHandle)
+		//return -1;
+	
+	//int t{VID_ForceUnlockedAndReturnState()}; // TODO
 	
 	//if(mbReadOnly)
 		//Sys_Error("Attempted to write to read-only file %d!\n", mpHandle);
 	
+	int x;
+	
+	//int handle = ToIntHandle(mpHandle);
+	
+#ifdef _WIN32
+	//x = fwrite(data, 1, count, sys_handles[handle]);
+#else
+	//x = write(handle, src, count);
+#endif
+	
 	return fwrite(data, 1 /*sizeof(char)*/, count, mpHandle); // TODO: sizeof(uint8_t)
+	
+	//VID_ForceLockState(t); // TODO
+	//return x;
 };
 
 size_t CFile::Read(void *dest, size_t count) const
@@ -66,14 +83,31 @@ size_t CFile::Read(void *dest, size_t count) const
 	if(!dest)
 		return -1;
 	
-	if(!mpHandle)
-		return -1;
+	//if(!mpHandle)
+		//return -1;
+	
+	//int t{VID_ForceUnlockedAndReturnState()}; // TODO
+	
+	int x;
+	
+	//int handle = ToIntHandle(mpHandle);
+	
+#ifdef _WIN32
+	//x = fread(dest, 1, count, sys_handles[handle]);
+#else
+	//x = read(handle, dest, count);
+#endif
 	
 	return fread(dest, 1 /*sizeof(char)*/, count, mpHandle); // TODO: sizeof(uint8_t)
+	
+	//VID_ForceLockState(t); // TODO
+	//return x;
 };
 
 int CFile::Printf(const char *text, ...)
 {
+	// TODO
+	
 	if(!text || !*text)
 		return -1;
 	
@@ -85,10 +119,26 @@ int CFile::Printf(const char *text, ...)
 
 int CFile::Seek(long position, SeekMode aeMode) const
 {
-	int nMode{SeekModeToInt(aeMode)};
-	
 	if(mpHandle)
+	{
+		int nMode{SeekModeToInt(aeMode)};
+		
+		//int t{VID_ForceUnlockedAndReturnState()}; // TODO: windows & not dedicated
+		
 		return fseek(mpHandle, position, nMode);
+		
+		/*
+		int handle = ToIntHandle(mpHandle);
+		
+#ifdef _WIN32
+		fseek(sys_handles[handle], position, SEEK_SET);
+#else
+		lseek(handle, position, SEEK_SET);
+#endif
+		*/
+		
+		//VID_ForceLockState(t); // TODO: windows & not dedicated
+	};
 
 	return 0;
 };
@@ -109,6 +159,17 @@ void CFile::Flush()
 int CFile::SetVBuf(char *apBuffer, int anMode, size_t anSize)
 {
 	return setvbuf(mpHandle, apBuffer, anMode, anSize);
+};
+
+void *CFile::GetReadBuffer(int *apOutBufferSize, bool abFailIfNotInCache) const
+{
+	// TODO
+	return nullptr;
+};
+
+void CFile::ReleaseReadBuffer(void *apBuffer)
+{
+	// TODO
 };
 
 bool CFile::IsEOF() const
@@ -160,7 +221,7 @@ void CFile::Open(const char *asName, const char *asMode)
 
 void CFile::Close()
 {
-	if(!IsOk())
+	if(IsOk())
 	{
 		Flush();
 		

@@ -80,31 +80,37 @@ public:
 	void Mount() override;
 	void Unmount() override;
 	
+	bool IsMounted() const /*override*/ {return mbMounted;}
+	
+	void SetWarningLevel(FileWarningLevel_t aeLevel) override {meWarningLevel = aeLevel;}
+	
 	void AddSearchPath(const char *asPath, const char *asAlias, bool abReadOnly) override;
 	bool RemoveSearchPath(const char *asAlias) override;
 	
 	void RemoveAllSearchPaths() override;
+	
+	bool AddPackFile(const char *asFullPath, const char *asPathID) override;
 	
 	IFile *OpenPathID(const char *asPath, const char *asPathID) override;
 	IFile *OpenFile(const char *asName, const char *asMode) override;
 	
 	void CloseFile(IFile *apFile) override;
 	
-	int GetFileTime(const char *asPath) const override;
-	uint GetFileSize(const char *asPath) const override;
+	void RemoveFile(const char *asRelativePath, const char *asAlias) override;
+	
+	/*long*/ int GetFileTime(const char *asFileName) const override;
+	uint GetFileSize(const char *asFileName) const override;
 	
 	bool IsFileExists(const char *asFileName) const override;
-	bool IsDirectory(const char *asFileName) const override;
+	bool IsDirectory(const char *asPath) const override;
 private:
-	static constexpr auto MAX_HANDLES{10};
+	IFile *FindFile(const char *asFileName) const;
 	
-	IFile *FindFile(const char *filename) const;
-	
-	pack_t *LoadPackFile(const char *packfile);
-	void AddGameDirectory(const char *dir);
+	pack_t *LoadPackFile(const char *asName);
+	void AddGameDirectory(const char *asDir);
 	
 	int findhandle() const;
-	int filelength(FILE *f);
+	int filelength(FILE *apFile);
 private:	
 	static constexpr auto MAX_HANDLES{10};
 	
@@ -157,5 +163,9 @@ private:
 	
 	int com_filesize{0};
 	
+	FileWarningLevel_t meWarningLevel{0};
+	
 	char com_cachedir[MAX_OSPATH]{};
+	
+	bool mbMounted{false};
 };
