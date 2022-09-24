@@ -2,7 +2,7 @@
  * This file is part of Magenta Engine
  *
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2019 BlackPhrase
+ * Copyright (C) 2018-2019, 2022 BlackPhrase
  *
  * Magenta Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,20 +29,20 @@ extern CConVar sv_friction;
 CConVar sv_edgefriction("edgefriction", "2");
 extern CConVar sv_stopspeed;
 
-static vec3_t forward, right, up;
+//static vec3_t forward, right, up;
 
-vec3_t wishdir;
-float wishspeed;
+//vec3_t wishdir;
+//float wishspeed;
 
 // world
-float *angles;
-float *origin;
-float *velocity;
+//float *angles;
+//float *origin;
+//float *velocity;
 
 // TODO: already defined in pmove...
 //int onground; // TODO: was qboolean here but marked as int in decl...
 
-usercmd_t cmd;
+//usercmd_t cmd;
 
 CConVar sv_idealpitchscale("sv_idealpitchscale", "0.8");
 
@@ -684,7 +684,7 @@ void SV_ClientThink()
 SV_ReadClientMove
 ===================
 */
-void SV_ReadClientMove(usercmd_t *move)
+void SV_ReadClientMove(INetMsg *net_message, usercmd_t *move)
 {
 	int i;
 	vec3_t angle;
@@ -696,29 +696,29 @@ void SV_ReadClientMove(usercmd_t *move)
 
 	// read current angles
 	for(i = 0; i < 3; i++)
-		angle[i] = MSG_ReadAngle(net_message);
+		angle[i] = net_message->ReadAngle();
 
 	VectorCopy(angle, host_client->edict->v.v_angle);
 
 	// read movement
-	move->forwardmove = MSG_ReadShort(net_message);
-	move->sidemove = MSG_ReadShort(net_message);
-	move->upmove = MSG_ReadShort(net_message);
+	move->forwardmove = net_message->ReadShort();
+	move->sidemove = net_message->ReadShort();
+	move->upmove = net_message->ReadShort();
 
 	// read buttons
-	bits = MSG_ReadByte(net_message);
+	bits = net_message->ReadByte();
 	host_client->edict->v.button0 = bits & 1;
 	host_client->edict->v.button2 = (bits & 2) >> 1;
 
-	i = MSG_ReadByte(net_message);
+	i = net_message->ReadByte();
 	if(i)
 		host_client->edict->v.impulse = i;
 
 #ifdef QUAKE2
 	// read light level
-	host_client->edict->v.light_level = MSG_ReadByte(net_message);
+	host_client->edict->v.light_level = net_message->ReadByte();
 #endif
-}
+};
 
 /*
 ===================
@@ -742,11 +742,11 @@ qboolean SV_ReadClientMessage()
 		{
 			Sys_Printf("SV_ReadClientMessage: NET_GetMessage failed\n");
 			return false;
-		}
+		};
 		if(!ret)
 			return true;
 
-		MSG_BeginReading();
+		net_message->BeginReading();
 
 		while(1)
 		{
@@ -757,9 +757,9 @@ qboolean SV_ReadClientMessage()
 			{
 				Sys_Printf("SV_ReadClientMessage: badread\n");
 				return false;
-			}
+			};
 
-			cmd = MSG_ReadChar(net_message);
+			cmd = net_message->ReadChar();
 
 			switch(cmd)
 			{
@@ -775,7 +775,7 @@ qboolean SV_ReadClientMessage()
 				break;
 
 			case clc_stringcmd:
-				s = MSG_ReadString(net_message);
+				s = net_message->ReadString();
 				//if (host_client->privileged) // TODO
 				ret = 2;
 				//else
@@ -833,12 +833,12 @@ qboolean SV_ReadClientMessage()
 			case clc_move:
 				SV_ReadClientMove(&host_client->cmd);
 				break;
-			}
-		}
+			};
+		};
 	} while(ret == 1);
 
 	return true;
-}
+};
 */
 
 /*
@@ -862,21 +862,80 @@ void SV_RunClients()
 		{
 			SV_DropClient(host_client, false, "Bye!"); // client misbehaved... // TODO
 			continue;
-		}
+		};
 
 		if(!host_client->spawned)
 		{
 			// clear client movement until a new packet is received
 			memset(&host_client->cmd, 0, sizeof(host_client->cmd));
 			continue;
-		}
+		};
 
 		// always pause in single player if in console or menus
 		if(!sv.paused && (svs.maxclients > 1 || key_dest == key_game))
 			SV_ClientThink();
-	}
-}
+	};
+};
+
+void SV_ParseConsistencyResponse()
+{
+	// TODO
+};
+
+void SV_ParseVoiceData()
+{
+	// TODO
+};
+
+void SV_ParseStringCommand(client_t *cl)
+{
+	char *s = MSG_ReadString();
+	
+	Cmd_TokenizeString(s);
+	
+	host_client = cl; // TODO: hack to let SV_New_f work properly
+	sv_player = cl->edict;
+	
+	if(Cmd_Exists(Cmd_Argv(0)))
+		Cmd_ExecuteString(s, src_client); // TODO: this allows players to call any cmd on the server??????????????
+	else
+		gEntityInterface.pfnClientCommand(sv_player);
+};
+
+/*
+==================
+SV_ExecuteUserCommand
+==================
 */
+void SV_ExecuteUserCommand(const char *s)
+{
+	//ucmd_t	*u;
+	
+	Cmd_TokenizeString(s /*, true*/); // TODO: q2
+	sv_player = host_client->edict; // TODO: = sv_client->edict in q2
+
+	SV_BeginRedirect(RD_CLIENT); // TODO: commented out in q2
+
+	// TODO: Cmd_ExecuteString here instead of this
+	/*
+	for (u=ucmds ; u->name ; u++)
+		if (!strcmp (Cmd_Argv(0), u->name) )
+		{
+			u->func ();
+			break;
+		};
+	*/
+	
+	
+	//if(!u->name /*&& sv.state == ss_game*/) // TODO
+		gEntityInterface.pfnClientCommand(sv_player);
+	
+	// TODO: qw
+	//if(!u->name)
+		//Con_Printf("Bad user command: %s\n", Cmd_Argv(0));
+
+	SV_EndRedirect(); // TODO: commented out in q2
+}
 
 /*
 ===================
@@ -885,7 +944,7 @@ SV_ExecuteClientMessage
 The current net_message is parsed for the given client
 ===================
 */
-void SV_ExecuteClientMessage (client_t *cl, sizebuf_t *net_message)
+void SV_ExecuteClientMessage(client_t *cl, INetMsg *net_message)
 {
 	int		c;
 	char	*s;
@@ -903,7 +962,7 @@ void SV_ExecuteClientMessage (client_t *cl, sizebuf_t *net_message)
 
 	// make sure the reply sequence number matches the incoming
 	// sequence number 
-	if (cl->netchan.incoming_sequence >= cl->netchan.outgoing_sequence)
+	if(cl->netchan.incoming_sequence >= cl->netchan.outgoing_sequence)
 		cl->netchan.outgoing_sequence = cl->netchan.incoming_sequence;
 	else
 		cl->send_message = false;	// don't reply, sequences have slipped		
@@ -922,20 +981,20 @@ void SV_ExecuteClientMessage (client_t *cl, sizebuf_t *net_message)
 	// other players
  	cl->localtime = sv.time;
 	cl->delta_sequence = -1;	// no delta unless requested
-	while (1)
+	while(1)
 	{
-		if (msg_badread)
+		if(msg_badread)
 		{
 			gpSystem->Printf ("SV_ReadClientMessage: badread\n");
 			SV_DropClient (cl, false, "Bad message read");
 			return;
-		}	
+		};
 
-		c = MSG_ReadByte (net_message);
-		if (c == -1)
+		c = net_message->ReadByte();
+		if(c == -1)
 			break;
-				
-		switch (c)
+		
+		switch(c)
 		{
 		default:
 			gpSystem->Printf ("SV_ReadClientMessage: unknown command char\n");
@@ -946,88 +1005,87 @@ void SV_ExecuteClientMessage (client_t *cl, sizebuf_t *net_message)
 			break;
 
 		case clc_delta:
-			cl->delta_sequence = MSG_ReadByte (net_message);
+			cl->delta_sequence = net_message->ReadByte();
 			break;
 
 		case clc_move:
-			if (move_issued)
+			if(move_issued)
 				return;		// someone is trying to cheat...
 
 			move_issued = true;
 
-			checksumIndex = MSG_GetReadCount();
-			checksum = (byte)MSG_ReadByte (net_message);
+			//checksumIndex = net_message->GetReadCount(); // TODO
+			checksum = (byte)net_message->ReadByte();
 
 			// read loss percentage
-			//cl->lossage = MSG_ReadByte(net_message); // TODO
+			//cl->lossage = net_message->ReadByte(); // TODO
 
-			MSG_ReadDeltaUsercmd (&nullcmd, &oldest);
-			MSG_ReadDeltaUsercmd (&oldest, &oldcmd);
-			MSG_ReadDeltaUsercmd (&oldcmd, &newcmd);
+			//net_message->ReadDeltaUsercmd(&nullcmd, &oldest); // TODO
+			net_message->ReadDeltaUsercmd(&oldest, &oldcmd);
+			net_message->ReadDeltaUsercmd(&oldcmd, &newcmd);
 
-			if ( !cl->spawned )
+			if(!cl->spawned)
 				break;
 
 			// if the checksum fails, ignore the rest of the packet
 			// TODO
 			//calculatedChecksum = COM_BlockSequenceCRCByte(
 				//net_message->data + checksumIndex + 1,
-				//MSG_GetReadCount() - checksumIndex - 1,
+				//net_message->GetReadCount() - checksumIndex - 1,
 				//seq_hash);
 
-			if (calculatedChecksum != checksum)
+			if(calculatedChecksum != checksum)
 			{
-				gpSystem->DevPrintf ("Failed command checksum for %s(%d) (%d != %d)\n", 
+				gpSystem->DevPrintf("Failed command checksum for %s(%d) (%d != %d)\n", 
 					cl->name, cl->netchan.incoming_sequence, checksum, calculatedChecksum);
 				return;
-			}
+			};
 
-			if (!sv.paused) {
+			if(!sv.paused)
+			{
 				SV_PreRunCmd();
 
-				if (net_drop < 20)
+				if(net_drop < 20)
 				{
-					while (net_drop > 2)
+					while(net_drop > 2)
 					{
-						SV_RunCmd (&cl->lastcmd);
+						SV_RunCmd(&cl->lastcmd);
 						net_drop--;
-					}
+					};
 					if (net_drop > 1)
-						SV_RunCmd (&oldest);
+						SV_RunCmd(&oldest);
 					if (net_drop > 0)
-						SV_RunCmd (&oldcmd);
-				}
-				SV_RunCmd (&newcmd);
+						SV_RunCmd(&oldcmd);
+				};
+				SV_RunCmd(&newcmd);
 
 				SV_PostRunCmd();
-			}
+			};
 
 			cl->lastcmd = newcmd;
 			cl->lastcmd.buttons = 0; // avoid multiple fires on lag
 			break;
 
-
 		case clc_stringcmd:	
-			s = MSG_ReadString (net_message);
-			//SV_ExecuteUserCommand (s); // TODO
+			s = net_message->ReadString();
+			//SV_ExecuteUserCommand(s); // TODO
 			break;
 
 		case clc_tmove:
-			o[0] = MSG_ReadCoord(net_message);
-			o[1] = MSG_ReadCoord(net_message);
-			o[2] = MSG_ReadCoord(net_message);
+			o[0] = net_message->ReadCoord();
+			o[1] = net_message->ReadCoord();
+			o[2] = net_message->ReadCoord();
 			// only allowed by spectators
-			//if (host_client->spectator) // TODO
+			//if(host_client->spectator) // TODO
 			{
 				VectorCopy(o, sv_player->v.origin);
 				SV_LinkEdict(sv_player, false);
-			}
+			};
 			break;
 
 		//case clc_upload: // TODO
 			//SV_NextUpload();
 			//break;
-
-		}
-	}
-}
+		};
+	};
+};
