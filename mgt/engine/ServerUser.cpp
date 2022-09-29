@@ -679,46 +679,6 @@ void SV_ClientThink()
 	SV_AirMove();
 }
 
-/*
-===================
-SV_ReadClientMove
-===================
-*/
-void SV_ReadClientMove(INetMsg *net_message, usercmd_t *move)
-{
-	int i;
-	vec3_t angle;
-	int bits;
-
-	// read ping time
-	host_client->ping_times[host_client->num_pings % NUM_PING_TIMES] = sv.time - MSG_ReadFloat(net_message);
-	host_client->num_pings++;
-
-	// read current angles
-	for(i = 0; i < 3; i++)
-		angle[i] = net_message->ReadAngle();
-
-	VectorCopy(angle, host_client->edict->v.v_angle);
-
-	// read movement
-	move->forwardmove = net_message->ReadShort();
-	move->sidemove = net_message->ReadShort();
-	move->upmove = net_message->ReadShort();
-
-	// read buttons
-	bits = net_message->ReadByte();
-	host_client->edict->v.button0 = bits & 1;
-	host_client->edict->v.button2 = (bits & 2) >> 1;
-
-	i = net_message->ReadByte();
-	if(i)
-		host_client->edict->v.impulse = i;
-
-#ifdef QUAKE2
-	// read light level
-	host_client->edict->v.light_level = net_message->ReadByte();
-#endif
-};
 
 /*
 ===================
@@ -877,31 +837,6 @@ void SV_RunClients()
 	};
 };
 
-void SV_ParseConsistencyResponse()
-{
-	// TODO
-};
-
-void SV_ParseVoiceData()
-{
-	// TODO
-};
-
-void SV_ParseStringCommand(client_t *cl)
-{
-	char *s = MSG_ReadString();
-	
-	Cmd_TokenizeString(s);
-	
-	host_client = cl; // TODO: hack to let SV_New_f work properly
-	sv_player = cl->edict;
-	
-	if(Cmd_Exists(Cmd_Argv(0)))
-		Cmd_ExecuteString(s, src_client); // TODO: this allows players to call any cmd on the server??????????????
-	else
-		gEntityInterface.pfnClientCommand(sv_player);
-};
-
 /*
 ==================
 SV_ExecuteUserCommand
@@ -937,6 +872,134 @@ void SV_ExecuteUserCommand(const char *s)
 	SV_EndRedirect(); // TODO: commented out in q2
 }
 
+class CCLC_StringCmdMsg final : public CBaseNetMsg
+{
+public:
+	CCLC_StringCmdMsg() : CBaseNetMsg(clc_stringcmd, "clc_stringcmd"){}
+	
+	void ReadFrom(const IReadBuffer &aBuffer) override
+	{
+		msCmd = aBuffer.ReadString();
+	};
+	
+	void WriteTo(IWriteBuffer &aBuffer) override
+	{
+		aBuffer.WriteString(msCmd);
+	};
+private:
+	const char *msCmd{nullptr};
+};
+
+class CCLC_StringCmdMsgHandler final : public INetMsgHandler
+{
+public:
+	CCLC_StringCmdMsgHandler(CGameClientEventDispatcher *apGameClientEventDispatcher) : mpGameClientEventDispatcher(apGameClientEventDispatcher){}
+	
+	bool Handle(INetClient *cl, const IReadBuffer &aBuffer) override
+	{
+		CCLC_StringCmdMsg Msg;
+		Msg.ReadFrom(aBuffer);
+		
+		ExecClientStringCommand(cl, Msg.msCmd);
+		//SV_ExecuteUserCommand(cl, Msg.msCmd); // TODO
+		
+		return true;
+	};
+private:
+	void ExecClientStringCommand(client_t *cl, const char *s)
+	{
+		//Cmd_TokenizeString(s);
+		CCmdArgs Args(s);
+		
+		host_client = cl; // TODO: hack to let SV_New_f work properly
+		sv_player = cl->edict;
+		
+		if(gpCmdRegistry->Exists(Args.GetByIndex(0)))
+			Cmd_ExecuteString(s, src_client); // TODO: this allows players to call any cmd on the server??????????????
+		else
+			mpGameClientEventDispatcher->OnClientCommand(cl, Args);
+	};
+private:
+	CGameClientEventDispatcher *mpGameClientEventDispatcher{nullptr};
+};
+
+class CCLC_FileConsistencyMsgHandler final : public INetMsgHandler
+{
+public:
+	bool Handle(INetClient *cl, INetMsg *net_message) override
+	{
+		SV_ParseConsistencyResponse(cl, net_message);
+		
+		return true;
+	};
+private:
+	void SV_ParseConsistencyResponse(client_t *cl, INetMsg *net_message)
+	{
+		// TODO
+		
+		// NOTE: a call to gamedll's inconsistent file handler func should probably be here so we keep this at the engine side
+	};
+};
+
+class CCLC_CvarValue2Msg final : public INetMsg
+{
+public:
+	CCLC_CvarValue2Msg() = default;
+	CCLC_CvarValue2Msg(int anRequestID, const char *asCvarName, const char *asCvarValue) : mnRequestID(anRequestID), msCvarName(asCvarName), msCvarValue(asCvarValue){}
+	
+	void ReadFrom(const IReadBuffer &aBuffer) override
+	{
+		mnRequestID = aBuffer.ReadLong(); // TODO: long?
+		msCvarName = aBuffer.ReadString(); // TODO: either the client sends it or the server operates on the mnRequestID and gets the name from it
+		msCvarValue = aBuffer.ReadString();
+	};
+	
+	void WriteTo(IWriteBuffer &aBuffer) override
+	{
+		aBuffer.WriteLong(mnRequestID);
+		aBuffer.WriteString(msCvarName);
+		aBuffer.WriteString(msCvarValue);
+	};
+public:
+	const char *msCvarName{nullptr}; // TODO: probably should allocate a buffer
+	const char *msCvarValue{nullptr}; // TODO: probably should allocate a buffer
+	
+	int mnRequestID{0};
+};
+
+class CCLC_CVarValue2MsgHandler final : public INetMsgHandler
+{
+public:
+	CCLC_CVarValue2MsgHandler(CGameClientEventDispatcher *apGameClientEventDispatcher) : mpGameClientEventDispatcher(apGameClientEventDispatcher){}
+	
+	bool Handle(INetClient *cl, INetMsg *net_message) override
+	{
+		SV_ParseCvarValueResponseEx(cl, net_message);
+		
+		return true;
+	};
+private:
+	void SV_ParseCvarValueResponseEx(client_t *cl, INetMsg *net_message)
+	{
+		// TODO: either this or that
+		int nRequestID{net_message.As<CCLC_CvarValue2Msg>().mnRequestID};
+		const char *sCvarName{net_message.As<CCLC_CvarValue2Msg>().msCvarName};
+		const char *sCvarValue{net_message.As<CCLC_CvarValue2Msg>().msCvarValue};
+		//
+		// JSON style?
+		//int nRequestID{net_message->GetKey("request_id")};
+		//const char *sCvarName{net_message->Keys["cvar_name"]};
+		//const char *sCvarValue{net_message->GetKey("cvar_value")};
+		//
+		
+		// TODO: something else?
+		
+		mpGameClientEventDispatcher->OnCvarValueReceived(cl->GetID(), nRequestID, sCvarName, sCvarValue);
+	};
+private:
+	CGameClientEventDispatcher *mpGameClientEventDispatcher{nullptr};
+};
+
 /*
 ===================
 SV_ExecuteClientMessage
@@ -944,20 +1007,13 @@ SV_ExecuteClientMessage
 The current net_message is parsed for the given client
 ===================
 */
-void SV_ExecuteClientMessage(client_t *cl, INetMsg *net_message)
+void SV_ExecuteClientMessage(client_t *cl, const IReadBuffer &aBuffer)
 {
 	int		c;
-	char	*s;
-	usercmd_t	oldest, oldcmd, newcmd;
-	client_frame_t	*frame;
-	vec3_t o;
-	qboolean	move_issued = false; //only allow one move command
-	int		checksumIndex;
-	byte	checksum, calculatedChecksum;
-	int		seq_hash;
+	//char	*s;
 
 	// calc ping time
-	frame = &cl->frames[cl->netchan.incoming_acknowledged & UPDATE_MASK];
+	client_frame_t *frame{&cl->frames[cl->netchan.incoming_acknowledged & UPDATE_MASK]};
 	frame->ping_time = realtime - frame->senttime;
 
 	// make sure the reply sequence number matches the incoming
@@ -965,7 +1021,7 @@ void SV_ExecuteClientMessage(client_t *cl, INetMsg *net_message)
 	if(cl->netchan.incoming_sequence >= cl->netchan.outgoing_sequence)
 		cl->netchan.outgoing_sequence = cl->netchan.incoming_sequence;
 	else
-		cl->send_message = false;	// don't reply, sequences have slipped		
+		cl->send_message = false; // don't reply, sequences have slipped		
 
 	// save time for ping calculations
 	cl->frames[cl->netchan.outgoing_sequence & UPDATE_MASK].senttime = realtime;
@@ -973,119 +1029,73 @@ void SV_ExecuteClientMessage(client_t *cl, INetMsg *net_message)
 
 	host_client = cl;
 	sv_player = host_client->edict;
+	pmove = &svpmove;
 
-//	seq_hash = (cl->netchan.incoming_sequence & 0xffff) ; // ^ QW_CHECK_HASH;
-	seq_hash = cl->netchan.incoming_sequence;
+//	int seq_hash = (cl->netchan.incoming_sequence & 0xffff) ; // ^ QW_CHECK_HASH;
+	int seq_hash = cl->netchan.incoming_sequence;
 	
 	// mark time so clients will know how much to predict
 	// other players
  	cl->localtime = sv.time;
-	cl->delta_sequence = -1;	// no delta unless requested
+	cl->delta_sequence = -1; // no delta unless requested
+	
 	while(1)
 	{
 		if(msg_badread)
 		{
-			gpSystem->Printf ("SV_ReadClientMessage: badread\n");
-			SV_DropClient (cl, false, "Bad message read");
+			gpSystem->Printf("SV_ReadClientMessage: badread\n");
+			SV_DropClient(cl, false, "Bad message read");
 			return;
 		};
-
-		c = net_message->ReadByte();
+		
+		c = aBuffer.ReadByte();
+		
+		// End of message(?)
 		if(c == -1)
 			break;
 		
+		// TODO
+		INetMsgHandler *handler{NetMsgHandlerManager->GetHandlerForMsg(net_message.GetID())};
+	
+		if(!handler)
+			return false;
+		
+		/*
 		switch(c)
 		{
 		default:
-			gpSystem->Printf ("SV_ReadClientMessage: unknown command char\n");
-			SV_DropClient (cl, false, "Unknown command char");
+			if(!mpGame->HandleClientMessage(cl->GetID(), aBuffer))
+				gpSystem->Printf("SV_ReadClientMessage: unknown command char (%d)\n", c);
+			//SV_DropClient (cl, false, "Unknown command char"); // TODO: just ignore the message for now
 			return;
-						
+		
 		case clc_nop:
 			break;
-
-		case clc_delta:
-			cl->delta_sequence = net_message->ReadByte();
+		
+		//clc_move
+		
+		case clc_stringcmd:
+			CCLC_StringCmdMsgHandler handler;
 			break;
-
-		case clc_move:
-			if(move_issued)
-				return;		// someone is trying to cheat...
-
-			move_issued = true;
-
-			//checksumIndex = net_message->GetReadCount(); // TODO
-			checksum = (byte)net_message->ReadByte();
-
-			// read loss percentage
-			//cl->lossage = net_message->ReadByte(); // TODO
-
-			//net_message->ReadDeltaUsercmd(&nullcmd, &oldest); // TODO
-			net_message->ReadDeltaUsercmd(&oldest, &oldcmd);
-			net_message->ReadDeltaUsercmd(&oldcmd, &newcmd);
-
-			if(!cl->spawned)
-				break;
-
-			// if the checksum fails, ignore the rest of the packet
-			// TODO
-			//calculatedChecksum = COM_BlockSequenceCRCByte(
-				//net_message->data + checksumIndex + 1,
-				//net_message->GetReadCount() - checksumIndex - 1,
-				//seq_hash);
-
-			if(calculatedChecksum != checksum)
-			{
-				gpSystem->DevPrintf("Failed command checksum for %s(%d) (%d != %d)\n", 
-					cl->name, cl->netchan.incoming_sequence, checksum, calculatedChecksum);
-				return;
-			};
-
-			if(!sv.paused)
-			{
-				SV_PreRunCmd();
-
-				if(net_drop < 20)
-				{
-					while(net_drop > 2)
-					{
-						SV_RunCmd(&cl->lastcmd);
-						net_drop--;
-					};
-					if (net_drop > 1)
-						SV_RunCmd(&oldest);
-					if (net_drop > 0)
-						SV_RunCmd(&oldcmd);
-				};
-				SV_RunCmd(&newcmd);
-
-				SV_PostRunCmd();
-			};
-
-			cl->lastcmd = newcmd;
-			cl->lastcmd.buttons = 0; // avoid multiple fires on lag
+		
+		//clc_delta
+		//clc_resourcelist
+		//clc_tmove
+		
+		case clc_fileconsistency:
+			CCLC_FileConsistencyMsgHandler handler;
 			break;
-
-		case clc_stringcmd:	
-			s = net_message->ReadString();
-			//SV_ExecuteUserCommand(s); // TODO
+		
+		//clc_voicedata
+		//clc_hltv
+		//clc_cvarvalue
+		
+		case clc_cvarvalue2:
+			CCLC_CVarValue2MsgHandler handler;
 			break;
-
-		case clc_tmove:
-			o[0] = net_message->ReadCoord();
-			o[1] = net_message->ReadCoord();
-			o[2] = net_message->ReadCoord();
-			// only allowed by spectators
-			//if(host_client->spectator) // TODO
-			{
-				VectorCopy(o, sv_player->v.origin);
-				SV_LinkEdict(sv_player, false);
-			};
-			break;
-
-		//case clc_upload: // TODO
-			//SV_NextUpload();
-			//break;
 		};
+		*/
+		
+		handler->Handle(cl, aBuffer);
 	};
 };
