@@ -2,7 +2,7 @@
  * This file is part of OGSNext Engine
  *
  * Copyright (C) 1996-2005 Id Software, Inc.
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2018-2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,11 +24,10 @@
 
 #include <vector>
 
-#include "CommonTypes.hpp"
+#include <CommonTypes.hpp>
+#include <common/netadr.h>
 
-#include "netadr.h"
-
-//#include "engine/IGameServer.hpp"
+//#include <next/engine/IGameServer.hpp>
 
 // MAX_CHALLENGES is made large to prevent a denial
 // of service attack that could cycle all of them
@@ -69,6 +68,8 @@ struct svstats_t
 interface IGameClient;
 using tGameClientVec = std::vector<IGameClient*>;
 
+interface INetServer;
+
 class CGameServer //final : public IGameServer
 {
 public:
@@ -93,6 +94,10 @@ public:
 	
 	IGameClient *GetClient(int anIndex) const /*override*/ {return mvClients.at(anIndex);}
 private:
+	void CheckTimeouts();
+	
+	void ReadPackets();
+	
 	void SendClientMessages();
 private:
 	//server_t *mpsv{nullptr};
@@ -105,7 +110,9 @@ public:
 	tGameClientVec mvClients;
 	//CGameClient *clients{nullptr}; // [maxclients]
 	
-	int maxclients;
+	INetServer *mpNetServer{nullptr};
+	
+	int maxclients{0};
 	
 	bool active{false};
 };
