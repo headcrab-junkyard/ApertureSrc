@@ -22,7 +22,7 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #include <memory>
 
-#include "CommonTypes.hpp"
+#include "engine/IMemory.hpp"
 
 interface ISystem;
 
@@ -30,11 +30,15 @@ class CMemHunk;
 class CMemCache;
 class CMemZone;
 
-class CMemory
+class CMemory : public IMemory
 {
 public:
 	CMemory(ISystem *apSystem, int anHeapSize);
 	~CMemory();
+	
+	void *Calloc(int anNum, size_t anSize) override;
+	
+	void *CheckCache(cache_user_t *apUser) override;
 	
 	CMemZone *GetZone() const {return mpMainZone.get();}
 	CMemHunk *GetHunk() const {return mpHunk.get();}

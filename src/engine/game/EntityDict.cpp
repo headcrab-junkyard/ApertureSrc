@@ -21,3 +21,16 @@
 
 #include "quakedef.h"
 #include "EntityDict.hpp"
+
+void CEntityDict::Print()
+{
+};
+
+void CEntityDict::WriteToFile(IFile *apFile)
+{
+};
+
+char *CEntityDict::ParseEdict(char *data, edict_t *ent)
+{
+    return nullptr;
+};

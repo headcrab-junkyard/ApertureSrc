@@ -24,6 +24,7 @@
 #include "engine/ICvarRegistry.hpp"
 
 interface ISystem;
+interface ICmdArgs;
 
 class CCvarRegistry final : public ICvarRegistry
 {
@@ -50,7 +51,7 @@ public:
 	/// called by Cmd_ExecuteString when Cmd_Argv(0) doesn't match a known
 	/// command.  Returns true if the command was a variable reference that
 	/// was handled. (print or change)
-	bool HandleCommand();
+	bool HandleCommand(const ICmdArgs &aArgs);
 private:
 	ISystem *mpSystem{nullptr};
 };

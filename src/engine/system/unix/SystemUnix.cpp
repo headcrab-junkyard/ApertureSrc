@@ -2,7 +2,7 @@
  * This file is part of OGSNext Engine
  *
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2021 BlackPhrase
+ * Copyright (C) 2021-2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,7 +71,7 @@ void CSystemUnix::Printf(const char *fmt, ...)
 	if(nostdout)
 		return;
 
-	//fprintf(stderr, "%s", text);
+	fprintf(stderr, "%s", text); // TODO
 	
 	for(auto p = reinterpret_cast<byte *>(text); *p; p++)
 	{
@@ -94,7 +94,7 @@ void CSystemUnix::Error(const char *error, ...)
 	va_start(argptr, error);
 	vsprintf(string, error, argptr);
 	va_end(argptr);
-	fprintf(stderr, "Error: %s\n", string);
+	//fprintf(stderr, "Error: %s\n", string);
 
 	Host_Shutdown();
 	exit(1);

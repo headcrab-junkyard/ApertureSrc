@@ -19,7 +19,13 @@
 
 /// @file
 
+#include "quakedef.h"
 #include "ModelLoaderHandler.hpp"
 
 CModelLoaderHandler::CModelLoaderHandler() = default;
 CModelLoaderHandler::~CModelLoaderHandler() = default;
+
+void CModelLoaderHandler::AddLoader(IModelLoader *apLoader)
+{
+	mvLoaders.push_back(apLoader);
+};

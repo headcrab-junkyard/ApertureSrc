@@ -2,7 +2,7 @@
  * This file is part of OGSNext Engine
  *
  * Copyright (C) 1996-2005 Id Software, Inc.
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2018-2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,10 +22,11 @@
 
 #pragma once
 
-//#include "engine/IGameClient.hpp"
+#include <CommonTypes.hpp>
+//#include <engine/IGameClient.hpp>
 
-#define NUM_PING_TIMES 16
-#define NUM_SPAWN_PARMS 16
+constexpr auto NUM_PING_TIMES{16};
+constexpr auto NUM_SPAWN_PARMS{16};
 
 using sizebuf_t = struct sizebuf_s;
 
@@ -38,6 +39,8 @@ struct client_frame_t
 	float				ping_time;
 	packet_entities_t	entities;
 };
+
+interface INetMsg;
 
 class CGameClient //final : public IGameClient
 {

@@ -23,14 +23,17 @@
 #include "quakedef.h"
 #include "Net.hpp"
 #include "System.hpp"
+#include "networksystem/INetworkSystem.hpp"
 
-CNetwork::CNetwork(CSys *apSystem) : mpSystem(apSystem){}
+CNetwork::CNetwork(CSystem *apSystem) : mpSystem(apSystem){}
 
 void CNetwork::Init()
 {
 	LoadModule();
 	
 	mpNetworkSystem->Init(Sys_GetFactoryThis());
+
+	//Netchan_Init(); // TODO
 };
 
 void CNetwork::Shutdown()
@@ -47,6 +50,20 @@ void CNetwork::Shutdown()
 void CNetwork::Config(bool multiplayer)
 {
 	mpNetworkSystem->Config(multiplayer);
+	
+	/*
+	if(multiplayer)
+	{
+		// TODO: should this be recreated every time?
+		mpServer = mpNetworkSystem->StartServer();
+		mpClient = mpNetworkSystem->StartClient();
+	}
+	else
+	{
+		mpServer = nullptr;
+		mpClient = nullptr;
+	};
+	*/
 };
 
 void CNetwork::Sleep(int msec)
@@ -56,22 +73,40 @@ void CNetwork::Sleep(int msec)
 
 bool CNetwork::GetPacket(netsrc_t sock, netadr_t &net_from, sizebuf_t &net_message)
 {
-	return mpNetworkSystem->GetPacket(sock, net_from, net_message);
+	// TODO
+	/*
+	switch(sock)
+	{
+	case NS_SERVER:
+		return mpServer->GetPacket(net_from, net_message);
+	case NS_CLIENT:
+		return mpClient->GetPacket(net_from, net_message);
+	};
+	*/
 };
 
 void CNetwork::SendPacket(netsrc_t sock, int length, const void *data, const netadr_t &to)
 {
-	mpNetworkSystem->SendPacket(sock, length, data, to);
+	// TODO
+	/*
+	switch(sock)
+	{
+	case NS_SERVER:
+		mpServer->SendPacket(length, data, to);
+	case NS_CLIENT:
+		mpClient->SendPacket(length, data, to);
+	};
+	*/
 };
 
 bool CNetwork::CompareAdr(const netadr_t &a, const netadr_t &b)
 {
-	return NET_CompareAdr(a, b);
+	return a == b;
 };
 
 bool CNetwork::CompareBaseAdr(const netadr_t &a, const netadr_t &b)
 {
-	return NET_CompareBaseAdr(a, b);
+	return a.CompareBase(b);
 };
 
 bool CNetwork::StringToAdr(const char *s, netadr_t &a)
@@ -86,17 +121,17 @@ void CNetwork::LoadModule()
 	mpNetworkSystemModule = Sys_LoadModule("networksystem");
 	
 	if(!mpNetworkSystemModule)
-		mpSystem->Error("");
+		mpSystem->Error("Couldn't load the 'networksystem' module!");
 	
 	auto fnNetworkSystemFactory{Sys_GetFactory(mpNetworkSystemModule)};
 	
 	if(!fnNetworkSystemFactory)
-		mpSystem->Error("");
+		mpSystem->Error("Couldn't get the factory from the network system module!");
 	
 	mpNetworkSystem = reinterpret_cast<INetworkSystem*>(fnNetworkSystemFactory(OGS_NETWORKSYSTEM_INTERFACE_VERSION, nullptr));
 	
 	if(!mpNetworkSystem)
-		mpSystem->Error("");
+		mpSystem->Error("Couldn't get the network system interface!");
 };
 
 void CNetwork::UnloadModule()

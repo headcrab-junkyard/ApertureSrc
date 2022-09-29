@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2020 BlackPhrase
+ * Copyright (C) 2020, 2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -19,16 +19,30 @@
 
 /// @file
 
+//#include "quakedef.h"
 #include "VoiceServer.hpp"
 
 EXPOSE_SINGLE_INTERFACE(CVoiceServer, IVoiceServer, OGS_VOICESERVER_INTERFACE_VERSION);
 
 bool CVoiceServer::SetClientListening(int anReceiver, int anSender, bool abState)
 {
-	return false;
+	if(anReceiver > 32 || anReceiver < 0) // TODO: find a way to get the actual max players value
+		return false;
+	
+	if(anSender > 32 || anReceiver < 0) // TODO: find a way to get the actual max players value
+		return false;
+	
+	mClientListeningMap[anReceiver][anSender] = abState;
+	return true;
 };
 
 bool CVoiceServer::GetClientListening(int anReceiver, int anSender) const
 {
-	return false;
+	if(anReceiver > 32 || anReceiver < 0) // TODO: find a way to get the actual max players value
+		return false;
+	
+	if(anSender > 32 || anReceiver < 0) // TODO: find a way to get the actual max players value
+		return false;
+	
+	return mClientListeningMap[anReceiver][anSender];
 };

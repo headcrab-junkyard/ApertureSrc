@@ -22,26 +22,26 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #include "CommonTypes.hpp"
 
-using sizebuf_t = struct sizebuf_s;
-
-interface ISystem;
+class CSystem;
+class CSizeBuffer;
 
 class CCmdBuffer
 {
 public:
-	CCmdBuffer(ISystem *apSystem);
+	CCmdBuffer(CSystem *apSystem);
 	~CCmdBuffer();
 	
+	///
 	void WaitFrames(uint anFrames){cmd_wait = anFrames;}
 	
 	/// As new commands are generated from the console or keybindings,
 	/// the text is added to the end of the command buffer
-	void AddText(const char *text);
+	void AddText(const char *asText);
 
 	/// When a command wants to issue other commands immediately, the text is
 	/// inserted at the beginning of the buffer, before any remaining unexecuted
 	/// commands
-	void InsertText(const char *text);
+	void InsertText(const char *asText);
 
 	/// Pulls off \n terminated lines of text from the command buffer and sends
 	/// them through Cmd_ExecuteString.  Stops when the buffer is empty.
@@ -52,9 +52,8 @@ private:
 	/// Allocates an initial text buffer that will grow as needed
 	void Init();
 private:
-	ISystem *mpSystem{nullptr};
-	
-	sizebuf_t *cmd_text{nullptr};
+	CSystem *mpSystem{nullptr};
+	CSizeBuffer *cmd_text{nullptr};
 	
 	uint cmd_wait{0};
 };

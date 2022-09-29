@@ -1,19 +1,20 @@
 /*
-Copyright (C) 2021 BlackPhrase
-
-This program is free software: you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation, either version 3
-of the License, or (at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
-
-See the GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <http://www.gnu.org/licenses/>.
+ * This file is part of OGSNext Engine
+ *
+ * Copyright (C) 2021-2022 BlackPhrase
+ *
+ * OGSNext Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OGSNext Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OGSNext Engine. If not, see <http://www.gnu.org/licenses/>.
 */
 
 /// @file
@@ -22,49 +23,47 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 #include "Game.hpp"
 #include "System.hpp"
 
+#include <game/server/IGame.hpp>
+
 CGame::CGame(CSystem *apSystem) : mpSystem(apSystem){}
 
-void CGame::Init()
+bool CGame::Init()
 {
 	LoadModule();
 	
-	mpGame->Init(Sys_GetFactoryThis());
+	return mpGame->Init(Sys_GetFactoryThis());
 };
 
 void CGame::Shutdown()
 {
-	if(mpGame)
-	{
-		mpGame->Shutdown();
-		mpGame = nullptr;
-	};
+	mpGame->Shutdown();
 	
 	UnloadModule();
 };
 
 void CGame::Update(float afTimeStep)
 {
-	mpGame->Update(afTimeStep);
+	mpGame->Frame(afTimeStep); // TODO: Update(afTimeStep);
 };
 
 void CGame::LoadModule()
 {
 	UnloadModule();
 	
-	mpGameModule = Sys_LoadModule(va("game"));
+	mpGameModule = Sys_LoadModule(va("%s/bin/server", com_gamedir));
 	
 	if(!mpGameModule)
-		mpSystem->Error("");
+		mpSystem->Error("Failed to load the game module!");
 	
-	auto fnGameFactory{Sys_GetFactory(mpGameModule)};
+	auto fnGameModuleFactory{Sys_GetFactory(mpGameModule)};
 	
-	if(!fnGameFactory)
-		mpSystem->Error("");
+	if(!fnGameModuleFactory)
+		mpSystem->Error("Failed to get the factory from the game module!");
 	
-	mpGame = reinterpret_cast<IGame*>(fnGameFactory(OGS_GAME_INTERFACE_VERSION, nullptr));
+	mpGame = reinterpret_cast<IGame*>(fnGameModuleFactory(OGS_GAME_INTERFACE_VERSION, nullptr));
 	
 	if(!mpGame)
-		mpSystem->Error("");
+		mpSystem->Error("Failed to get the game interface!");
 };
 
 void CGame::UnloadModule()

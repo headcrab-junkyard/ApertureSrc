@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2018-2021 BlackPhrase
+ * Copyright (C) 2018-2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,20 +21,25 @@
 
 #pragma once
 
+//#include "engine/IModelCache.hpp"
+
 class CModel;
 
-using model_t = struct model_s;
+//using model_t = struct model_s;
 
-class CModelCache
+class CModelCache // final : public IModelCache
 {
 public:
+	//CModelCache();
+	//~CModelCache();
+	
 	void Init();
 	
 	void ClearAll();
 	
-	model_t *GetForName(const char *name, bool crash) const;
+	CModel *GetByName(const char *name, bool crash) const; // override
 	
-	void TouchModel(const char *name);
+	void TouchModel(const char *name); // override
 private:
-	model_t *FindName(const char *name) const;
+	CModel *FindByName(const char *name) const;
 };

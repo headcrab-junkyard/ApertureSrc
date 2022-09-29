@@ -27,6 +27,8 @@
 #include "enums.h"
 
 interface INetworkSystem;
+interface INetClient;
+interface INetServer;
 
 using netadr_t = struct netadr_s;
 using sizebuf_t = struct sizebuf_s;
@@ -43,8 +45,12 @@ public:
 
 	void Config(bool abMultiplayer);
 
-	void Sleep(int msec);
+	void Sleep(int anMSec); // TODO: unused?
 	
+	//INetServer *GetServer() const;
+
+	//INetClient *GetClient() const;
+
 	bool GetPacket(netsrc_t sock, netadr_t &net_from, sizebuf_t &net_message);
 	void SendPacket(netsrc_t sock, int length, const void *data, const netadr_t &to);
 
@@ -59,5 +65,8 @@ private:
 	void *mpNetworkSystemModule{nullptr};
 	
 	INetworkSystem *mpNetworkSystem{nullptr};
-	CSys *mpSystem{nullptr};
+	CSystem *mpSystem{nullptr};
+
+	INetServer *mpServer{nullptr};
+	INetClient *mpClient{nullptr};
 };

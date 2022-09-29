@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2018-2019, 2021 BlackPhrase
+ * Copyright (C) 2018-2019, 2021-2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,6 +22,14 @@
 #include "quakedef.h"
 #include "ModelCache.hpp"
 
+//EXPOSE_SINGLE_INTERFACE(CModelCache, IModelCache, OGS_MODELCACHE_INTERFACE_VERSION);
+
+//CModelCache::CModelCache() = default;
+//CModelCache::~CModelCache() = default;
+
+// TODO: temp
+extern model_t *Mod_FindName(const char *name);
+
 void CModelCache::Init()
 {
 	Mod_Init();
@@ -32,7 +40,7 @@ void CModelCache::ClearAll()
 	Mod_ClearAll();
 };
 
-model_t *CModelCache::GetForName(const char *name, bool crash) const
+CModel *CModelCache::GetByName(const char *name, bool crash) const
 {
 	return Mod_ForName(name, crash);
 };
@@ -42,7 +50,7 @@ void CModelCache::TouchModel(const char *name)
 	Mod_TouchModel(name);
 };
 
-model_t *CModelCache::FindName(const char *name) const
+CModel *CModelCache::FindByName(const char *name) const
 {
 	return Mod_FindName(name);
 };

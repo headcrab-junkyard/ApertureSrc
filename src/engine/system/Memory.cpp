@@ -8,6 +8,7 @@
 #include "MemZone.hpp"
 
 #include "engine/ISystem.hpp"
+#include "engine/ICmdArgs.hpp"
 
 //============================================================================
 
@@ -25,6 +26,16 @@ CMemory::~CMemory()
 	free(mpMemBase);
 };
 
+void *CMemory::Calloc(int anNum, size_t anSize)
+{
+	return calloc(anNum, anSize);
+};
+
+void *CMemory::CheckCache(cache_user_t *apUser)
+{
+	return mpCache->Check(apUser);
+};
+
 /*
 ========================
 Memory_Init
@@ -36,7 +47,7 @@ void CMemory::Init(int anHeapSize)
 
 	mpCache = std::make_unique<CMemCache>(mpSystem);
 	
-	mpCache->Init();
+	//mpCache->Init(); // TODO
 	
 	int nZoneSize{DYNAMIC_SIZE};
 	

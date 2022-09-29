@@ -2,7 +2,7 @@
  * This file is part of OGSNext Engine
  *
  * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2019, 2021 BlackPhrase
+ * Copyright (C) 2018-2019, 2021-2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -91,15 +91,17 @@ void CSystem::DebugLog(const char *file, const char *fmt, ...)
 void CSystem::Error(const char *error, ...)
 {
 	va_list argptr;
-	char text[1024]{};
+	char sText[1024]{};
 
 	va_start(argptr, error);
-	vsprintf(text, error, argptr);
+	vsprintf(sText, error, argptr);
 	va_end(argptr);
-
-	mpEventDispatcher->DispatchError(text);
 	
-	mImpl.Error(text);
+	Printf("[ERROR] %s", sText);
+	
+	mpEventDispatcher->DispatchError(sText);
+	
+	mImpl.Error(sText);
 };
 
 // TODO: temp
@@ -123,12 +125,12 @@ void CSystem::Printf(const char *fmt, ...)
 	
 	mImpl.Printf("%s", text);
 	
-	// write it to the scrollable buffer on client-side
+	// Write it to the scrollable buffer on client-side
 	//if(!skipclient) // TODO
 		//if(gpEngineClient) // TODO
 			//gpEngineClient->ConPrint(text); // TODO
 	
-	// log all messages to file
+	// Log all messages to file
 	if(con_debuglog)
 		Con_DebugLog("qconsole.log", "%s", text);
 };
@@ -143,7 +145,7 @@ A CSystem::Printf that only shows up if the "developer" cvar is set
 // FIXME: make a buffer size safe vsprintf?
 void CSystem::DevPrintf(const char *fmt, ...)
 {
-	// don't confuse non-developers with techie stuff...
+	// Don't confuse non-developers with techie stuff...
 	//if(!developer.GetValue()) // TODO
 		//return;
 	
@@ -166,11 +168,7 @@ void CSystem::Warning(const char *fmt, ...)
 	vsprintf(msg, fmt, argptr);
 	va_end(argptr);
 	
-#ifdef _WIN32
 	Printf("[WARNING] %s", msg);
-#elif __linux__
-	fprintf(stderr, "[WARNING] %s", msg); // TODO: u sure?
-#endif
 };
 
 void CSystem::Quit()

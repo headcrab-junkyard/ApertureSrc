@@ -54,36 +54,13 @@ CMemZone::CMemZone(ISystem *apSystem, CMemHunk *apMemHunk, int anSize) : mpSyste
 
 /*
 ========================
-Z_ClearZone
-========================
-*/
-void memzone_t::Clear(int size)
-{
-	memblock_t *block{nullptr};
-
-	// set the entire zone to one free block
-
-	this->blocklist.next = this->blocklist.prev = block =
-	(memblock_t *)((byte *)this + sizeof(memzone_t));
-	this->blocklist.tag = 1; // in use block
-	this->blocklist.id = 0;
-	this->blocklist.size = 0;
-	this->rover = block;
-
-	block->prev = block->next = &this->blocklist;
-	block->tag = 0; // free block
-	block->id = ZONEID;
-	block->size = size - sizeof(memzone_t);
-};
-/*
-========================
 Z_Malloc
 ========================
 */
 void *CMemZone::Malloc(int size)
 {
 	CheckHeap(); // DEBUG
-	void *buf{TagMalloc(size, 1)};
+	auto buf{TagMalloc(size, 1)};
 	if(!buf)
 		mpSystem->Error("Z_Malloc: failed on allocation of %i bytes", size);
 	Q_memset(buf, 0, size);
@@ -206,4 +183,28 @@ void CMemZone::CheckHeap()
 		if(!block->tag && !block->next->tag)
 			mpSystem->Error("Z_CheckHeap: two consecutive free blocks\n");
 	};
+};
+
+/*
+========================
+Z_ClearZone
+========================
+*/
+void CMemZone::Clear(int size)
+{
+	memblock_t *block{nullptr};
+
+	// set the entire zone to one free block
+
+	mpZone->blocklist.next = mpZone->blocklist.prev = block =
+	(memblock_t *)((byte *)mpZone + sizeof(memzone_t));
+	mpZone->blocklist.tag = 1; // in use block
+	mpZone->blocklist.id = 0;
+	mpZone->blocklist.size = 0;
+	mpZone->rover = block;
+
+	block->prev = block->next = &mpZone->blocklist;
+	block->tag = 0; // free block
+	block->id = ZONEID;
+	block->size = size - sizeof(memzone_t);
 };

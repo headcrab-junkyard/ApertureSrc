@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2020 BlackPhrase
+ * Copyright (C) 2020, 2022 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,4 +28,6 @@ class CVoiceServer final : public IVoiceServer
 public:
 	bool SetClientListening(int anReceiver, int anSender, bool abState) override;
 	bool GetClientListening(int anReceiver, int anSender) const override;
+private:
+	bool mClientListeningMap[32][32]{};
 };

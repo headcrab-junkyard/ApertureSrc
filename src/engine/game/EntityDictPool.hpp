@@ -22,6 +22,9 @@
 
 #pragma once
 
+#include "CommonTypes.hpp"
+
+interface IFile;
 class CEntityDict;
 
 class CEntityDictPool
@@ -30,11 +33,13 @@ public:
 	CEntityDict *Alloc();
 	void Free(CEntityDict *apDict);
 
-	void WriteGlobals(FILE *apFile);
+	void WriteGlobals(IFile *apFile);
 	void ParseGlobals(char *asData);
 
 	void LoadFromFile(char *asData);
 
 	void PrintEdicts();
 	void PrintNum(int anEnt);
+private:
+	CEntityDict *mpHead{nullptr};
 };

@@ -25,11 +25,13 @@
 
 #include "engine/ICmdArgs.hpp"
 
+class CSystem;
+
 class CCmdArgs /*final*/ : public ICmdArgs
 {
 public:
-	CCmdArgs(const char *asCmdLine);
-	//~CCmdArgs();
+	CCmdArgs(CSystem *apSystem, const char *asCmdLine);
+	~CCmdArgs();
 	
 	/// @return number of arguments provided
 	int GetCount() const override;
@@ -54,6 +56,8 @@ private:
 	static constexpr auto MAX_ARGS{80};
 	
 	char *cmd_argv[MAX_ARGS]{};
+	
+	CSystem *mpSystem{nullptr};
 	
 	const char *cmd_args{nullptr};
 	

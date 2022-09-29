@@ -22,13 +22,21 @@
 
 #pragma once
 
+#include "CommonTypes.hpp"
+
+interface IFile;
+
+using edict_t = struct edict_s;
+
 class CEntityDict
 {
 public:
 	void Print();
-	void WriteToFile(FILE *apFile);
+	void WriteToFile(IFile *apFile);
 	
 	char *ParseEdict(char *data, edict_t *ent);
 
 	//eval_t *GetFieldValue(const char *field) const;
+private:
+	edict_t *mpData{nullptr};
 };
