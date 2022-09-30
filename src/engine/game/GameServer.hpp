@@ -29,10 +29,10 @@
 
 //#include <next/engine/IGameServer.hpp>
 
-// MAX_CHALLENGES is made large to prevent a denial
-// of service attack that could cycle all of them
-// out before legitimate users connected
-#define MAX_CHALLENGES 1024
+/// MAX_CHALLENGES is made large to prevent a denial
+/// of service attack that could cycle all of them
+/// out before legitimate users connected
+constexpr auto MAX_CHALLENGES{1024};
 
 using client_t = struct client_s;
 
@@ -84,17 +84,45 @@ public:
 	void Activate();
 	void Deactivate();
 	
-	void BroadcastPrintf(/*int level,*/ const char *asMsg, ...);
+	void AddEventListener(IGameServerEventListener *apListener) override;
+	void RemoveEventListener(IGameServerEventListener *apListener) override;
+	
+	void AddClientEventListener(IGameClientEventListener *apListener) override;
+	void RemoveClientEventListener(IGameClientEventListener *apListener) override;
+	
+	int RegisterUserMsg(const char *asName, int anSize) override; 
+	bool RegisterNetMsg(INetMsg *apMsg) override;
+	
+	bool SetNetMsgHandler(const char *asMsg, INetMsgHandler *apHandler) override;
+	
+	void ForceExactFile(const char *asName) override;
+	void ForceModelBounds(const char *asNae, const vec3_t &avMins, const vec3_t &avMaxs) override;
+	
+	void BroadcastPrintf(/*int level,*/ const char *asMsg, ...) override;
 	void BroadcastCmd(const char *asCmd, ...);
+	
+	void MessageEnd(INetMsg *apMsg) override;
+	
+	IGameClient *CreateFakeClient(const char *asName) override;
 	
 	void ReconnectAllClients();
 	//void DisconnectAllClients();
 	
 	int GetActiveClientsNum() const;
 	
-	IGameClient *GetClient(int anIndex) const /*override*/ {return mvClients.at(anIndex);}
+	IGameClient *GetClientByName(const char *asName) const override;
+	IGameClient *GetClientByIndex(int anIndex) const override {return mvClients.at(anIndex);}
+	
+	IInfoBuffer *GetServerInfo() const override;
+	IInfoBuffer *GetPhysicsInfo() const override;
 private:
 	void CheckTimeouts();
+	
+	bool FilterPacket(const netadr_t &net_from);
+	void SendBan(const netadr_t &net_from);
+	
+	void HandleConnectionlessPacket(const IReadBuffer &aBuffer);
+	void ExecuteClientMessage(CGameClient *cl, const IReadBuffer &aBuffer)
 	
 	void ReadPackets();
 	
@@ -105,7 +133,7 @@ private:
 public:
 	challenge_t challenges[MAX_CHALLENGES]; // to prevent invalid IPs from connecting
 	
-	svstats_t stats;
+	svstats_t mStats;
 	
 	tGameClientVec mvClients;
 	//CGameClient *clients{nullptr}; // [maxclients]

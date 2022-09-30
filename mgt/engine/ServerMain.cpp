@@ -704,25 +704,6 @@ void SV_Shutdown(bool crash)
 	memset(svs.clients, 0, svs.maxclientslimit * sizeof(client_t));
 };
 
-/*
-=================
-SV_SendBan
-=================
-*/
-void SV_SendBan ()
-{
-	char		data[128];
-
-	data[0] = data[1] = data[2] = data[3] = 0xff;
-	data[4] = A2C_PRINT;
-	data[5] = 0;
-	
-	Q_strcat (data, "\nbanned.\n");
-	
-	NET_SendPacket (NS_SERVER, Q_strlen(data), data, net_from);
-}
-
-/*
 ==============================================================================
 
 PACKET FILTERING
@@ -752,25 +733,6 @@ If 0, then only addresses matching the list will be allowed.  This lets you easi
 
 ==============================================================================
 */
-
-/*
-=================
-SV_FilterPacket
-=================
-*/
-qboolean SV_FilterPacket ()
-{
-	int		i;
-	unsigned	in;
-	
-	in = *(unsigned *)net_from.ip;
-
-	for (i=0 ; i<numipfilters ; i++)
-		if ( (in & ipfilters[i].mask) == ipfilters[i].compare)
-			return sv_filterban.GetValue();
-
-	return !sv_filterban.GetValue();
-}
 
 /*
 ==============================================================================
@@ -1225,66 +1187,6 @@ void SVC_RemoteCommand()
 	}
 
 	SV_EndRedirect();
-}
-
-/*
-=================
-SV_ConnectionlessPacket
-
-A connectionless packet has four leading 0xff
-characters to distinguish it from a game channel.
-Clients that are in the game can still send
-connectionless packets.
-=================
-*/
-void SV_ConnectionlessPacket()
-{
-	char *s;
-	const char *c;
-
-	MSG_BeginReading();
-	MSG_ReadLong(net_message); // skip the -1 marker
-
-	//s = MSG_ReadStringLine(net_message); // TODO
-
-	Cmd_TokenizeString(s);
-
-	c = Cmd_Argv(0);
-
-	if(!strcmp(c, "ping") || (c[0] == A2A_PING && (c[1] == 0 || c[1] == '\n')))
-	{
-		SVC_Ping();
-		return;
-	}
-	if(c[0] == A2A_ACK && (c[1] == 0 || c[1] == '\n'))
-	{
-		gpSystem->Printf("A2A_ACK from %s\n", NET_AdrToString(net_from));
-		return;
-	}
-	else if(!strcmp(c, "status"))
-	{
-		SVC_Status();
-		return;
-	}
-	else if(!strcmp(c, "log"))
-	{
-		SVC_Log();
-		return;
-	}
-	else if(!strcmp(c, "connect"))
-	{
-		SVC_DirectConnect();
-		return;
-	}
-	else if(!strcmp(c, "getchallenge"))
-	{
-		SVC_GetChallenge();
-		return;
-	}
-	else if(!strcmp(c, "rcon"))
-		SVC_RemoteCommand();
-	else
-		gpSystem->Printf("bad connectionless packet from %s:\n%s\n", NET_AdrToString(net_from), s);
 }
 
 /*

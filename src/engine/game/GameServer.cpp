@@ -23,6 +23,8 @@
 #include "quakedef.h"
 #include "GameServer.hpp"
 
+#include <networksystem/INetServer.hpp>
+
 void CGameServer::Init()
 {
 };
@@ -108,10 +110,10 @@ void CGameServer::Frame(double host_frametime)
 	// Get packets
 	ReadPackets();
 
-	// check for commands typed to the host
+	// Check for commands typed to the host
 	//SV_GetConsoleCommands (); // TODO: handled by Host_GetConsoleCommands
 
-	// process console commands
+	// Process console commands
 	//Cbuf_Execute(); // TODO: qw
 
 	//SV_CheckVars(); // TODO: qw
@@ -119,24 +121,25 @@ void CGameServer::Frame(double host_frametime)
 	// Send messages back to the clients that had packets read this frame
 	SendClientMessages();
 
-	// send a heartbeat to the master if needed
+	// Send a heartbeat to the master if needed
 	//Master_Heartbeat (); // TODO: qw
 
 	// TODO: qw
 
-	// collect timing statistics
+	// Collect timing statistics
 	/*
-	end = Sys_FloatTime ();
-	svs.stats.active += end-start;
-	if (++svs.stats.count == STATFRAMES)
+	end = Sys_FloatTime();
+	mStats.active += end - start;
+	if(++mStats.count == STATFRAMES)
 	{
-		svs.stats.latched_active = svs.stats.active;
-		svs.stats.latched_idle = svs.stats.idle;
-		svs.stats.latched_packets = svs.stats.packets;
-		svs.stats.active = 0;
-		svs.stats.idle = 0;
-		svs.stats.packets = 0;
-		svs.stats.count = 0;
+		mStats.latched_active = mStats.active;
+		mStats.latched_idle = mStats.idle;
+		mStats.latched_packets = mStats.packets;
+		
+		mStats.active = 0;
+		mStats.idle = 0;
+		mStats.packets = 0;
+		mStats.count = 0;
 	};
 */
 };
@@ -145,12 +148,12 @@ void CGameServer::Frame(double host_frametime)
 
 void CGameServer::Activate()
 {
-	mpEventBroadcaster->OnServerActivate();
+	mpEventBroadcaster->OnActivate(mnMaxClients);
 };
 
 void CGameServer::Deactivate()
 {
-	mpEventBroadcaster->OnServerDeactivate();
+	mpEventBroadcaster->OnDeactivate();
 };
 
 void CGameServer::BroadcastPrintf(/*int level,*/ const char *asMsg, ...)
@@ -168,6 +171,15 @@ void CGameServer::BroadcastPrintf(/*int level,*/ const char *asMsg, ...)
 
 void CGameServer::BroadcastCmd(const char *asCmd, ...)
 {
+	va_list ArgList{};
+	char sFmtMsg[1024]{};
+	
+	va_start(ArgList, asMsg);
+	vsprintf(sFmtMsg, asMsg, ArgList);
+	va_end(ArgList);
+	
+	for(auto It : mvClients)
+		It->SendCmd(sFmtMsg);
 };
 
 void CGameServer::ReconnectAllClients()
@@ -216,8 +228,8 @@ void CGameServer::CheckTimeouts()
 			
 			if(cl->GetNetChan()->last_received < fDropTime)
 			{
-				//BroadcastPrintf(PRINT_HIGH, "%s timed out\n", cl->name); // TODO
-				SV_DropClient(cl, false, "Timed out");
+				//BroadcastPrintf(PRINT_HIGH, "%s timed out\n", cl->GetName()); // TODO
+				cl->Drop(false, "Timed out");
 				cl->active = false; // don't bother with zombie state
 			};
 		};
@@ -234,8 +246,199 @@ void CGameServer::CheckTimeouts()
 	};
 };
 
-// TODO
-void SV_ConnectionlessPacket();
+/*
+=================
+SV_FilterPacket
+=================
+*/
+bool CGameServer::FilterPacket(const netadr_t &net_from)
+{
+	uint in = *(uint *)net_from.ip;
+
+	for(int i = 0; i < numipfilters; i++)
+		if((in & ipfilters[i].mask) == ipfilters[i].compare)
+			return sv_filterban.GetValue();
+
+	return !sv_filterban.GetValue();
+};
+
+/*
+=================
+SV_SendBan
+=================
+*/
+void CGameServer::SendBan(const netadr_t &net_from)
+{
+	char data[128]{};
+
+	data[0] = data[1] = data[2] = data[3] = 0xff;
+	data[4] = A2C_PRINT;
+	data[5] = 0;
+	
+	Q_strcat(data, "\nbanned.\n");
+	
+	mpNetServer->SendPacket(Q_strlen(data), data, net_from);
+};
+
+/*
+=================
+SV_ConnectionlessPacket
+
+A connectionless packet has four leading 0xff
+characters to distinguish it from a game channel.
+Clients that are in the game can still send
+connectionless packets.
+=================
+*/
+void CGameServer::HandleConnectionlessPacket(const IReadBuffer &net_message)
+{
+	char *s;
+
+	MSG_BeginReading();
+	MSG_ReadLong(net_message); // skip the -1 marker
+
+	//s = MSG_ReadStringLine(net_message); // TODO
+	
+	//Cmd_TokenizeString(s);
+	CCmdArgs Args(s);
+
+	const char *c{Args.GetByIndex(0)};
+
+	if(!Q_strcmp(c, "ping") || (c[0] == A2A_PING && (c[1] == 0 || c[1] == '\n')))
+	{
+		SVC_Ping();
+		return;
+	}
+	if(c[0] == A2A_ACK && (c[1] == 0 || c[1] == '\n'))
+	{
+		gpSystem->Printf("A2A_ACK from %s\n", NET_AdrToString(net_from));
+		return;
+	}
+	else if(!Q_strcmp(c, "status"))
+	{
+		SVC_Status();
+		return;
+	}
+	else if(!Q_strcmp(c, "log"))
+	{
+		SVC_Log();
+		return;
+	}
+	else if(!Q_strcmp(c, "connect"))
+	{
+		SVC_DirectConnect();
+		return;
+	}
+	else if(!Q_strcmp(c, "getchallenge"))
+	{
+		SVC_GetChallenge();
+		return;
+	}
+	else if(!Q_strcmp(c, "rcon"))
+		SVC_RemoteCommand();
+	else
+		gpSystem->Printf("bad connectionless packet from %s:\n%s\n", net_from.ToString(), s);
+};
+
+/*
+===================
+SV_ExecuteClientMessage
+
+The current net_message is parsed for the given client
+===================
+*/
+void CGameServer::ExecuteClientMessage(CGameClient *cl, const IReadBuffer &aBuffer)
+{
+	int		c;
+	//char	*s;
+
+	// calc ping time
+	client_frame_t *frame{&cl->frames[cl->netchan.incoming_acknowledged & UPDATE_MASK]};
+	frame->ping_time = realtime - frame->senttime;
+
+	// make sure the reply sequence number matches the incoming
+	// sequence number 
+	if(cl->netchan.incoming_sequence >= cl->netchan.outgoing_sequence)
+		cl->netchan.outgoing_sequence = cl->netchan.incoming_sequence;
+	else
+		cl->send_message = false; // don't reply, sequences have slipped		
+
+	// save time for ping calculations
+	cl->frames[cl->netchan.outgoing_sequence & UPDATE_MASK].senttime = realtime;
+	cl->frames[cl->netchan.outgoing_sequence & UPDATE_MASK].ping_time = -1;
+
+	host_client = cl;
+	sv_player = host_client->edict;
+	pmove = &svpmove;
+
+//	int seq_hash = (cl->netchan.incoming_sequence & 0xffff) ; // ^ QW_CHECK_HASH;
+	int seq_hash = cl->netchan.incoming_sequence;
+	
+	// mark time so clients will know how much to predict
+	// other players
+ 	cl->localtime = sv.time;
+	cl->delta_sequence = -1; // no delta unless requested
+	
+	while(1)
+	{
+		if(msg_badread)
+		{
+			gpSystem->Printf("SV_ReadClientMessage: badread\n");
+			SV_DropClient(cl, false, "Bad message read");
+			return;
+		};
+		
+		c = aBuffer.ReadByte();
+		
+		// End of message(?)
+		if(c == -1)
+			break;
+		
+		// TODO
+		INetMsgHandler *handler{NetMsgHandlerManager->GetHandlerForMsg(net_message.GetID())};
+	
+		if(!handler)
+			return false;
+		
+		/*
+		switch(c)
+		{
+		default:
+			if(!mpGame->HandleClientMessage(cl->GetID(), aBuffer))
+				gpSystem->Printf("SV_ReadClientMessage: unknown command char (%d)\n", c);
+			//SV_DropClient (cl, false, "Unknown command char"); // TODO: just ignore the message for now
+			return;
+		
+		case clc_nop:
+			break;
+		
+		//clc_move
+		
+		case clc_stringcmd:
+			CCLC_StringCmdMsgHandler handler;
+			break;
+		
+		//clc_delta
+		//clc_resourcelist
+		//clc_tmove
+		
+		case clc_fileconsistency:
+			CCLC_FileConsistencyMsgHandler handler;
+			break;
+		
+		//clc_voicedata
+		//clc_hltv
+		//clc_cvarvalue
+		
+		case clc_cvarvalue2:
+			CCLC_CVarValue2MsgHandler handler;
+			break;
+		};
+		*/
+		
+		handler->Handle(cl, aBuffer);
+	};
+};
 
 /*
 =================
@@ -250,30 +453,33 @@ void CGameServer::ReadPackets()
 
 	bool good{false};
 	
-	while(mpNetServer->GetPacket(&net_from, &net_message))
+	CNetAdr net_from;
+	CReadBuffer net_message;
+	
+	while(mpNetServer->GetPacket(net_from, net_message))
 	{
-		if(SV_FilterPacket(net_from))
+		if(FilterPacket(net_from))
 		{
-			SV_SendBan(net_from); // Tell them we aren't listening...
+			SendBan(net_from); // Tell them we aren't listening...
 			continue;
 		};
 
 		// Check for connectionless packet (0xffffffff) first
-		if(*(int *)net_message.data == -1)
+		if(*(int*)net_message.data == -1)
 		{
-			SV_ConnectionlessPacket();
+			HandleConnectionlessPacket(net_message);
 			continue;
 		};
 
-		// read the qport out of the message so we can fix up
-		// stupid address translating routers
+		// Read the qport out of the message so we can fix up
+		// Stupid address translating routers
 		MSG_BeginReading();
-		net_message.ReadLong(); // sequence number
-		net_message.ReadLong(); // sequence number
+		net_message.ReadLong(); // Sequence number
+		net_message.ReadLong(); // Sequence number
 		qport = net_message.ReadShort() & 0xffff;
 
-		// check for packets from connected clients
-		for(i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
+		// Check for packets from connected clients
+		for(i = 0, cl = svs.clients; i < svs.maxclients; i++, cl++)
 		{
 			if(!cl->active)
 				continue;
@@ -288,11 +494,11 @@ void CGameServer::ReadPackets()
 			};
 			if(cl->GetNetChan()->Process(&net_message))
 			{
-				// this is a valid, sequenced packet, so process it
-				svs.stats.packets++;
+				// This is a valid, sequenced packet, so process it
+				mStats.packets++;
 				good = true;
-				cl->send_message = true; // reply at end of frame
-				SV_ExecuteClientMessage(cl, &net_message);
+				cl->send_message = true; // Reply at end of frame
+				ExecuteClientMessage(cl, net_message);
 			};
 			break;
 		};
@@ -310,7 +516,7 @@ void CGameServer::ReadPackets()
 SV_SendClientMessages
 =======================
 */
-void SV_SendClientMessages()
+void CGameServer::SendClientMessages()
 {
 	int i, j;
 	client_t *c;
