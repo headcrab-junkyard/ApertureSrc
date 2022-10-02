@@ -27,12 +27,12 @@
 #include "GameClientEventDispatcher.hpp"
 extern CGameClientEventDispatcher *gpGameClientEventDispatcher;
 
-#define	MAX_IPFILTERS	1024
+constexpr auto MAX_IPFILTERS{1024};
 
 struct ipfilter_t
 {
-	unsigned	mask;
-	unsigned	compare;
+	uint mask;
+	uint compare;
 };
 
 server_t sv{};         // local server
@@ -53,7 +53,19 @@ CConVar sv_timeout("sv_timeout", "60"); // seconds without any message
 
 void SV_WriteSpawn(client_t *client)
 {
+	// don't begin again
+	if(client->spawned)
+		return;
+
 	client->spawned = true;
+
+	// TODO: client connection code? ClientPutInServer?
+	
+	// clear the net statistics, because connecting gives a bogus picture
+	client->netchan.frame_latency = 0;
+	client->netchan.frame_rate = 0;
+	client->netchan.drop_count = 0;
+	client->netchan.good_count = 0;
 };
 
 void SV_New_f(const ICmdArgs &apArgs);
@@ -73,13 +85,16 @@ void SV_Spawn_f(const ICmdArgs &apArgs) // TODO: was Host_Spawn_f
 	{
 		gpSystem->Printf("spawn is not valid from the console\n");
 		return;
-	}
+	};
 
 	if(host_client->spawned)
 	{
-		gpSystem->Printf("Spawn not valid -- allready spawned\n");
+		gpSystem->Printf("Spawn not valid -- already spawned\n");
 		return;
-	}
+	};
+
+	// NOTE: prespawn
+	SZ_Write(&host_client->netchan.message, sv.signon.data, sv.signon.cursize);
 
 	// handle the case of a level changing while a client was connecting
 	if ( atoi(Cmd_Argv(1)) != svs.spawncount )
@@ -87,14 +102,14 @@ void SV_Spawn_f(const ICmdArgs &apArgs) // TODO: was Host_Spawn_f
 		gpSystem->Printf ("SV_Spawn_f from different level\n");
 		SV_New_f (apArgs);
 		return;
-	}
+	};
 	
-	// TODO
-	//SV_WriteSpawn(host_client);
+	SV_WriteSpawn(host_client);
 	
 	// run the entrance script
 	if(sv.loadgame)
-	{ // loaded games are fully inited allready
+	{
+		// loaded games are fully inited already
 		// if this is the last client to be connected, unpause
 		sv.paused = false;
 	}
@@ -144,15 +159,15 @@ void SV_Spawn_f(const ICmdArgs &apArgs) // TODO: was Host_Spawn_f
 		// actually spawn the player // TODO: QW
 		//gGlobalVariables.time = sv.time; // TODO: QW
 		gpGameClientEventDispatcher->DispatchPutInServer(sv_player);
-		}
-	}
+		};
+	};
 
 	// send all current names, colors, and frag counts
 	host_client->netchan.message->Clear();
 
 	// send time of update
-	MSG_WriteByte(&host_client->netchan.message, svc_time);
-	MSG_WriteFloat(&host_client->netchan.message, sv.time);
+	host_client->netchan.message->WriteByte(svc_time);
+	host_client->netchan.message->WriteFloat(sv.time);
 
 	for(i = 0, client = svs.clients; i < svs.maxclients; i++, client++)
 	{
@@ -169,21 +184,23 @@ void SV_Spawn_f(const ICmdArgs &apArgs) // TODO: was Host_Spawn_f
 		MSG_WriteByte(&host_client->netchan.message, client->topcolor);
 		MSG_WriteByte(&host_client->netchan.message, client->bottomcolor);
 		*/
-	}
+	};
 
 	// send all current light styles
 	for(i = 0; i < MAX_LIGHTSTYLES; i++)
 	{
-		MSG_WriteByte(&host_client->netchan.message, svc_lightstyle);
-		MSG_WriteByte(&host_client->netchan.message, (char)i);
-		MSG_WriteString(&host_client->netchan.message, sv.lightstyles[i]);
-	}
+		host_client->netchan.message->WriteByte(svc_lightstyle);
+		host_client->netchan.message->WriteByte((char)i);
+		host_client->netchan.message->WriteString(sv.lightstyles[i]);
+	};
 
 	//
-	// send some stats
+	// send some stats (force stats to be updated)
 	//
 // TODO
 /*
+	Q_memset (host_client->stats, 0, sizeof(host_client->stats));
+	
 	MSG_WriteByte(&host_client->netchan.message, svc_updatestat);
 	MSG_WriteByte(&host_client->netchan.message, STAT_TOTALSECRETS);
 	MSG_WriteLong(&host_client->netchan.message, gGlobalVariables.total_secrets);
@@ -216,8 +233,10 @@ void SV_Spawn_f(const ICmdArgs &apArgs) // TODO: was Host_Spawn_f
 	SV_WriteClientdataToMessage(sv_player, &host_client->netchan.message);
 
 	MSG_WriteByte(&host_client->netchan.message, svc_signonnum);
-	MSG_WriteByte(&host_client->netchan.message, 3);
+	MSG_WriteByte(&host_client->netchan.message, 2); // TODO: looks like this should be 1
 	//host_client->sendsignon = true;
+
+	// TODO: svc_voiceinit
 };
 
 /*
@@ -260,10 +279,10 @@ void SV_New_f(const ICmdArgs &apArgs)
 	*/
 
 	// send the serverdata
-	//MSG_WriteByte (&host_client->netchan.message, svc_serverdata); // TODO
-	MSG_WriteLong (&host_client->netchan.message, PROTOCOL_VERSION);
-	MSG_WriteLong (&host_client->netchan.message, svs.spawncount);
-	MSG_WriteString (&host_client->netchan.message, gamedir);
+	//host_client->netchan.message->WriteByte (svc_serverdata); // TODO
+	host_client->netchan.message->WriteLong (PROTOCOL_VERSION);
+	host_client->netchan.message->WriteLong (svs.spawncount);
+	host_client->netchan.message->WriteString (gamedir);
 
 	playernum = NUM_FOR_EDICT(host_client->edict)-1;
 	//if (host_client->spectator) // TODO
@@ -292,6 +311,11 @@ void SV_New_f(const ICmdArgs &apArgs)
 	// send server info string
 	MSG_WriteByte (&host_client->netchan.message, svc_stufftext);
 	MSG_WriteString (&host_client->netchan.message, va("fullserverinfo \"%s\"\n", svs.info) );
+
+	// TODO: svc_updateuserinfo
+
+	// TODO: svc_resourcerequest
+	// TODO: svc_resourcelist
 };
 
 // TODO
@@ -760,23 +784,23 @@ void SVC_Status()
 	Cmd_TokenizeString("status");
 	SV_BeginRedirect(RD_PACKET);
 	//gpSystem->Printf("%s\n", svs.info); // TODO
-	for(i = 0; i < MAX_CLIENTS; i++)
+	for(i = 0; i < svs.maxclients; i++)
 	{
 		cl = &svs.clients[i];
 		if((cl->connected || cl->spawned) /*&& !cl->spectator*/) // TODO
 		{
-			top = atoi(Info_ValueForKey(cl->userinfo, "topcolor"));
-			bottom = atoi(Info_ValueForKey(cl->userinfo, "bottomcolor"));
+			top = atoi(cl->userinfo->GetValueForKey("topcolor"));
+			bottom = atoi(cl->userinfo->GetValueForKey("bottomcolor"));
 			top = (top < 0) ? 0 : ((top > 13) ? 13 : top);
 			bottom = (bottom < 0) ? 0 : ((bottom > 13) ? 13 : bottom);
 			//ping = SV_CalcPing(cl); // TODO
 			gpSystem->Printf("%i %i %i %i \"%s\" \"%s\" %i %i\n", cl->userid,
 			           cl->old_frags, (int)(realtime - cl->connection_started) / 60,
-			           ping, cl->name, Info_ValueForKey(cl->userinfo, "skin"), top, bottom);
-		}
-	}
+			           ping, cl->GetName(), Info_ValueForKey(cl->userinfo, "skin"), top, bottom);
+		};
+	};
 	SV_EndRedirect();
-}
+};
 
 /*
 ===================
@@ -806,7 +830,7 @@ void SV_CheckLog()
 		gpSystem->Printf("beginning fraglog sequence %i\n", svs.logsequence);
 	}
 */
-}
+};
 
 /*
 ================
@@ -818,7 +842,7 @@ the same as the current sequence, an A2A_NACK will be returned
 instead of the data.
 ================
 */
-void SVC_Log()
+void SVC_Log(const INetAdr &net_from, const ICmdArgs &aArgs)
 {
 	// TODO
 /*
@@ -842,9 +866,9 @@ void SVC_Log()
 	sprintf(data, "stdlog %i\n", svs.logsequence - 1);
 	strcat(data, (char *)svs.log_buf[((svs.logsequence - 1) & 1)]);
 
-	NET_SendPacket(NS_SERVER, strlen(data) + 1, data, net_from);
+	NET_SendPacket(NS_SERVER, Q_strlen(data) + 1, data, net_from);
 */
-}
+};
 
 /*
 ================
@@ -853,14 +877,11 @@ SVC_Ping
 Just responds with an acknowledgement
 ================
 */
-void SVC_Ping()
+void SVC_Ping(const INetAdr &net_from)
 {
-	char data;
-
-	data = A2A_ACK;
-
-	NET_SendPacket(NS_SERVER, 1, &data, net_from);
-}
+	char data = A2A_ACK;
+	gpNetServer->SendPacket(1, &data, net_from);
+};
 
 /*
 =================
@@ -873,7 +894,7 @@ flood the server with invalid connection IPs.  With a
 challenge, they must give a valid IP address.
 =================
 */
-void SVC_GetChallenge()
+void SVC_GetChallenge(const INetAdr &net_from)
 {
 	int i;
 	int oldest;
@@ -891,8 +912,8 @@ void SVC_GetChallenge()
 		{
 			oldestTime = svs.challenges[i].time;
 			oldest = i;
-		}
-	}
+		};
+	};
 
 	if(i == MAX_CHALLENGES)
 	{
@@ -901,11 +922,11 @@ void SVC_GetChallenge()
 		svs.challenges[oldest].adr = net_from;
 		svs.challenges[oldest].time = realtime;
 		i = oldest;
-	}
+	};
 
 	// send it back
 	Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c%i", S2C_CHALLENGE, svs.challenges[i].challenge);
-}
+};
 
 // TODO
 void SV_ExtractFromUserinfo (client_t *cl);
@@ -917,7 +938,7 @@ SVC_DirectConnect
 A connection request that did not come from the master
 ==================
 */
-void SVC_DirectConnect()
+void SVC_DirectConnect(const INetAdr &net_from, const ICmdArgs &aArgs)
 {
 	char userinfo[1024];
 	static int userid;
@@ -940,7 +961,7 @@ void SVC_DirectConnect()
 		Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c\nServer is version %4.2f.\n", A2C_PRINT, VERSION);
 		gpSystem->Printf("* rejected connect from version %i\n", version);
 		return;
-	}
+	};
 
 	qport = atoi(Cmd_Argv(2));
 
@@ -959,17 +980,17 @@ void SVC_DirectConnect()
 				break; // good
 			Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c\nBad challenge.\n", A2C_PRINT);
 			return;
-		}
-	}
+		};
+	};
 	if(i == MAX_CHALLENGES)
 	{
 		Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c\nNo challenge for address.\n", A2C_PRINT);
 		return;
-	}
+	};
 
 	// check for password
-	s = Info_ValueForKey(userinfo, "spectator");
-	if(s[0] && strcmp(s, "0"))
+	s = userinfo->GetValueForKey("spectator");
+	if(s[0] && Q_strcmp(s, "0"))
 	{
 		// TODO
 		/*
@@ -977,32 +998,32 @@ void SVC_DirectConnect()
 			stricmp(spectator_password.string, "none") &&
 			strcmp(spectator_password.string, s) )
 		{	// failed
-			gpSystem->Printf ("%s:spectator password failed\n", NET_AdrToString (net_from));
+			gpSystem->Printf ("%s:spectator password failed\n", net_from.ToString());
 			Netchan_OutOfBandPrint (NS_SERVER, net_from, "%c\nrequires a spectator password\n\n", A2C_PRINT);
 			return;
-		}
+		};
 		*/
-		Info_RemoveKey(userinfo, "spectator"); // remove passwd
-		Info_SetValueForStarKey(userinfo, "*spectator", "1", MAX_INFO_STRING);
+		userinfo->RemoveKey("spectator"); // remove passwd
+		userinfo->SetValueForStarKey("*spectator", "1", MAX_INFO_STRING);
 		spectator = true;
 	}
 	else
 	{
-		s = Info_ValueForKey(userinfo, "password");
+		s = userinfo->GetValueForKey("password");
 		// TODO
 		/*
 		if(password.string[0] &&
 		   stricmp(password.string, "none") &&
 		   strcmp(password.string, s))
 		{
-			gpSystem->Printf("%s:password failed\n", NET_AdrToString(net_from));
+			gpSystem->Printf("%s:password failed\n", net_from.ToString());
 			Netchan_OutOfBandPrint(NS_SERVER, net_from, "%c\nserver requires a password\n\n", A2C_PRINT);
 			return;
 		}
 		*/
 		spectator = false;
-		Info_RemoveKey(userinfo, "password"); // remove passwd
-	}
+		userinfo->RemoveKey("password"); // remove passwd
+	};
 
 	adr = net_from;
 	userid++; // so every client gets a unique id
@@ -1026,29 +1047,29 @@ void SVC_DirectConnect()
 		//strncpy(newcl->userinfo, userinfo, sizeof(newcl->userinfo) - 1);
 
 	// if there is allready a slot for this ip, drop it
-	for(i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
+	for(i = 0, cl = svs.clients; i < svs.maxclients; i++, cl++)
 	{
 		if(!cl->active)
 			continue;
-		if(NET_CompareBaseAdr(adr, cl->netchan.remote_address) && (cl->netchan.qport == qport || adr.port == cl->netchan.remote_address.port))
+		if(NET_CompareBaseAdr(adr, cl->GetNetChan()->remote_address) && (cl->GetNetChan()->qport == qport || adr.port == cl->GetNextChan()->remote_address.port))
 		{
 			if(cl->connected)
 			{
-				gpSystem->Printf("%s:dup connect\n", NET_AdrToString(adr));
+				gpSystem->Printf("%s:dup connect\n", adr.ToString());
 				userid--;
 				return;
-			}
+			};
 
-			gpSystem->Printf("%s:reconnect\n", NET_AdrToString(adr));
-			SV_DropClient(cl, false, "reconnect");
+			gpSystem->Printf("%s:reconnect\n", adr.ToString());
+			cl->DropClient(false, "reconnect");
 			break;
-		}
-	}
+		};
+	};
 
 	// count up the clients and spectators
 	clients = 0;
 	spectators = 0;
-	for(i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
+	for(i = 0, cl = svs.clients; i < svs.maxclients; i++, cl++)
 	{
 		if(!cl->active)
 			continue;
@@ -1056,7 +1077,7 @@ void SVC_DirectConnect()
 			//spectators++;
 		//else
 			clients++;
-	}
+	};
 
 	// if at server limits, refuse connection
 	//if(maxplayers.value > MAX_CLIENTS) // TODO
@@ -1067,24 +1088,24 @@ void SVC_DirectConnect()
 		gpSystem->Printf("%s:full connect\n", NET_AdrToString(adr));
 		Netchan_OutOfBandPrint(NS_SERVER, adr, "%c\nserver is full\n\n", A2C_PRINT);
 		return;
-	}
+	};
 
 	// find a client slot
 	newcl = nullptr;
-	for(i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
+	for(i = 0, cl = svs.clients; i < svs.maxclients; i++, cl++)
 	{
 		if(!cl->active)
 		{
 			newcl = cl;
 			break;
-		}
-	}
+		};
+	};
 
 	if(!newcl)
 	{
 		gpSystem->Printf("WARNING: miscounted available clients\n");
 		return;
-	}
+	};
 
 	// build a new connection
 	// accept the new client
@@ -1131,21 +1152,21 @@ void SVC_DirectConnect()
 		gpSystem->DevPrintf("Client %s connected\n", newcl->name);
 
 	newcl->sendinfo = true;
-}
+};
 
 int Rcon_Validate()
 {
 	// TODO
 /*
-	if(!strlen(rcon_password.string))
+	if(!Q_strlen(rcon_password.string))
 		return 0;
 
-	if(strcmp(Cmd_Argv(1), rcon_password.string))
+	if(Q_strcmp(Cmd_Argv(1), rcon_password.string))
 		return 0;
 */
 
 	return 1;
-}
+};
 
 /*
 ===============
@@ -1156,14 +1177,14 @@ Shift down the remaining args
 Redirect all printfs
 ===============
 */
-void SVC_RemoteCommand()
+void SVC_RemoteCommand(const INetAdr &net_from, const IReadBuffer &net_message, const ICmdArgs &aArgs)
 {
 	int i;
 	char remaining[1024];
 
 	if(!Rcon_Validate())
 	{
-		gpSystem->Printf("Bad rcon from %s:\n%s\n", NET_AdrToString(net_from), net_message.data + 4);
+		gpSystem->Printf("Bad rcon from %s:\n%s\n", net_from.ToString(), net_message.data + 4);
 
 		SV_BeginRedirect(RD_PACKET);
 
@@ -1171,23 +1192,23 @@ void SVC_RemoteCommand()
 	}
 	else
 	{
-		gpSystem->Printf("Rcon from %s:\n%s\n", NET_AdrToString(net_from), net_message.data + 4);
+		gpSystem->Printf("Rcon from %s:\n%s\n", net_from.ToString(), net_message.data + 4);
 
 		SV_BeginRedirect(RD_PACKET);
 
 		remaining[0] = 0;
 
-		for(i = 2; i < Cmd_Argc(); i++)
+		for(i = 2; i < aArgs.GetCount(); i++)
 		{
-			strcat(remaining, Cmd_Argv(i));
-			strcat(remaining, " ");
+			Q_strcat(remaining, aArgs.GetByIndex(i));
+			Q_strcat(remaining, " ");
 		};
 
 		Cmd_ExecuteString(remaining, src_command); // TODO: src_client?
-	}
+	};
 
 	SV_EndRedirect();
-}
+};
 
 /*
 =============================================================================
@@ -1229,11 +1250,11 @@ void SV_FlushRedirect ()
 		MSG_WriteByte (&host_client->netchan.message, svc_print);
 		//MSG_WriteByte (&host_client->netchan.message, PRINT_HIGH); // TODO
 		MSG_WriteString (&host_client->netchan.message, outputbuf);
-	}
+	};
 
 	// clear it
 	outputbuf[0] = 0;
-}
+};
 
 /*
 ==================
@@ -1247,13 +1268,13 @@ void SV_BeginRedirect (redirect_t rd)
 {
 	sv_redirected = rd;
 	outputbuf[0] = 0;
-}
+};
 
 void SV_EndRedirect ()
 {
 	SV_FlushRedirect ();
 	sv_redirected = RD_NONE;
-}
+};
 
 /*
 =============================================================================
@@ -1288,10 +1309,10 @@ void SV_StartParticle(vec3_t org, vec3_t dir, int color, int count)
 		else if(v < -128)
 			v = -128;
 		MSG_WriteChar(&sv.datagram, v);
-	}
+	};
 	MSG_WriteByte(&sv.datagram, count);
 	MSG_WriteByte(&sv.datagram, color);
-}
+};
 
 /*  
 ==================
@@ -1316,13 +1337,13 @@ void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume,
 	int ent;
 
 	if(volume < 0 || volume > 255)
-		Sys_Error("SV_StartSound: volume = %i", volume);
+		gpSystem->Error("SV_StartSound: volume = %i", volume);
 
 	if(attenuation < 0 || attenuation > 4)
-		Sys_Error("SV_StartSound: attenuation = %f", attenuation);
+		gpSystem->Error("SV_StartSound: attenuation = %f", attenuation);
 
 	if(channel < 0 || channel > 7)
-		Sys_Error("SV_StartSound: channel = %i", channel);
+		gpSystem->Error("SV_StartSound: channel = %i", channel);
 
 	if(sv.datagram.cursize > MAX_DATAGRAM - 16)
 		return;
@@ -1336,7 +1357,7 @@ void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume,
 	{
 		gpSystem->Printf("SV_StartSound: %s not precacheed\n", sample);
 		return;
-	}
+	};
 
 	ent = NUM_FOR_EDICT(entity);
 
@@ -1359,7 +1380,7 @@ void SV_StartSound(edict_t *entity, int channel, const char *sample, int volume,
 	MSG_WriteByte(&sv.datagram, sound_num);
 	for(i = 0; i < 3; i++)
 		MSG_WriteCoord(&sv.datagram, entity->v.origin[i] + 0.5 * (entity->v.mins[i] + entity->v.maxs[i]));
-}
+};
 
 /*
 ==============================================================================
@@ -1421,7 +1442,7 @@ void SV_SendServerinfo(client_t *client)
 
 	client->connected = true;
 	client->spawned = false; // need prespawn, spawn, etc
-}
+};
 
 /*
 ================
@@ -1437,7 +1458,6 @@ void SV_ConnectClient (int clientnum)
 	edict_t			*ent;
 	client_t		*client;
 	int				edictnum;
-	struct netchan_s *netconnection;
 	int				i;
 	float			spawn_parms[NUM_SPAWN_PARMS];
 
@@ -1473,10 +1493,10 @@ void SV_ConnectClient (int clientnum)
 		gEntityInterface.pfnSetNewParms();
 		for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
 			client->spawn_parms[i] = (&gGlobalVariables.parm1)[i];
-	}
+	};
 
 	SV_SendServerinfo (client);
-}
+};
 */
 
 /*
@@ -1496,7 +1516,7 @@ SV_ClearDatagram
 void SV_ClearDatagram()
 {
 	sv.datagram.Clear();
-}
+};
 
 /*
 =============================================================================
@@ -1529,9 +1549,9 @@ void SV_AddToFatPVS(vec3_t org, mnode_t *node)
 				pvs = Mod_LeafPVS((mleaf_t *)node, sv.worldmodel);
 				for(i = 0; i < fatbytes; i++)
 					fatpvs[i] |= pvs[i];
-			}
+			};
 			return;
-		}
+		};
 
 		plane = node->plane;
 		d = DotProduct(org, plane->normal) - plane->dist;
@@ -1543,9 +1563,9 @@ void SV_AddToFatPVS(vec3_t org, mnode_t *node)
 		{ // go down both
 			SV_AddToFatPVS(org, node->children[0]);
 			node = node->children[1];
-		}
-	}
-}
+		};
+	};
+};
 
 /*
 =============
@@ -1561,7 +1581,7 @@ byte *SV_FatPVS(vec3_t org)
 	Q_memset(fatpvs, 0, fatbytes);
 	SV_AddToFatPVS(org, sv.worldmodel->nodes);
 	return fatpvs;
-}
+};
 
 //=============================================================================
 
@@ -1607,13 +1627,13 @@ void SV_WriteEntitiesToClient(edict_t *clent, sizebuf_t *msg)
 
 			if(i == ent->num_leafs)
 				continue; // not visible
-		}
+		};
 
 		if(msg->maxsize - msg->cursize < 16)
 		{
 			gpSystem->Printf("packet overflow\n");
 			return;
-		}
+		};
 
 		// send an update
 		bits = 0;
@@ -1623,7 +1643,7 @@ void SV_WriteEntitiesToClient(edict_t *clent, sizebuf_t *msg)
 			miss = ent->v.origin[i] - ent->baseline.origin[i];
 			if(miss < -0.1 || miss > 0.1)
 				bits |= U_ORIGIN1 << i;
-		}
+		};
 
 		if(ent->v.angles[0] != ent->baseline.angles[0])
 			bits |= U_ANGLE1;
@@ -1692,8 +1712,8 @@ void SV_WriteEntitiesToClient(edict_t *clent, sizebuf_t *msg)
 			MSG_WriteCoord(msg, ent->v.origin[2]);
 		if(bits & U_ANGLE3)
 			MSG_WriteAngle(msg, ent->v.angles[2]);
-	}
-}
+	};
+};
 
 /*
 =============
@@ -1708,10 +1728,8 @@ void SV_CleanupEnts()
 
 	ent = NEXT_EDICT(sv.edicts);
 	for(e = 1; e < sv.num_edicts; e++, ent = NEXT_EDICT(ent))
-	{
 		ent->v.effects = (int)ent->v.effects & ~EF_MUZZLEFLASH;
-	}
-}
+};
 
 /*
 ==================
@@ -1743,7 +1761,7 @@ void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg)
 
 		ent->v.dmg_take = 0;
 		ent->v.dmg_save = 0;
-	}
+	};
 
 	//
 	// send the current viewpos offset from the view entity
@@ -1757,7 +1775,7 @@ void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg)
 		for(i = 0; i < 3; i++)
 			MSG_WriteAngle(msg, ent->v.angles[i]);
 		ent->v.fixangle = 0;
-	}
+	};
 
 	bits = 0;
 
@@ -1796,7 +1814,7 @@ void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg)
 			bits |= (SU_PUNCH1 << i);
 		if(ent->v.velocity[i])
 			bits |= (SU_VELOCITY1 << i);
-	}
+	};
 
 	if(ent->v.weaponframe)
 		bits |= SU_WEAPONFRAME;
@@ -1824,7 +1842,7 @@ void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg)
 			MSG_WriteChar(msg, ent->v.punchangle[i]);
 		if(bits & (SU_VELOCITY1 << i))
 			MSG_WriteChar(msg, ent->v.velocity[i] / 16);
-	}
+	};
 
 	// [always sent]	if (bits & SU_ITEMS)
 	MSG_WriteLong(msg, items);
@@ -1856,10 +1874,10 @@ void SV_WriteClientdataToMessage(edict_t *ent, sizebuf_t *msg)
 			{
 				MSG_WriteByte(msg, i);
 				break;
-			}
-		}
-	}
-}
+			};
+		};
+	};
+};
 
 /*
 =================
@@ -1877,7 +1895,6 @@ void SV_ExtractFromUserinfo (client_t *cl)
 	int		dupc = 1;
 	char	newname[80];
 
-
 	// name for C code
 	val = Info_ValueForKey (cl->userinfo, "name");
 
@@ -1892,26 +1909,28 @@ void SV_ExtractFromUserinfo (client_t *cl)
 		//white space only
 		strcpy(newname, "unnamed");
 		p = newname;
-	}
+	};
 
 	if (p != newname && *p) {
 		for (q = newname; *p; *q++ = *p++)
 			;
 		*q = 0;
-	}
+	};
 	for (p = newname + strlen(newname) - 1; p != newname && (*p == ' ' || *p == '\r' || *p == '\n') ; p--)
 		;
 	p[1] = 0;
 
-	if (strcmp(val, newname)) {
+	if (strcmp(val, newname))
+	{
 		Info_SetValueForKey (cl->userinfo, "name", newname, MAX_INFO_STRING);
 		val = Info_ValueForKey (cl->userinfo, "name");
-	}
+	};
 
-	if (!val[0] || !stricmp(val, "console")) {
+	if (!val[0] || !stricmp(val, "console"))
+	{
 		Info_SetValueForKey (cl->userinfo, "name", "unnamed", MAX_INFO_STRING);
 		val = Info_ValueForKey (cl->userinfo, "name");
-	}
+	};
 
 	// check to see if another user by the same name exists
 	while (1) {
@@ -1920,7 +1939,7 @@ void SV_ExtractFromUserinfo (client_t *cl)
 				continue;
 			if (!stricmp(client->name, val))
 				break;
-		}
+		};
 		if (i != MAX_CLIENTS) { // dup name
 			if (strlen(val) > sizeof(cl->name) - 1)
 				val[sizeof(cl->name) - 4] = 0;
@@ -1937,7 +1956,7 @@ void SV_ExtractFromUserinfo (client_t *cl)
 			val = Info_ValueForKey (cl->userinfo, "name");
 		} else
 			break;
-	}
+	};
 	
 	// TODO
 	/*
@@ -1959,12 +1978,11 @@ void SV_ExtractFromUserinfo (client_t *cl)
 	}
 	*/
 
-
 	strncpy (cl->name, val, sizeof(cl->name)-1);	
 
 	// rate command
 	val = Info_ValueForKey (cl->userinfo, "rate");
-	if (strlen(val))
+	if (Q_strlen(val))
 	{
 		i = atoi(val);
 		if (i < 500)
@@ -1972,23 +1990,22 @@ void SV_ExtractFromUserinfo (client_t *cl)
 		if (i > 10000)
 			i = 10000;
 		cl->netchan.rate = 1.0/i;
-	}
+	};
 
 	// msg command
 	val = Info_ValueForKey (cl->userinfo, "msg");
-	if (strlen(val))
+	if (Q_strlen(val))
 	{
 		//cl->messagelevel = atoi(val); // TODO
-	}
-
-}
+	};
+};
 
 /*
 =======================
 SV_SendClientDatagram
 =======================
 */
-qboolean SV_SendClientDatagram(client_t *client)
+bool SV_SendClientDatagram(client_t *client)
 {
 	byte buf[MAX_DATAGRAM];
 	CSizeBuffer msg;
@@ -2016,10 +2033,10 @@ qboolean SV_SendClientDatagram(client_t *client)
 	{
 		//SV_DropClient(client, true, "datagram"); // if the message couldn't send, kick off
 		//return false;
-	}
+	};
 
 	return true;
-}
+};
 
 /*
 =======================
@@ -2043,21 +2060,21 @@ void SV_UpdateToReliableMessages()
 				//MSG_WriteByte(&client->netchan.message, svc_updatefrags); // TODO
 				//MSG_WriteByte(&client->netchan.message, i); // TODO
 				//MSG_WriteShort(&client->netchan.message, host_client->edict->v.frags); // TODO
-			}
+			};
 
 			host_client->old_frags = host_client->edict->v.frags;
-		}
-	}
+		};
+	};
 
 	for(j = 0, client = svs.clients; j < svs.maxclients; j++, client++)
 	{
 		if(!client->active)
 			continue;
 		client->netchan.message->Write(sv.reliable_datagram.data, sv.reliable_datagram.cursize);
-	}
+	};
 
 	sv.reliable_datagram.Clear();
-}
+};
 
 /*
 =======================
@@ -2076,7 +2093,7 @@ void SV_SendNop(client_t *client)
 	msg.maxsize = sizeof(buf);
 	msg.cursize = 0;
 
-	MSG_WriteChar(&msg, svc_nop);
+	msg.WriteChar(svc_nop);
 
 	// TODO
 	client->netchan->Transmit(msg.cursize, msg.data);
@@ -2084,7 +2101,7 @@ void SV_SendNop(client_t *client)
 		//SV_DropClient(client, true, "NOP"); // if the message couldn't send, kick off
 	
 	//client->last_message = realtime;
-}
+};
 
 /*
 ==============================================================================
@@ -2111,9 +2128,9 @@ int SV_ModelIndex(const char *name)
 		if(!strcmp(sv.model_precache[i], name))
 			return i;
 	if(i == MAX_MODELS || !sv.model_precache[i])
-		Sys_Error("SV_ModelIndex: model %s not precached", name);
+		gpSystem->Error("SV_ModelIndex: model %s not precached", name);
 	return i;
-}
+};
 
 /*
 ================
@@ -2151,9 +2168,8 @@ void SV_CreateBaseline()
 		else
 		{
 			svent->baseline.colormap = 0;
-			svent->baseline.modelindex =
-			SV_ModelIndex(pr_strings + svent->v.model);
-		}
+			svent->baseline.modelindex = SV_ModelIndex(pr_strings + svent->v.model);
+		};
 
 		//
 		// add to the message
@@ -2198,35 +2214,6 @@ void SV_BroadcastCommand(const char *fmt, ...)
 
 /*
 ================
-SV_SendReconnect
-
-Tell all the clients that the server is changing levels
-================
-*/
-void SV_SendReconnect()
-{
-	char data[128];
-	sizebuf_t msg;
-
-	msg.data = (byte*)data;
-	msg.cursize = 0;
-	msg.maxsize = sizeof(data);
-
-	//MSG_WriteChar (&msg, svc_stufftext);
-	//MSG_WriteString (&msg, "reconnect\n");
-	//NET_SendToAll (&msg, 5);
-	SV_BroadcastCommand("reconnect\n");
-
-	//if(cls.state != ca_dedicated) // TODO
-#ifdef QUAKE2
-		//Cbuf_InsertText("reconnect\n");
-#else
-		//Cmd_ExecuteString("reconnect\n", src_command);
-#endif
-}
-
-/*
-================
 SV_SaveSpawnparms
 
 Grabs the current state of each client for saving across the
@@ -2244,11 +2231,18 @@ void SV_SaveSpawnparms()
 		if(!host_client->active)
 			continue;
 
+		// TODO: qw
+		// needs to reconnect
+		//host_client->connected = true;
+
 		// call the progs to get default spawn parms for the new client
 		//gGlobalVariables.self = EDICT_TO_PROG(host_client->edict); // TODO
 		//gEntityInterface.pfnParmsChangeLevel(); // TODO
 		for(j = 0; j < NUM_SPAWN_PARMS; j++)
 			host_client->spawn_parms[j] = (&gGlobalVariables.parm1)[j];
+	};
+};
+
 	}
 }
 
@@ -2256,31 +2250,46 @@ void SV_SaveSpawnparms()
 ================
 SV_SpawnServer
 
+Change the server to a new map, taking all connected
+clients along with it.
+
 This is called at the start of each level
 ================
 */
 extern float scr_centertime_off;
 
-void SV_SpawnServer(const char *server, const char *startspot)
+void SV_SpawnServer(const char *mapname, const char *startspot)
 {
 	edict_t *ent;
 	int i;
 
+	// TODO: non-qw
 	// let's not have any servers with no name
 	if(hostname.GetString() == 0)
 		Cvar_Set("hostname", "UNNAMED");
 	//scr_centertime_off = 0; // TODO
+	//
 
-	gpSystem->DevPrintf("SpawnServer: %s\n", server);
-	svs.changelevel_issued = false; // now safe to issue another
+	// load progs to get entity field count
+	// which determines how big each edict is
+	Host_InitializeGameDLL();
 
+	gEntityInterface.pfnGameInit(); // TODO
+
+	gpSystem->DevPrintf("SpawnServer: %s\n", mapname);
+	svs.changelevel_issued = false; // now safe to issue another // TODO: non-qw
+
+	//SV_SaveSpawnparms(); // TODO: qw
+	
+	// TODO: qw
+	//svs.spawncount++; // Any partially connected client will be restarted
+
+// TODO: non-qw
 	//
 	// tell all connected clients that we are going to a new level
 	//
 	if(sv.active)
-	{
-		SV_SendReconnect();
-	}
+		gpGameServer->ReconnectAllClients();
 
 	//
 	// make cvars consistant
@@ -2294,24 +2303,51 @@ void SV_SpawnServer(const char *server, const char *startspot)
 		current_skill = 3;
 
 	Cvar_SetValue("skill", (float)current_skill);
+//
+
+	//sv.state = ss_dead; // TODO: qw
 
 	//
 	// set up the new server
 	//
 	Host_ClearMemory();
+	//
+	// TODO: qw
+	//Mod_ClearAll ();
+	//Hunk_FreeToLowMark (host_hunklevel);
+	//
 
-	memset(&sv, 0, sizeof(sv));
+	// wipe the entire per-level structure
+	Q_memset(&sv, 0, sizeof(sv));
 
-	strcpy(sv.name, server);
+	// TODO: qw
+	/*
+	sv.datagram.maxsize = sizeof(sv.datagram_buf);
+	sv.datagram.data = sv.datagram_buf;
+	sv.datagram.allowoverflow = true;
+
+	sv.reliable_datagram.maxsize = sizeof(sv.reliable_datagram_buf);
+	sv.reliable_datagram.data = sv.reliable_datagram_buf;
+	
+	sv.multicast.maxsize = sizeof(sv.multicast_buf);
+	sv.multicast.data = sv.multicast_buf;
+	
+	sv.master.maxsize = sizeof(sv.master_buf);
+	sv.master.data = sv.master_buf;
+	
+	sv.signon.maxsize = sizeof(sv.signon_buffers[0]);
+	sv.signon.data = sv.signon_buffers[0];
+	sv.num_signon_buffers = 1;
+	*/
+
+	Q_strcpy(sv.name, mapname);
 
 	if(startspot)
-		strcpy(sv.startspot, startspot);
+		Q_strcpy(sv.startspot, startspot);
 
-	// load progs to get entity field count
-	PR_LoadProgs();
-
+// TODO: non-qw
 	// allocate server memory
-	sv.max_edicts = MAX_EDICTS;
+	sv.max_edicts = MAX_EDICTS; // TODO: can be adjusted by the gameinfo key
 
 	// allocate edicts
 	sv.edicts = (edict_t*)Hunk_AllocName(sv.max_edicts * sizeof(edict_t), "edicts");
@@ -2327,6 +2363,7 @@ void SV_SpawnServer(const char *server, const char *startspot)
 	sv.signon.maxsize = sizeof(sv.signon_buf);
 	sv.signon.cursize = 0;
 	sv.signon.data = sv.signon_buf;
+//
 
 	// leave slots at start for clients only
 	sv.num_edicts = svs.maxclients + 1;
@@ -2334,23 +2371,30 @@ void SV_SpawnServer(const char *server, const char *startspot)
 	{
 		ent = EDICT_NUM(i + 1);
 		svs.clients[i].edict = ent;
-	}
+		//ZOID - make sure we update frags right
+		//svs.clients[i].old_frags = 0; // TODO: qw
+	};
 
-	sv.state = ss_loading;
-	sv.paused = false;
+	sv.state = ss_loading; // TODO: non-qw
+	sv.paused = false; // TODO: non-qw
 
 	sv.time = 1.0;
 
-	strcpy(sv.name, server);
-	sprintf(sv.modelname, "maps/%s.bsp", server);
-	sv.worldmodel = Mod_ForName(sv.modelname, false);
+	Q_strcpy(sv.name, mapname);
+	Q_sprintf(sv.modelname, "maps/%s.bsp", mapname);
+	sv.worldmodel = Mod_ForName(sv.modelname, false); // TODO: true in qw
+	//SV_CalcPHS (); // TODO: qw
+
+	
+	// TODO: non-qw
 	if(!sv.worldmodel)
 	{
 		gpSystem->Printf("Couldn't spawn server %s\n", sv.modelname);
 		sv.active = false;
 		return;
-	}
+	};
 	sv.models[1] = sv.worldmodel;
+	//
 
 	//
 	// clear world interaction links
@@ -2361,49 +2405,68 @@ void SV_SpawnServer(const char *server, const char *startspot)
 
 	sv.model_precache[0] = pr_strings;
 	sv.model_precache[1] = sv.modelname;
+	//sv.models[1] = sv.worldmodel; // TODO: qw
 	for(i = 1; i < sv.worldmodel->numsubmodels; i++)
 	{
 		sv.model_precache[1 + i] = localmodels[i];
 		sv.models[i + 1] = Mod_ForName(localmodels[i], false);
-	}
+	};
+
+	// TODO: qw
+	// check player/eyes models for hacks
+	//sv.model_player_checksum = SV_CheckModel("progs/player.mdl");
+	//sv.eyes_player_checksum = SV_CheckModel("progs/eyes.mdl");
 
 	//
-	// load the rest of the entities
+	// load/spawn the rest of the entities on the map
 	//
+
+	// precache and static commands can be issued during map initialization
+	//sv.state = ss_loading; // TODO: qw
+	
 	ent = EDICT_NUM(0);
-	memset(&ent->v, 0, sizeof(entvars_t));
+	Q_memset(&ent->v, 0, sizeof(entvars_t)); // TODO: non-qw
 	ent->free = false;
-	ent->v.model = sv.worldmodel->name - pr_strings;
+	ent->v.model = sv.worldmodel->name - pr_strings; // TODO: PR_SetString
+	// TODO: non-qw
 	ent->v.modelindex = 1; // world model
 	ent->v.solid = SOLID_BSP;
 	ent->v.movetype = MOVETYPE_PUSH;
+	//
 
+	// TODO: non-qw
 	if(coop.GetValue())
 		gGlobalVariables.coop = coop.GetValue();
 	else
 		gGlobalVariables.deathmatch = deathmatch.GetValue();
+	//
 
 	gGlobalVariables.mapname = sv.name - pr_strings;
 	gGlobalVariables.startspot = sv.startspot - pr_strings;
 
+	// TODO: non-qw
 	// serverflags are for cross level information (sigils)
 	gGlobalVariables.serverflags = svs.serverflags;
 
+	//// look up some model indexes for specialized message compression
+	//SV_FindModelNumbers (); // TODO: qw
+
+	// TODO: non-qw?
 	// run the frame start qc function to let progs check cvars
 	//SV_ProgStartFrame ();
 
 	// load and spawn all other entities
 	ED_LoadFromFile(sv.worldmodel->entities);
 
-	sv.active = true;
+	SV_ActivateServer();
 
 	// all setup is completed, any further precache statements are errors
 	sv.state = ss_active;
 
 	// run two frames to allow everything to settle
 	host_frametime = 0.1;
-	SV_Physics(host_frametime);
-	SV_Physics(host_frametime);
+	SV_GameFrame(host_frametime);
+	SV_GameFrame(host_frametime);
 
 	// save movement vars
 	//SV_SetMoveVars();
@@ -2416,9 +2479,9 @@ void SV_SpawnServer(const char *server, const char *startspot)
 	// send serverinfo to all connected clients
 	for(i = 0, host_client = svs.clients; i < svs.maxclients; i++, host_client++)
 		if(host_client->active)
-			SV_SendServerinfo(host_client);
+			host_client->SendServerInfo();
 	//
 
 	//Info_SetValueForKey (svs.info, "map", sv.name, MAX_SERVERINFO_STRING);
 	gpSystem->DevPrintf("Server spawned.\n");
-}
+};

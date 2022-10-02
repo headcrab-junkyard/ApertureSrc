@@ -52,7 +52,7 @@ void CGameServer::_Frame(double host_frametime)
 	// move things around and think
 	// always pause in single player if in console or menus
 	if(!sv.paused && (svs.maxclients > 1 || key_dest == key_game))
-		SV_GameFrame(host_frametime);
+		GameFrame(host_frametime);
 };
 
 void CGameServer::Frame(double host_frametime)
@@ -105,7 +105,7 @@ void CGameServer::Frame(double host_frametime)
 	// Move things around and think
 	// Always pause in single player if in console or menus
 	if(!sv.paused && (svs.maxclients > 1 /*|| key_dest == key_game*/)) // TODO
-		SV_GameFrame(host_frametime);
+		GameFrame(host_frametime);
 
 	// Get packets
 	ReadPackets();
@@ -182,10 +182,41 @@ void CGameServer::BroadcastCmd(const char *asCmd, ...)
 		It->SendCmd(sFmtMsg);
 };
 
+/*
+================
+SV_SendReconnect
+
+Tell all the clients that the server is changing levels
+================
+*/
 void CGameServer::ReconnectAllClients()
 {
-	for(auto It : mvClients)
-		It->Reconnect();
+	//for(auto It : mvClients)
+		//It->Reconnect();
+	
+	char data[128]{};
+	sizebuf_t msg;
+
+	msg.data = reinterpret_cast<byte*>(data);
+	msg.cursize = 0;
+	msg.maxsize = sizeof(data);
+
+	//msg.WriteChar(svc_stufftext);
+	//msg.WriteString("reconnect\n");
+	//NET_SendToAll(&msg, 5);
+	BroadcastCmd("reconnect\n"); // TODO: local client will also receive this command, so why should we manually execute it below?
+	
+	// TODO: find a better way to do that
+	if(cls.state != ca_dedicated)
+#ifdef QUAKE2
+		Cbuf_InsertText("reconnect\n");
+#else
+		Cmd_ExecuteString("reconnect\n", src_command);
+#endif
+};
+
+void CGameServer::DisconnectAllClients()
+{
 };
 
 int CGameServer::GetActiveClientsNum() const
@@ -234,7 +265,7 @@ void CGameServer::CheckTimeouts()
 			};
 		};
 
-		//if (cl->active == true && realtime - cl->connection_started > zombietime.value) // TODO
+		//if(cl->active == true && realtime - cl->connection_started > zombietime.value) // TODO
 			//cl->active = false; // Can now be reused
 	};
 
@@ -244,6 +275,25 @@ void CGameServer::CheckTimeouts()
 		// Nobody left, unpause the server
 		//SV_TogglePause("Pause released since no players are left.\n"); // TODO
 	};
+};
+
+/*
+================
+SV_Physics
+
+================
+*/
+void CGameServer::GameFrame(double host_frametime)
+{
+	// Let the game know that a new frame has started
+	gGlobalVariables.time = sv.time;
+	
+	gpGame->StartFrame();
+	
+	if(gGlobalVariables.force_retouch)
+		--gGlobalVariables.force_retouch;
+
+	sv.time += host_frametime;
 };
 
 /*
@@ -290,14 +340,14 @@ Clients that are in the game can still send
 connectionless packets.
 =================
 */
-void CGameServer::HandleConnectionlessPacket(const IReadBuffer &net_message)
+void CGameServer::HandleConnectionlessPacket(const INetAdr &net_from, const IReadBuffer &net_message)
 {
 	char *s;
 
-	MSG_BeginReading();
-	MSG_ReadLong(net_message); // skip the -1 marker
+	net_message.BeginReading();
+	net_message.ReadLong(); // Skip the -1 marker
 
-	//s = MSG_ReadStringLine(net_message); // TODO
+	//s = net_message.ReadStringLine(); // TODO
 	
 	//Cmd_TokenizeString(s);
 	CCmdArgs Args(s);
@@ -306,12 +356,12 @@ void CGameServer::HandleConnectionlessPacket(const IReadBuffer &net_message)
 
 	if(!Q_strcmp(c, "ping") || (c[0] == A2A_PING && (c[1] == 0 || c[1] == '\n')))
 	{
-		SVC_Ping();
+		SVC_Ping(net_from);
 		return;
 	}
 	if(c[0] == A2A_ACK && (c[1] == 0 || c[1] == '\n'))
 	{
-		gpSystem->Printf("A2A_ACK from %s\n", NET_AdrToString(net_from));
+		gpSystem->Printf("A2A_ACK from %s\n", net_from.ToString());
 		return;
 	}
 	else if(!Q_strcmp(c, "status"))
@@ -321,21 +371,21 @@ void CGameServer::HandleConnectionlessPacket(const IReadBuffer &net_message)
 	}
 	else if(!Q_strcmp(c, "log"))
 	{
-		SVC_Log();
+		SVC_Log(net_from, Args);
 		return;
 	}
 	else if(!Q_strcmp(c, "connect"))
 	{
-		SVC_DirectConnect();
+		SVC_DirectConnect(net_from, Args);
 		return;
 	}
 	else if(!Q_strcmp(c, "getchallenge"))
 	{
-		SVC_GetChallenge();
+		SVC_GetChallenge(net_from);
 		return;
 	}
 	else if(!Q_strcmp(c, "rcon"))
-		SVC_RemoteCommand();
+		SVC_RemoteCommand(net_from, net_message, Args);
 	else
 		gpSystem->Printf("bad connectionless packet from %s:\n%s\n", net_from.ToString(), s);
 };
@@ -349,32 +399,32 @@ The current net_message is parsed for the given client
 */
 void CGameServer::ExecuteClientMessage(CGameClient *cl, const IReadBuffer &aBuffer)
 {
-	int		c;
-	//char	*s;
+	int c;
+	//char *s;
 
-	// calc ping time
-	client_frame_t *frame{&cl->frames[cl->netchan.incoming_acknowledged & UPDATE_MASK]};
+	// Calc ping time
+	client_frame_t *frame{&cl->frames[cl->GetNetChan()->incoming_acknowledged & UPDATE_MASK]};
 	frame->ping_time = realtime - frame->senttime;
 
-	// make sure the reply sequence number matches the incoming
+	// Make sure the reply sequence number matches the incoming
 	// sequence number 
-	if(cl->netchan.incoming_sequence >= cl->netchan.outgoing_sequence)
-		cl->netchan.outgoing_sequence = cl->netchan.incoming_sequence;
+	if(cl->GetNetChan()->incoming_sequence >= cl->GetNetChan()->outgoing_sequence)
+		cl->GetNetChan()->outgoing_sequence = cl->GetNetChan()->incoming_sequence;
 	else
-		cl->send_message = false; // don't reply, sequences have slipped		
+		cl->send_message = false; // Don't reply, sequences have slipped		
 
-	// save time for ping calculations
-	cl->frames[cl->netchan.outgoing_sequence & UPDATE_MASK].senttime = realtime;
-	cl->frames[cl->netchan.outgoing_sequence & UPDATE_MASK].ping_time = -1;
+	// Save time for ping calculations
+	cl->frames[cl->GetNetChan()->outgoing_sequence & UPDATE_MASK].senttime = realtime;
+	cl->frames[cl->GetNetChan()->outgoing_sequence & UPDATE_MASK].ping_time = -1;
 
 	host_client = cl;
 	sv_player = host_client->edict;
 	pmove = &svpmove;
 
-//	int seq_hash = (cl->netchan.incoming_sequence & 0xffff) ; // ^ QW_CHECK_HASH;
-	int seq_hash = cl->netchan.incoming_sequence;
+//	int seq_hash = (cl->GetNetChan()->incoming_sequence & 0xffff) ; // ^ QW_CHECK_HASH;
+	int seq_hash = cl->GetNetChan()->incoming_sequence;
 	
-	// mark time so clients will know how much to predict
+	// Mark time so clients will know how much to predict
 	// other players
  	cl->localtime = sv.time;
 	cl->delta_sequence = -1; // no delta unless requested
@@ -384,7 +434,7 @@ void CGameServer::ExecuteClientMessage(CGameClient *cl, const IReadBuffer &aBuff
 		if(msg_badread)
 		{
 			gpSystem->Printf("SV_ReadClientMessage: badread\n");
-			SV_DropClient(cl, false, "Bad message read");
+			cl->Drop(false, "Bad message read");
 			return;
 		};
 		
@@ -394,20 +444,22 @@ void CGameServer::ExecuteClientMessage(CGameClient *cl, const IReadBuffer &aBuff
 		if(c == -1)
 			break;
 		
-		// TODO
-		INetMsgHandler *handler{NetMsgHandlerManager->GetHandlerForMsg(net_message.GetID())};
-	
-		if(!handler)
-			return false;
-		
-		/*
 		switch(c)
 		{
 		default:
-			if(!mpGame->HandleClientMessage(cl->GetID(), aBuffer))
+			// TODO
+			INetMsgHandler *pHandler{NetMsgHandlerManager->GetHandlerForMsg(net_message.GetID())};
+			
+			//if(!mpGame->HandleClientMessage(cl->GetID(), aBuffer))
+			if(!pHandler)
+			{
 				gpSystem->Printf("SV_ReadClientMessage: unknown command char (%d)\n", c);
-			//SV_DropClient (cl, false, "Unknown command char"); // TODO: just ignore the message for now
-			return;
+				//cl->Drop(false, "Unknown command char"); // TODO: just ignore the message for now
+				return;
+			};
+			
+			pHandler->Handle(cl, aBuffer);
+			break;
 		
 		case clc_nop:
 			break;
@@ -428,15 +480,13 @@ void CGameServer::ExecuteClientMessage(CGameClient *cl, const IReadBuffer &aBuff
 		
 		//clc_voicedata
 		//clc_hltv
+		
 		//clc_cvarvalue
 		
 		case clc_cvarvalue2:
 			CCLC_CVarValue2MsgHandler handler;
 			break;
 		};
-		*/
-		
-		handler->Handle(cl, aBuffer);
 	};
 };
 
@@ -521,10 +571,10 @@ void CGameServer::SendClientMessages()
 	int i, j;
 	client_t *c;
 
-	// update frags, names, etc
+	// Update frags, names, etc
 	SV_UpdateToReliableMessages();
 
-	// build individual updates
+	// Build individual updates
 	for(i = 0, c = svs.clients; i < svs.maxclients; i++, c++)
 	{
 		if(!c->active)
@@ -532,36 +582,36 @@ void CGameServer::SendClientMessages()
 
 		if(c->drop)
 		{
-			SV_DropClient(c, false, "Dropped by the server!");
+			c->Drop(false, "Dropped by the server!");
 			c->drop = false;
 			continue;
 		};
 
 		// TODO
 		/*
-		// check to see if we have a backbuf to stick in the reliable
+		// Check to see if we have a backbuf to stick in the reliable
 		if (c->num_backbuf)
 		{
-			// will it fit?
-			if (c->netchan.message.cursize + c->backbuf_size[0] < c->netchan.message.maxsize)
+			// Will it fit?
+			if(c->GetNetChan()->message.cursize + c->backbuf_size[0] < c->GetNetChan()->message.maxsize)
 			{
-				gpSystem->DevPrintf("%s: backbuf %d bytes\n", c->name, c->backbuf_size[0]);
+				gpSystem->DevPrintf("%s: backbuf %d bytes\n", c->GetName(), c->backbuf_size[0]);
 
 				// it'll fit
-				SZ_Write(&c->netchan.message, c->backbuf_data[0], c->backbuf_size[0]);
+				SZ_Write(&c->GetNetChan()->message, c->backbuf_data[0], c->backbuf_size[0]);
 				
 				//move along, move along
 				for (j = 1; j < c->num_backbuf; j++)
 				{
-					memcpy(c->backbuf_data[j - 1], c->backbuf_data[j], c->backbuf_size[j]);
+					Q_memcpy(c->backbuf_data[j - 1], c->backbuf_data[j], c->backbuf_size[j]);
 					c->backbuf_size[j - 1] = c->backbuf_size[j];
 				};
 
 				c->num_backbuf--;
 				
-				if (c->num_backbuf)
+				if(c->num_backbuf)
 				{
-					memset(&c->backbuf, 0, sizeof(c->backbuf));
+					Q_memset(&c->backbuf, 0, sizeof(c->backbuf));
 					c->backbuf.data = c->backbuf_data[c->num_backbuf - 1];
 					c->backbuf.cursize = c->backbuf_size[c->num_backbuf - 1];
 					c->backbuf.maxsize = sizeof(c->backbuf_data[c->num_backbuf - 1]);
@@ -576,50 +626,50 @@ void CGameServer::SendClientMessages()
 		// some other message data (name changes, etc) may accumulate
 		// between signon stages
 		/*
-		if (!c->sendsignon)
+		if(!c->sendsignon)
 		{
-			if (realtime - c->last_message > 5)
-				SV_SendNop (c);
-			continue;	// don't send out non-signon messages
+			if(realtime - c->last_message > 5)
+				c->SendNop();
+			continue; // don't send out non-signon messages
 		};
 		*/
 
-		// if the reliable message overflowed, drop the client
-		if(c->netchan.message.overflowed)
+		// If the reliable message overflowed, drop the client
+		if(c->GetNetChan()->message.overflowed)
 		{
-			c->netchan.message->Clear();
+			c->GetNetChan()->message->Clear();
 			c->datagram.Clear(&);
 			//SV_BroadcastPrintf(PRINT_HIGH, "%s overflowed\n", c->name); // TODO
 			gpSystem->Printf("WARNING: reliable overflow for %s\n", c->name);
-			SV_DropClient(c, true, "Overflowed!");
+			c->Drop(true, "Overflowed!");
 			c->send_message = true;
-			c->netchan.cleartime = 0; // don't choke this message
+			c->GetNetChan()->cleartime = 0; // don't choke this message
 		};
 
-		// only send messages if the client has sent one
+		// Only send messages if the client has sent one
 		// and the bandwidth is not choked
 		if(!c->send_message)
 			continue;
 
-		c->send_message = false; // try putting this after choke?
+		c->send_message = false; // Try putting this after choke?
 
-		if(!sv.paused && !c->netchan->CanPacket())
+		if(!sv.paused && !c->GetNetChan()->CanPacket())
 		{
 			c->chokecount++;
-			continue; // bandwidth choke
+			continue; // Bandwidth choke
 		};
 
 		/*
-		if (c->netchan.message.cursize)
+		if(c->GetNetChan()->message.cursize)
 		{
-			if (!c->netchan->CanPacket ()) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
+			if(!c->GetNetChan()->CanPacket()) // TODO: was NET_CanSendMessage; Netchan_CanReliable?
 			{
-//				I_Printf ("can't write\n");
+//				I_Printf("can't write\n");
 				continue;
 			};
 
 			if (c->dropasap)
-				SV_DropClient (false);	// went to another level
+				SV_DropClient(false);	// went to another level
 			else
 			{
 				if (NET_SendMessage (c->netchan, &c->netchan.message) == -1)
@@ -632,11 +682,11 @@ void CGameServer::SendClientMessages()
 		*/
 
 		if(c->spawned)
-			SV_SendClientDatagram(c);
+			c->SendDatagram();
 		else
-			c->netchan->Transmit(0, nullptr); // just update reliable
+			c->GetNetChan()->Transmit(0, nullptr); // Just update reliable
 	};
 
-	// clear muzzle flashes
+	// Clear muzzle flashes
 	SV_CleanupEnts();
 };

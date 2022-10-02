@@ -66,6 +66,11 @@ public:
 	void QueryCvarValue(const char *asCvarName) override;
 	void QueryCvarValueEx(const char *asCvarName, int anRequestID) override;
 public:
+	void SendNop();
+	void SendDatagram();
+	
+	INetChan *GetNetChan() const;
+public:
 	//sizebuf_t message{};
 	
 	bool active{false}; // false = client is free

@@ -123,7 +123,7 @@ byte playertouch[(MAX_EDICTS+7)/8];
 
 void SV_PreRunCmd()
 {
-	memset(playertouch, 0, sizeof(playertouch));
+	Q_memset(playertouch, 0, sizeof(playertouch));
 	
 	//gEntityInterface.pfnCmdStart();
 }
@@ -284,11 +284,12 @@ void SV_PostRunCmd()
 {
 	// run post-think
 
-	//if (!host_client->spectator) // TODO
+	//if(!host_client->spectator) // TODO
 	{
 		gGlobalVariables.time = sv.time;
 		//gEntityInterface.pfnPlayerPostThink(sv_player); // TODO
-		//SV_RunNewmis (); // TODO: unused
+		gEntityInterface.pfnCmdEnd();
+		//SV_RunNewmis(); // TODO: unused
 	}
 	/*
 	else if(SpectatorThink) // TODO: unused
@@ -810,6 +811,7 @@ SV_RunClients
 void SV_RunClients()
 {
 	int i;
+	client_t *host_client;
 
 	for(i = 0, host_client = svs.clients; i < svs.maxclients; i++, host_client++)
 	{
@@ -833,19 +835,18 @@ void SV_RunClients()
 
 		// always pause in single player if in console or menus
 		if(!sv.paused && (svs.maxclients > 1 || key_dest == key_game))
-			SV_ClientThink();
+			SV_ClientThink(sv_player);
 	};
 };
+*/
 
 /*
 ==================
 SV_ExecuteUserCommand
 ==================
 */
-void SV_ExecuteUserCommand(const char *s)
+void SV_ExecuteUserCommand(client_t *host_client, const char *s)
 {
-	//ucmd_t	*u;
-	
 	Cmd_TokenizeString(s /*, true*/); // TODO: q2
 	sv_player = host_client->edict; // TODO: = sv_client->edict in q2
 
@@ -853,14 +854,13 @@ void SV_ExecuteUserCommand(const char *s)
 
 	// TODO: Cmd_ExecuteString here instead of this
 	/*
-	for (u=ucmds ; u->name ; u++)
+	for (ucmd_t *u=ucmds ; u->name ; u++)
 		if (!strcmp (Cmd_Argv(0), u->name) )
 		{
 			u->func ();
 			break;
 		};
 	*/
-	
 	
 	//if(!u->name /*&& sv.state == ss_game*/) // TODO
 		gEntityInterface.pfnClientCommand(sv_player);

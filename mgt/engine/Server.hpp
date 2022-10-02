@@ -22,61 +22,27 @@
 
 #pragma once
 
-#include "usercmd.h"
+#include <common/usercmd.h>
 
-struct svstats_t
-{
-	double active;
-	double idle;
-	int count;
-	int packets;
+//=============================================================================
 
-	double latched_active;
-	double latched_idle;
-	int latched_packets;
-};
-
-// MAX_CHALLENGES is made large to prevent a denial
-// of service attack that could cycle all of them
-// out before legitimate users connected
-#define MAX_CHALLENGES 1024
-
-struct challenge_t
-{
-	netadr_t adr;
-	int challenge;
-	int time;
-};
+//constexpr auto AUTHORIZE_TIMEOUT{5000}; // TODO: q3
 
 struct server_static_t
 {
 	int spawncount; // number of servers spawned since start, used to check late spawns
 
-	int maxclients;
 	int maxclientslimit;
-	struct client_s *clients;    // [maxclients]
 	int serverflags;             // episode completion information
 	bool changelevel_issued; // cleared when at SV_SpawnServer
 
-	svstats_t stats;
-
-	challenge_t challenges[MAX_CHALLENGES]; // to prevent invalid IPs from connecting
-	
 	char info[MAX_SERVERINFO_STRING]; // TODO
 };
 
 //=============================================================================
 
-enum server_state_t
-{
-	ss_loading,
-	ss_active
-};
-
 struct server_t
 {
-	bool active; // false if only a net client
-
 	bool paused;
 	bool loadgame; // handle connections specially
 

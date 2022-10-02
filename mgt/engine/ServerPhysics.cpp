@@ -22,7 +22,6 @@
 
 #include "quakedef.h"
 
-
 /**
 
 
@@ -47,26 +46,4 @@ CConVar sv_gravity("sv_gravity", "800", FCVAR_SERVER);
 CConVar sv_maxvelocity("sv_maxvelocity", "2000");
 CConVar sv_nostep("sv_nostep", "0");
 
-#ifdef QUAKE2
-static vec3_t vec_origin = { 0.0, 0.0, 0.0 };
-#endif
-
-#define MOVE_EPSILON 0.01
-
-/*
-================
-SV_Physics
-
-================
-*/
-void SV_Physics(double host_frametime)
-{
-	// let the game know that a new frame has started
-	gGlobalVariables.time = sv.time;
-	gpGame->StartFrame();
-	
-	if(gGlobalVariables.force_retouch)
-		gGlobalVariables.force_retouch--;
-
-	sv.time += host_frametime;
-};
+constexpr auto MOVE_EPSILON{0.01};

@@ -49,18 +49,24 @@ struct challenge_t
 	//bool	connected;
 };
 
-//=============================================================================
-
 struct svstats_t
 {
 	double active;
 	double idle;
+	
 	int count;
 	int packets;
 
 	double latched_active;
 	double latched_idle;
 	int latched_packets;
+};
+
+enum server_state_t
+{
+	//ss_dead ///< no map loaded
+	ss_loading, ///< spawning level entities
+	ss_active ///< actively running
 };
 
 //=============================================================================
@@ -105,7 +111,7 @@ public:
 	
 	IGameClient *CreateFakeClient(const char *asName) override;
 	
-	void ReconnectAllClients();
+	void ReconnectAllClients(); // TODO: BroadcastReconnect?
 	//void DisconnectAllClients();
 	
 	int GetActiveClientsNum() const;
@@ -118,10 +124,13 @@ public:
 private:
 	void CheckTimeouts();
 	
+	void GameFrame(float afTimeStep);
+	//void GameFrame(double frametime);
+	
 	bool FilterPacket(const netadr_t &net_from);
 	void SendBan(const netadr_t &net_from);
 	
-	void HandleConnectionlessPacket(const IReadBuffer &aBuffer);
+	void HandleConnectionlessPacket(const INetAdr &net_from, const IReadBuffer &aBuffer);
 	void ExecuteClientMessage(CGameClient *cl, const IReadBuffer &aBuffer)
 	
 	void ReadPackets();
@@ -131,7 +140,7 @@ private:
 	//server_t *mpsv{nullptr};
 	//server_static_t *mpsvs{nullptr};
 public:
-	challenge_t challenges[MAX_CHALLENGES]; // to prevent invalid IPs from connecting
+	challenge_t mChallenges[MAX_CHALLENGES]{}; // to prevent invalid IPs from connecting
 	
 	svstats_t mStats;
 	
@@ -140,7 +149,9 @@ public:
 	
 	INetServer *mpNetServer{nullptr};
 	
+	server_state_t meState{ss_loading}; ///< Some actions are only valid during load
+	
 	int maxclients{0};
 	
-	bool active{false};
+	bool mbActive{false}; ///< False if only a net client
 };
