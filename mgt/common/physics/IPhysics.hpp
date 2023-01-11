@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2015-2018, 2020 BlackPhrase
+ * Copyright (C) 2015-2018, 2020, 2022-2023 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,17 +22,17 @@
 
 #pragma once
 
-#include "CommonTypes.hpp"
-#include "tier1/interface.h"
+#include <next/CommonTypes.hpp>
+#include <tier1/interface.h>
 
 constexpr auto OGS_PHYSICS_INTERFACE_VERSION{"OGSPhysics001"};
 
-struct IPhysicsWorld;
+interface IPhysicsWorld;
 
 interface IPhysics : public IBaseInterface
 {
-	//virtual IPhysicsWorld *CreatePhysicsWorld() = 0;
-	//virtual void DestroyPhysicsWorld(IPhysicsWorld *apWorld) = 0;
+	virtual IPhysicsWorld *CreateWorld() = 0;
+	virtual void DestroyWorld(IPhysicsWorld *apWorld) = 0;
 	
-	virtual qboolean RecursiveHullCheck(hull_t *hull, int num, float p1f, float p2f, vec3_t p1, vec3_t p2, trace_t *trace) = 0;
+	//virtual bool RecursiveHullCheck(hull_t *hull, int num, float p1f, float p2f, vec3_t p1, vec3_t p2, trace_t *trace) = 0;
 };
