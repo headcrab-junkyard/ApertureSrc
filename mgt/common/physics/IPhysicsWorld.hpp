@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2018-2020 BlackPhrase
+ * Copyright (C) 2018-2020, 2023 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "CommonTypes.hpp"
+#include <next/CommonTypes.hpp>
 
 class idVec3;
 interface IPhysicsBody;
@@ -41,10 +41,9 @@ interface IPhysicsWorld
 	///
 	virtual void SetGravity(const idVec3 &avGravity) = 0;
 	
-	
 	///
 	virtual const idVec3 &GetGravity() const = 0;
 	
 	///
-	virtual struct pmtrace_s *TraceLine(float *start, float *end, int flags, int usehull, int ignore_pe) // PM_TraceLine
+	virtual struct pmtrace_s *TraceLine(float *start, float *end, int flags, int usehull, int ignore_pe) = 0; // TODO: was PM_TraceLine
 };
