@@ -1,3 +1,4 @@
 # GoldSource Clutch
 
-A simple Magenta Native API to GoldSource API conversion layer
+A simple Next API to Legacy API conversion layer
+Allows the new engine to support old mods by providing an intermediary module which recreates the engine environment for running the mods expecting the original GoldSource API
