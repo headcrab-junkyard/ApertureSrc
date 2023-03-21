@@ -19,15 +19,43 @@
 
 /// @file
 
-#include "game/server/IGame.hpp"
+#pragma once
 
-class CGame : public IGame
+#include <memory>
+#include <vector>
+
+#include <next/game/server/IGame.hpp>
+#include <next/engine/IGameServerEventListener.hpp>
+
+interface ISystem;
+interface ISystemEventListener;
+
+interface IGameServer;
+interface IGameClientEventListener;
+
+class CGamePlayer;
+using tGamePlayerVec = std::vector<CGamePlayer*>;
+
+class CGame : public IGame, public IGameServerEventListener
 {
-public:
+public: // IGame interface methods
 	bool Init(CreateInterfaceFn afnEngineFactory) override;
 	void Shutdown() override;
 	
 	void Frame(double afFrameTime) override;
 	
-	const char *GetDescription() const override {return "GSClutch";}
+	const char *GetDescription() const override;
+public: // IGameServerEventListener interface methods
+	void OnServerActivate(int anMaxEntities, int anMaxClients) override;
+	void OnServerDeactivate() override;
+private:
+	CGamePlayer *GetPlayer(int anClientID) const {return mvPlayers.at(anClientID);}
+private:
+	tGamePlayerVec mvPlayers;
+	
+	std::unique_ptr<ISystemEventListener> mpSystemEventListener;
+	std::unique_ptr<IGameClientEventListener> mpGameClientEventListener;
+	
+	ISystem *mpSystem{nullptr};
+	IGameServer *mpGameServer{nullptr};
 };

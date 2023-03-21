@@ -21,25 +21,74 @@
 
 #include "Game.hpp"
 #include "Server.hpp"
-#include "engine/ISystem.hpp"
+#include "GamePlayer.hpp"
+#include "SystemEventListener.hpp"
+#include "GameClientEventListener.hpp"
+
+#include <next/engine/ISystem.hpp>
+#include <next/engine/IGameServer.hpp>
 
 ISystem *gpSystem{nullptr};
 
 bool CGame::Init(CreateInterfaceFn afnEngineFactory)
 {
-	gpSystem = afnEngineFactory(MGT_SYSTEM_INTERFACE_VERSION, nullptr);
+	mpSystem = reinterpret_cast<ISystem*>(afnEngineFactory(OGS_SYSTEM_INTERFACE_VERSION, nullptr));
+	mpGameServer = reinterpret_cast<IGameServer*>(afnEngineFactory(OGS_GAMESERVER_INTERFACE_VERSION, nullptr));
 	
-	if(!gpSystem)
-		return false;
+	if(!mpSystem || !mpGameServer)
+		return false; // TODO: make more informative?
 	
+	gpSystem = mpSystem;
+	
+	// Connect the system event listener
+	mpSystemEventListener = std::make_unique<CSystemEventListner>();
+	mpSystem->AddListener(mpSystemEventListener.get());
+	
+	// Connect the game module as a game server event listener
+	mpGameServer->AddListener(this);
+	
+	// Connect the game client event listener 
+	mpGameClientEventListener = std::make_unique<CGameClientEventListener>(this);
+	mpGameServer->AddClientListener(mpGameClientEventListener.get());
+	
+	// Init the legacy API game
+	gEntityInterface.pfnGameInit();
+	gEntityInterface.pfnRegisterEncoders();
+	gEntityInterface.pfnPM_Init(gpsvmove); // TODO: add the sv move struct here
 	return true;
 };
 
 void CGame::Shutdown()
 {
+	// Shutdown the legacy API game
+	if(gNewDLLFunctions.pfnGameShutdown)
+		gNewDLLFunctions.pfnGameShutdown();
 };
 
 void CGame::Frame(double afFrameTime)
 {
 	SV_Physics(afFrameTime);
+	
+	gEntityInterface.pfnStartFrame();
+};
+
+const char *CGame::GetDescription() const
+{
+	return gEntityInterface.pfnGetGameDescription();
+};
+
+void CGame::OnServerActivate(int anMaxEntities, int anMaxClients)
+{
+	// TODO: init the edicts array here
+	mvEdicts = reinterpret_cast<edict_t*>(malloc(sizeof(edict_t) * anMaxEntities));
+	
+	// TODO: resize the players vector to anMaxClients size here
+	mvPlayers.resize(anMaxClients);
+	
+	gEntityInterface.pfnServerActivate(mvEdicts, anMaxEntities, anMaxClients);
+};
+
+void CGame::OnServerDeactivate()
+{
+	gEntityInterface.pfnServerDeactivate();
 };
