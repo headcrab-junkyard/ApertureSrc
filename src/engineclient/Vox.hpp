@@ -1,8 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 1996-1997 Id Software, Inc.
- * Copyright (C) 2018-2019, 2021 BlackPhrase
+ * Copyright (C) 2018-2019, 2023 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,30 +21,10 @@
 
 #pragma once
 
-class CScreen
-{
-public:
-	void Init();
+constexpr auto MAX_SENTENCES{1024};
 
-	void Update();
-	
-	void SetActive(bool abActive);
+void VOX_Init();
 
-	void SizeUp();
-	void SizeDown();
+void VOX_LoadSound(const char *asSentence);
 
-	void BringDownConsole();
-	void CenterPrint(const char *str);
-
-	void BeginLoadingPlaque();
-	void EndLoadingPlaque();
-
-	int ModalMessage(const char *text);
-
-#ifdef _WIN32
-	void UpdateWholeScreen();
-#endif
-private:
-	bool initialized{false}; ///< ready to draw		
-	bool disabled_for_loading{false};
-};
+void VOX_ReadSentenceFile(const char *asFileName);

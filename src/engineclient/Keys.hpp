@@ -20,16 +20,23 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include "CommonTypes.hpp"
+
+interface IFile;
+
 class CKeys
 {
 public:
-	void Init();
+	void Init(); // TODO: not present in q3
 	
 	void ClearStates();
 	
-	void Key_Event(int key, bool down);
+	void Key_Event(int key, bool down); // TODO: not present in q3
 	
 	void SetBinding(int keynum, const char *binding);
+	const char *GetBinding(int anKey) const;
 	
-	void WriteBindings(FILE *f);
+	void WriteBindings(IFile *apFile); // TODO: WriteBindingsToFile?
+	
+	bool IsDown(int anKey) const;
 };

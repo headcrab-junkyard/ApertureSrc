@@ -1,7 +1,7 @@
 /*
  * This file is part of OGSNext Engine
  *
- * Copyright (C) 2019-2022 BlackPhrase
+ * Copyright (C) 2018, 2023 BlackPhrase
  *
  * OGSNext Engine is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,40 +21,11 @@
 
 #pragma once
 
-#include <memory>
-
-#include "CommonTypes.hpp"
-#include "soundsystem/ISoundSystem.hpp"
-
-interface ISoundSystem;
-
-class CCDAudio;
-
-class CSound
+class CVoice
 {
 public:
 	void Init();
 	void Shutdown();
 	
-	void Update();
-	
-	void SetListenerPos(const idVec3 &avOrigin, const idVec3 &avPosX, const idVec3 &avPosY, const idVec3 &avPosZ);
-private:
-	void LoadSoundSystemModule();
-	void UnloadSoundSystemModule();
-private:
-	std::unique_ptr<CCDAudio> mpCDAudio;
-	
-	void *mpSoundSystemModule{nullptr};
-	
-	ISoundSystem *mpSoundSystem{nullptr};
-};
-
-class CSoundSystemNull : public ISoundSystem
-{
-public:
-	bool Init(CreateInterfaceFn afnEngineFactory, void *apWindow) override;
-	void Shutdown() override;
-
-	void Update(float afTimeStep) override;
+	void RegisterCvars();
 };

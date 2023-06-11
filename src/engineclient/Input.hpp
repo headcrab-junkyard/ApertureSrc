@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2019-2020 BlackPhrase
+Copyright (C) 2019-2021 BlackPhrase
 
 This program is free software: you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -20,9 +20,13 @@ along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 #pragma once
 
+#include <memory>
+
 #include "CommonTypes.hpp"
 
 interface IInputSystem;
+
+class CKeys;
 
 class CInput
 {
@@ -35,7 +39,7 @@ public:
 	void Commands();
 
 	/// Add additional movement on top of the keyboard move cmd
-	void Move(usercmd_t *cmd);
+	//void Move(usercmd_t *cmd);
 
 #ifdef _WIN32
 	/// Restores all button and position states to defaults
@@ -44,6 +48,8 @@ public:
 private:
 	void LoadInputSystemModule();
 	void UnloadInputSystemModule();
+private:
+	std::unique_ptr<CKeys> mpKeys;
 	
 	void *mpInputSystemModule{nullptr};
 	

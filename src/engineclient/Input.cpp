@@ -1,5 +1,5 @@
 /*
-Copyright (C) 2019-2020 BlackPhrase
+Copyright (C) 2019-2021 BlackPhrase
 
 This program is free software: you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -16,12 +16,22 @@ You should have received a copy of the GNU General Public License
 along with this program. If not, see <http://www.gnu.org/licenses/>.
 */
 
+/// @file
+
 #include "quakedef.h"
+
 #include "Input.hpp"
+#include "Keys.hpp"
+
+#include "inputsystem/IInputSystem.hpp"
 
 void CInput::Init()
 {
 	LoadInputSystemModule();
+	
+	mpKeys = std::make_unique<CKeys>();
+	
+	mpKeys->Init();
 };
 
 void CInput::Shutdown()
@@ -36,7 +46,7 @@ void CInput::Commands()
 
 void CInput::Move(usercmd_t *cmd)
 {
-	IN_Move(cmd);
+	mpClientGame->IN_Move(cmd);
 };
 
 #ifdef _WIN32
@@ -53,17 +63,17 @@ void CInput::LoadInputSystemModule()
 	mpInputSystemModule = Sys_LoadModule("inputsystem");
 	
 	if(!mpInputSystemModule)
-		mpSystem->Error("");
+		mpSystem->Error("Failed to load the input system module!");
 	
 	auto fnInputSystemFactory{Sys_GetFactory(mpInputSystemModule)};
 	
 	if(!fnInputSystemFactory)
-		mpSystem->Error("");
+		mpSystem->Error("Failed to get the input system module factory!");
 	
 	mpInputSystem = reinterpret_cast<IInputSystem*>(fnInputSystemFactory(OGS_INPUTSYSTEM_INTERFACE_VERSION, nullptr));
 	
 	if(!mpInputSystem)
-		mpSystem->Error("");
+		mpSystem->Error("Failed to get the input system interface!");
 };
 
 void CInput::UnloadInputSystemModule()
