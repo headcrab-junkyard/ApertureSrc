@@ -20,7 +20,7 @@
 /// @file
 
 #include "quakedef.h"
-#include "Cvar.hpp"
+#include "ConVar.hpp"
 
 CConVar::CConVar(const char *asName, const char *asDefValue, const char *asDesc)
 {
