@@ -1,52 +1,126 @@
+/*
+ * This file is part of OGSNext Engine
+ *
+ * Copyright (C) 2019-2023 BlackPhrase
+ *
+ * OGSNext Engine is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * OGSNext Engine is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with OGSNext Engine. If not, see <http://www.gnu.org/licenses/>.
+*/
+
+/// @file
+
 #include "quakedef.h"
 #include "Cvar.hpp"
 
-void CCvar::Init()
+CConVar::CConVar(const char *asName, const char *asDefValue, const char *asDesc)
 {
-	//Cvar_Init(); // TODO
+	mpData->name = asName; //strcpy(mpData->name, asName);
+	
+	strcpy(mpData->string, asDefValue); // TODO: alloc
+	
+	msDefValue = asDefValue;
+	msDesc = asDesc;
+}
+
+CConVar::CConVar(cvar_t *apData, const char *asDesc)
+{
+	mpData = apData;
+	msDesc = asDesc;
 };
 
-void CCvar::RegisterVariable(cvar_t *variable)
+void CConVar::Reset()
 {
-	Cvar_RegisterVariable(variable);
+	strcpy(mpData->value, msDefValue);
 };
 
-void CCvar::Set(const char *var_name, const char *value)
+void CConVar::SetChangeValueListener(IConVarValueListener *apListener)
 {
-	Cvar_Set(var_name, value);
+	mpValueChangeListener = apListener;
 };
 
-void CCvar::SetValue(const char *var_name, float value)
+const char *CConVar::GetName() const
 {
-	Cvar_SetValue(var_name, value);
+	return mpData->name;
 };
 
-float CCvar::VariableValue(const char *var_name) const
+const char *CConVar::GetDesc() const
 {
-	return Cvar_VariableValue(var_name);
+	return msDesc;
 };
 
-const char *CCvar::VariableString(const char *var_name) const
+void CConVar::SetFlags(int anFlags)
 {
-	return Cvar_VariableString(var_name);
+	mpData->flags = anFlags;
 };
 
-const char *CCvar::CompleteVariable(const char *partial) const
+void CConVar::AddFlags(int anFlags)
 {
-	return Cvar_CompleteVariable(partial);
+	mpData->flags |= anFlags;
 };
 
-bool CCvar::HandleCommand()
+bool CConVar::HasFlags(int anFlags) const
 {
-	return Cvar_Command();
+	return mpData->flags & anFlags;
 };
 
-void CCvar::WriteVariables(IFile *f)
+int CConVar::GetFlags() const
 {
-	Cvar_WriteVariables(f);
+	return mpData->flags;
 };
 
-cvar_t *CCvar::FindVar(const char *var_name) const
+void CConVar::SetString(const char *asValue)
 {
-	return Cvar_FindVar(var_name);
+	auto sOldValue{asValue};
+	
+	strcpy(mpData->string, asValue); // TODO: alloc
+	
+	if(mpValueChangeListener)
+		mpValueChangeListener(GetName(), sOldValue, asValue);
+};
+
+void CConVar::SetInt(int anValue)
+{
+	SetString(std::to_string(anValue));
+};
+
+void CConVar::SetFloat(float afValue)
+{
+	SetString(std::to_string(afValue));
+};
+
+void CConVar::SetBool(bool abValue)
+{
+	SetString(std::to_string(abValue));
+};
+
+const char *CConVar::GetString() const
+{
+	return mpData->string;
+};
+
+int CConVar::GetInt() const
+{
+	return atoi(mpData->string);
+};
+
+float CConVar::GetFloat() const
+{
+	return atof(mpData->string);
+};
+
+bool CConVar::GetBool() const
+{
+	if(GetInt() > 0 || !strcmp(GetString(), "true"))
+		return true;
+	return false;
 };
