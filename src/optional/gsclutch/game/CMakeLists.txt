@@ -1,4 +1,4 @@
-if(NOT MGT_DEDICATED)
+if(NOT OGS_DEDICATED)
 	add_subdirectory(client)
 endif()
 

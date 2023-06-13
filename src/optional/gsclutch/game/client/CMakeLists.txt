@@ -1,4 +1,4 @@
-project(mgt-gsclutch-client)
+project(ogs-gsclutch-client)
 
 add_library(${PROJECT_NAME} MODULE)
 
@@ -9,5 +9,5 @@ target_sources(${PROJECT_NAME}
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
-	OUTPUT_NAME "client"
+	OUTPUT_NAME "gsclient"
 )

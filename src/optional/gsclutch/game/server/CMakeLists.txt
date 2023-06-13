@@ -1,4 +1,4 @@
-project(mgt-gsclutch-server)
+project(ogs-gsclutch-server)
 
 add_library(${PROJECT_NAME} MODULE)
 
@@ -9,5 +9,5 @@ target_sources(${PROJECT_NAME}
 )
 
 set_target_properties(${PROJECT_NAME} PROPERTIES
-	OUTPUT_NAME "server"
+	OUTPUT_NAME "gsserver"
 )
