@@ -1,7 +1,7 @@
 # OGSNext Engine
 
-[![Build Status](https://ci.appveyor.com/api/projects/status/github/BlackPhrase/OGSNext?svg=true)](https://ci.appveyor.com/project/BlackPhrase/OGSNext)
-[![Build Status](https://travis-ci.org/BlackPhrase/OGSNext.svg)](https://travis-ci.org/BlackPhrase/OGSNext)
+[![Build Status](https://ci.appveyor.com/api/projects/status/github/headcrab-junkyard/OGSNext?svg=true)](https://ci.appveyor.com/project/headcrab-junkyard/OGSNext)
+[![Build Status](https://travis-ci.org/headcrab-junkyard/OGSNext.svg)](https://travis-ci.org/headcrab-junkyard/OGSNext)
 
 ![OGSNext Logo](docs/pics/OGSLogo1280x512.png?raw=true "OGSNext Logo")
 
@@ -11,7 +11,7 @@ If you want something, [open an issue](issues/new)
 If you have something to provide, open a pull request
 
 Feel free to provide any help you can to the project  
-If you want to contribute but don't know where to start, take a look at the issues tagged as ["Help Wanted"](https://gitlab.com/BlackPhrase/magenta/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
+If you want to contribute but don't know where to start, take a look at the issues tagged as ["Help Wanted"](https://gitlab.com/headcrab-junkyard/OGSNext/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
 
 Take a look at the [CONTRIBUTING](CONTRIBUTING.md) file for some detailed information
 
@@ -28,7 +28,7 @@ Please note that this project is released with a [Contributor Code of Conduct](C
 
 ## License
 
-[![license](https://img.shields.io/github/license/BlackPhrase/OGSNext.svg)](https://gitlab.com/BlackPhrase/OGSNext/blob/master/LICENSE)
+[![license](https://img.shields.io/github/license/headcrab-junkyard/OGSNext.svg)](https://gitlab.com/headcrab-junkyard/OGSNext/blob/master/LICENSE)
 
 The engine is licensed under the terms of GNU GPLv3 license  
 See [LICENSE](LICENSE) file for license text and additional info
